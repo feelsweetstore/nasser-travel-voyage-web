@@ -20,9 +20,12 @@ const Navbar = () => {
       <div className="container-custom py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-heading font-bold text-nasser-primary">NASSER TRAVEL</span>
-            <span className="text-xl font-heading text-nasser-dark">HORIZON</span>
+          <Link to="/" className="flex items-center">
+            <img 
+              src="/lovable-uploads/d19dbcf9-1907-4336-85b4-f60eec78f9b3.png" 
+              alt="NASSER TRAVEL HORIZON" 
+              className="h-14 md:h-16"
+            />
           </Link>
 
           {/* Desktop Navigation */}
