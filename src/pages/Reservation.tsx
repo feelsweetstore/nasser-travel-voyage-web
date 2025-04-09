@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Form, PenSquare, Clock } from 'lucide-react';
+import { PenSquare, Clock } from 'lucide-react';
 import ReservationForm from '../components/reservation/ReservationForm';
 import WhatsAppReservation from '../components/reservation/WhatsAppReservation';
 import OnlineReservation from '../components/reservation/OnlineReservation';

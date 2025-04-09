@@ -8,6 +8,13 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Reservation from "./pages/Reservation";
+import About from "./pages/About";
+import Services from "./pages/Services";
+import Testimonials from "./pages/Testimonials";
+import Gallery from "./pages/Gallery";
+import Contact from "./pages/Contact";
+import FAQ from "./pages/FAQ";
+import ClientArea from "./pages/ClientArea";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,7 +29,13 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/reserver" element={<Reservation />} />
-          {/* Autres routes seront ajoutées ici */}
+          <Route path="/about" element={<About />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/temoignages" element={<Testimonials />} />
+          <Route path="/galerie" element={<Gallery />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/espace-client" element={<ClientArea />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />
