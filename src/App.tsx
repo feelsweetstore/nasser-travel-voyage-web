@@ -16,6 +16,7 @@ import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
 import ClientArea from "./pages/ClientArea";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/espace-client" element={<ClientArea />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />

@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Mail, Phone } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Mail, Phone, Settings } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-nasser-dark text-white pt-12 pb-6">
+    <footer className="bg-nasser-dark text-white pt-12 pb-6 relative">
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About Section */}
@@ -131,6 +131,15 @@ const Footer = () => {
           </p>
         </div>
       </div>
+      
+      {/* Admin access icon - discreet in the bottom right */}
+      <Link 
+        to="/admin" 
+        className="absolute bottom-2 right-2 text-gray-700 hover:text-gray-500 transition-colors"
+        aria-label="Admin Dashboard"
+      >
+        <Settings size={18} />
+      </Link>
     </footer>
   );
 };
