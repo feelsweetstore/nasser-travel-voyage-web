@@ -26,9 +26,9 @@ class OnlineReservationService {
   }
 
   /**
-   * Process a reservation
-   * @param reservationData - The reservation data
-   * @returns The created reservation ID
+   * Process a reservation or quote request
+   * @param reservationData - The reservation or quote data
+   * @returns The created reservation/quote ID
    */
   static async createReservation(reservationData: any): Promise<string> {
     // Simulate an API call with a delay
@@ -39,8 +39,8 @@ class OnlineReservationService {
     const newReservation = {
       id: `res-${Date.now()}`,
       ...reservationData,
-      createdAt: new Date().toISOString(),
-      status: 'confirmed'
+      createdAt: reservationData.createdAt || new Date().toISOString(),
+      status: reservationData.status || 'nouveau'
     };
     
     reservations.push(newReservation);
@@ -50,13 +50,54 @@ class OnlineReservationService {
   }
 
   /**
-   * Get all reservations
-   * @returns Array of reservation objects
+   * Get all reservations and quotes
+   * @returns Array of reservation and quote objects
    */
   static async getReservations(): Promise<any[]> {
     // Simulate an API call with a delay
     await new Promise(resolve => setTimeout(resolve, 300));
     return JSON.parse(localStorage.getItem('reservations') || '[]');
+  }
+  
+  /**
+   * Get reservations by status
+   * @param status - The status to filter by
+   * @returns Array of filtered reservation objects
+   */
+  static async getReservationsByStatus(status: string): Promise<any[]> {
+    // Simulate an API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const reservations = JSON.parse(localStorage.getItem('reservations') || '[]');
+    return reservations.filter((res: any) => res.status === status);
+  }
+  
+  /**
+   * Get reservations by type
+   * @param type - The type to filter by (reservation or quote)
+   * @returns Array of filtered reservation objects
+   */
+  static async getReservationsByType(type: string): Promise<any[]> {
+    // Simulate an API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const reservations = JSON.parse(localStorage.getItem('reservations') || '[]');
+    return reservations.filter((res: any) => res.type === type);
+  }
+  
+  /**
+   * Update a reservation or quote status
+   * @param id - The reservation ID
+   * @param status - The new status
+   */
+  static async updateStatus(id: string, status: string): Promise<void> {
+    // Simulate an API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const reservations = JSON.parse(localStorage.getItem('reservations') || '[]');
+    const updatedReservations = reservations.map((res: any) => 
+      res.id === id ? { ...res, status } : res
+    );
+    
+    localStorage.setItem('reservations', JSON.stringify(updatedReservations));
   }
 }
 

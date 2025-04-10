@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { CalendarIcon, Users, Plane } from 'lucide-react';
+import { CalendarIcon, Users, Plane, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import OnlineReservationService from '../../services/OnlineReservationService';
 
-const ReservationForm = () => {
+const QuoteForm = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     fullName: '',
@@ -21,6 +21,8 @@ const ReservationForm = () => {
     passengers: '1',
     travelClass: 'economy',
     ticketType: 'roundTrip',
+    budget: '',
+    flexibility: 'strict',
     message: ''
   });
 
@@ -40,24 +42,24 @@ const ReservationForm = () => {
       ...formData,
       departureDate: departureDate ? format(departureDate, 'yyyy-MM-dd') : '',
       returnDate: returnDate ? format(returnDate, 'yyyy-MM-dd') : '',
-      requestType: 'reservation' // Always set to reservation
+      requestType: 'quote' // Always set to quote
     };
     
-    console.log('Form data submitted:', submissionData);
+    console.log('Quote form data submitted:', submissionData);
     
     try {
-      // Save the reservation
+      // Save the quote request
       await OnlineReservationService.createReservation({
         ...submissionData,
         createdAt: new Date().toISOString(),
-        type: 'form',
+        type: 'quote',
         status: 'nouveau'
       });
       
       // Show success message
       toast({
-        title: "Demande de réservation envoyée avec succès!",
-        description: "Nous vous contacterons très prochainement.",
+        title: "Demande de devis envoyée avec succès!",
+        description: "Nous vous contacterons très prochainement avec votre devis personnalisé.",
         variant: "default",
       });
 
@@ -72,6 +74,8 @@ const ReservationForm = () => {
         passengers: '1',
         travelClass: 'economy',
         ticketType: 'roundTrip',
+        budget: '',
+        flexibility: 'strict',
         message: ''
       });
       setDepartureDate(undefined);
@@ -160,7 +164,7 @@ const ReservationForm = () => {
         {/* Date de départ */}
         <div>
           <label htmlFor="departureDate" className="block text-sm font-medium text-gray-700 mb-1">
-            Date de départ *
+            Date de départ approximative *
           </label>
           <Popover>
             <PopoverTrigger asChild>
@@ -195,7 +199,7 @@ const ReservationForm = () => {
         {/* Date de retour */}
         <div>
           <label htmlFor="returnDate" className="block text-sm font-medium text-gray-700 mb-1">
-            Date de retour
+            Date de retour approximative
           </label>
           <Popover>
             <PopoverTrigger asChild>
@@ -273,6 +277,47 @@ const ReservationForm = () => {
           </div>
         </div>
 
+        {/* Budget */}
+        <div>
+          <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-1">
+            Budget approximatif
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              id="budget"
+              name="budget"
+              value={formData.budget}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nasser-primary"
+              placeholder="Ex: 500 000 FCFA"
+            />
+            <FileText className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
+          </div>
+        </div>
+
+        {/* Flexibility */}
+        <div>
+          <label htmlFor="flexibility" className="block text-sm font-medium text-gray-700 mb-1">
+            Flexibilité des dates
+          </label>
+          <div className="relative">
+            <select
+              id="flexibility"
+              name="flexibility"
+              value={formData.flexibility}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-nasser-primary"
+            >
+              <option value="strict">Dates fixes</option>
+              <option value="flexible-days">Flexible (±2-3 jours)</option>
+              <option value="flexible-week">Flexible (±1 semaine)</option>
+              <option value="very-flexible">Très flexible</option>
+            </select>
+            <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
+          </div>
+        </div>
+
         {/* Type de billet */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -318,7 +363,7 @@ const ReservationForm = () => {
         {/* Message / demande particulière */}
         <div className="md:col-span-2">
           <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-            Message / demande particulière
+            Précisions sur votre demande
           </label>
           <textarea
             id="message"
@@ -327,7 +372,7 @@ const ReservationForm = () => {
             onChange={handleChange}
             rows={4}
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nasser-primary"
-            placeholder="Précisez toute information complémentaire importante pour votre voyage..."
+            placeholder="Précisez toute demande particulière, préférences, ou spécificités pour votre devis..."
           ></textarea>
         </div>
       </div>
@@ -337,14 +382,14 @@ const ReservationForm = () => {
           type="submit"
           className="btn-primary py-3 px-8 text-lg"
         >
-          Envoyer ma demande de réservation
+          Demander mon devis
         </button>
         <p className="mt-3 text-sm text-gray-500">
-          Nous vous répondrons dans les plus brefs délais.
+          Nous vous contacterons rapidement pour vous proposer un devis personnalisé.
         </p>
       </div>
     </form>
   );
 };
 
-export default ReservationForm;
+export default QuoteForm;

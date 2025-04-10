@@ -9,6 +9,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Reservation from "./pages/Reservation";
+import Quote from "./pages/Quote";
 import About from "./pages/About";
 import Services from "./pages/Services";
 import Testimonials from "./pages/Testimonials";
@@ -81,6 +82,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/reserver" element={<Reservation />} />
+              <Route path="/devis" element={<Quote />} />
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
               <Route path="/temoignages" element={<Testimonials />} />

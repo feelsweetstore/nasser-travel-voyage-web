@@ -25,13 +25,10 @@ const HeroSection = () => {
             Votre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.
           </p>
           <div className="flex flex-wrap gap-4">
-            <div className="relative">
-              <button className="btn-primary flex items-center">
-                Réserver maintenant <ArrowRight className="ml-2 h-5 w-5" />
-              </button>
-              <span className="badge-coming-soon absolute -top-3 -right-3">Bientôt disponible</span>
-            </div>
-            <Link to="/reserver" className="btn-secondary flex items-center">
+            <Link to="/reserver" className="btn-primary flex items-center">
+              Réserver maintenant <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+            <Link to="/devis" className="btn-secondary flex items-center">
               Demander un devis <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <a href="https://wa.me/23566000000" className="btn-outline bg-white/10 flex items-center backdrop-blur-sm">

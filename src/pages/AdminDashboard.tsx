@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Users, MessageSquare, FileText, BarChart2, SwitchIcon } from 'lucide-react';
+import { Settings, Users, MessageSquare, FileText, BarChart2, Switch as SwitchIcon } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import OnlineReservationService from '../services/OnlineReservationService';
+import { Badge } from "@/components/ui/badge";
 
 const AdminDashboard = () => {
   const { toast } = useToast();
@@ -14,14 +14,9 @@ const AdminDashboard = () => {
   const [clientAreaEnabled, setClientAreaEnabled] = useState(false);
   const [testimonialsEnabled, setTestimonialsEnabled] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [requests, setRequests] = useState<any[]>([]);
   
   // Mock data for this example
-  const formRequests = [
-    { id: 1, name: "Jean Dupont", email: "jean@example.com", destination: "Paris", date: "2025-05-15", status: "Nouveau" },
-    { id: 2, name: "Marie Martin", email: "marie@example.com", destination: "Dubai", date: "2025-06-02", status: "Traité" },
-    { id: 3, name: "Ahmed Bako", email: "ahmed@example.com", destination: "Istanbul", date: "2025-05-20", status: "En attente" },
-  ];
-  
   const reviews = [
     { id: 1, name: "Thomas Jean", email: "thomas@example.com", rating: 5, message: "Service exceptionnel et rapide!", published: true },
     { id: 2, name: "Sarah Ouma", email: "sarah@example.com", rating: 4, message: "Très bonne expérience, je recommande.", published: true },
@@ -57,6 +52,10 @@ const AdminDashboard = () => {
         
         setClientAreaEnabled(clientAreaStatus);
         setTestimonialsEnabled(testimonialsStatus);
+        
+        // Load all form requests and quotes
+        const reservations = await OnlineReservationService.getReservations();
+        setRequests(reservations);
       } catch (error) {
         console.error('Error loading settings:', error);
       } finally {
@@ -118,7 +117,16 @@ const AdminDashboard = () => {
     });
   };
 
-  const handleStatusChange = (id: number, newStatus: string) => {
+  const handleStatusChange = (id: string, newStatus: string) => {
+    const updatedRequests = requests.map(req => 
+      req.id === id ? { ...req, status: newStatus } : req
+    );
+    
+    setRequests(updatedRequests);
+    
+    // Save to localStorage
+    localStorage.setItem('reservations', JSON.stringify(updatedRequests));
+    
     toast({
       title: "Statut mis à jour",
       description: `La demande #${id} a été marquée comme "${newStatus}".`,
@@ -226,55 +234,205 @@ const AdminDashboard = () => {
           <TabsContent value="requests">
             <Card>
               <CardHeader>
-                <CardTitle>Demandes de réservation</CardTitle>
+                <CardTitle>Demandes de réservation et devis</CardTitle>
                 <CardDescription>
-                  Gérez les demandes de réservation reçues via le formulaire
+                  Gérez les demandes de réservation et de devis reçues via les formulaires
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Nom</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Destination</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {formRequests.map((request) => (
-                      <TableRow key={request.id}>
-                        <TableCell>{request.id}</TableCell>
-                        <TableCell>{request.name}</TableCell>
-                        <TableCell>{request.email}</TableCell>
-                        <TableCell>{request.destination}</TableCell>
-                        <TableCell>{request.date}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            request.status === "Nouveau" ? "bg-blue-100 text-blue-800" :
-                            request.status === "Traité" ? "bg-green-100 text-green-800" :
-                            "bg-yellow-100 text-yellow-800"
-                          }`}>
-                            {request.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <button 
-                              className="text-sm text-blue-600 hover:underline"
-                              onClick={() => handleStatusChange(request.id, "Traité")}
-                            >
-                              Marquer traité
-                            </button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <Tabs defaultValue="all">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="all">Toutes les demandes</TabsTrigger>
+                    <TabsTrigger value="reservations">Réservations</TabsTrigger>
+                    <TabsTrigger value="quotes">Devis</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="all">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Nom</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Destination</TableHead>
+                          <TableHead>Date de création</TableHead>
+                          <TableHead>Statut</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {requests.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                              Aucune demande pour le moment
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          requests.map((request) => (
+                            <TableRow key={request.id}>
+                              <TableCell className="font-mono text-xs">{request.id.substring(0, 8)}...</TableCell>
+                              <TableCell>
+                                <Badge variant={request.type === 'quote' ? 'outline' : 'default'}>
+                                  {request.type === 'quote' ? 'Devis' : 'Réservation'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>{request.fullName}</TableCell>
+                              <TableCell>{request.email}</TableCell>
+                              <TableCell>{request.destination}</TableCell>
+                              <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell>
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                  request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                  request.status === "traité" ? "bg-green-100 text-green-800" :
+                                  request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                  "bg-gray-100 text-gray-800"
+                                }`}>
+                                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col space-y-1">
+                                  <button 
+                                    className="text-sm text-blue-600 hover:underline"
+                                    onClick={() => handleStatusChange(request.id, "traité")}
+                                  >
+                                    Marquer traité
+                                  </button>
+                                  <button 
+                                    className="text-sm text-yellow-600 hover:underline"
+                                    onClick={() => handleStatusChange(request.id, "en attente")}
+                                  >
+                                    Marquer en attente
+                                  </button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TabsContent>
+                  <TabsContent value="reservations">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Nom</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Destination</TableHead>
+                          <TableHead>Date de création</TableHead>
+                          <TableHead>Statut</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {requests.filter(r => r.type !== 'quote').length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                              Aucune réservation pour le moment
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          requests.filter(r => r.type !== 'quote').map((request) => (
+                            <TableRow key={request.id}>
+                              <TableCell className="font-mono text-xs">{request.id.substring(0, 8)}...</TableCell>
+                              <TableCell>{request.fullName}</TableCell>
+                              <TableCell>{request.email}</TableCell>
+                              <TableCell>{request.destination}</TableCell>
+                              <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell>
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                  request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                  request.status === "traité" ? "bg-green-100 text-green-800" :
+                                  request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                  "bg-gray-100 text-gray-800"
+                                }`}>
+                                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col space-y-1">
+                                  <button 
+                                    className="text-sm text-blue-600 hover:underline"
+                                    onClick={() => handleStatusChange(request.id, "traité")}
+                                  >
+                                    Marquer traité
+                                  </button>
+                                  <button 
+                                    className="text-sm text-yellow-600 hover:underline"
+                                    onClick={() => handleStatusChange(request.id, "en attente")}
+                                  >
+                                    Marquer en attente
+                                  </button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TabsContent>
+                  <TabsContent value="quotes">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Nom</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Destination</TableHead>
+                          <TableHead>Date de création</TableHead>
+                          <TableHead>Statut</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {requests.filter(r => r.type === 'quote').length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                              Aucune demande de devis pour le moment
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          requests.filter(r => r.type === 'quote').map((request) => (
+                            <TableRow key={request.id}>
+                              <TableCell className="font-mono text-xs">{request.id.substring(0, 8)}...</TableCell>
+                              <TableCell>{request.fullName}</TableCell>
+                              <TableCell>{request.email}</TableCell>
+                              <TableCell>{request.destination}</TableCell>
+                              <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell>
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                  request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                  request.status === "traité" ? "bg-green-100 text-green-800" :
+                                  request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                  "bg-gray-100 text-gray-800"
+                                }`}>
+                                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col space-y-1">
+                                  <button 
+                                    className="text-sm text-blue-600 hover:underline"
+                                    onClick={() => handleStatusChange(request.id, "traité")}
+                                  >
+                                    Marquer traité
+                                  </button>
+                                  <button 
+                                    className="text-sm text-yellow-600 hover:underline"
+                                    onClick={() => handleStatusChange(request.id, "en attente")}
+                                  >
+                                    Marquer en attente
+                                  </button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </TabsContent>
