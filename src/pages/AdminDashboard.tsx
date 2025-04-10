@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Users, MessageSquare, FileText, BarChart2, Download, Eye, Send } from 'lucide-react';
+import { Settings, Users, MessageSquare, FileText, BarChart2, Download, Eye, Send, Plus, Pencil, Trash } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +13,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import PDFService from '../services/PDFService';
 import ResponsePDFTemplate from '../components/pdf/ResponsePDFTemplate';
+import ReviewService from '../services/ReviewService';
+import ContentService from '../services/ContentService';
+import ContentForm from '../components/admin/ContentForm';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const AdminDashboard = () => {
   const { toast } = useToast();
@@ -27,22 +31,17 @@ const AdminDashboard = () => {
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
   const pdfTemplateRef = useRef<HTMLDivElement>(null);
   
-  // Ajouter un nouvel état pour gérer le dialogue de détail des avis
+  // État pour la gestion des avis
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [activeReview, setActiveReview] = useState<any>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
   
-  // Mock data for this example
-  const reviews = [
-    { id: 1, name: "Thomas Jean", email: "thomas@example.com", rating: 5, message: "Service exceptionnel et rapide!", published: true },
-    { id: 2, name: "Sarah Ouma", email: "sarah@example.com", rating: 4, message: "Très bonne expérience, je recommande.", published: true },
-    { id: 3, name: "Ali Mohammed", email: "ali@example.com", rating: 3, message: "Service correct mais délai un peu long.", published: false },
-  ];
-  
-  const contentItems = [
-    { id: 1, title: "Texte d'accueil", page: "Accueil", content: "Bienvenue chez NASSER TRAVEL HORIZON..." },
-    { id: 2, title: "À propos", page: "À propos", content: "NASSER TRAVEL HORIZON est une agence de voyage..." },
-    { id: 3, title: "Services", page: "Services", content: "Nous offrons une gamme complète de services..." },
-  ];
+  // État pour la gestion du contenu
+  const [contentItems, setContentItems] = useState<any[]>([]);
+  const [contentDialogOpen, setContentDialogOpen] = useState(false);
+  const [activeContentItem, setActiveContentItem] = useState<any>(null);
+  const [deleteContentDialogOpen, setDeleteContentDialogOpen] = useState(false);
+  const [contentToDelete, setContentToDelete] = useState<number | null>(null);
 
   // Stats mock data
   const stats = {
@@ -55,22 +54,30 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    // Load settings from localStorage
+    // Charger les paramètres depuis localStorage
     const loadSettings = async () => {
       try {
         const onlineReservationStatus = await OnlineReservationService.getStatus();
         setOnlineReservation(onlineReservationStatus);
         
-        // Load other settings
+        // Charger les autres paramètres
         const clientAreaStatus = localStorage.getItem('clientAreaEnabled') === 'true';
-        const testimonialsStatus = localStorage.getItem('testimonialsEnabled') !== 'false'; // Default to true
+        const testimonialsStatus = localStorage.getItem('testimonialsEnabled') !== 'false'; // Par défaut à true
         
         setClientAreaEnabled(clientAreaStatus);
         setTestimonialsEnabled(testimonialsStatus);
         
-        // Load all form requests and quotes
+        // Charger toutes les demandes de formulaires et devis
         const reservations = await OnlineReservationService.getReservations();
         setRequests(reservations);
+        
+        // Charger les avis clients
+        const clientReviews = ReviewService.getReviews();
+        setReviews(clientReviews);
+        
+        // Charger le contenu du site
+        const siteContent = ContentService.getContent();
+        setContentItems(siteContent);
       } catch (error) {
         console.error('Error loading settings:', error);
       } finally {
@@ -139,7 +146,7 @@ const AdminDashboard = () => {
     
     setRequests(updatedRequests);
     
-    // Save to localStorage
+    // Enregistrer dans localStorage
     localStorage.setItem('reservations', JSON.stringify(updatedRequests));
     
     toast({
@@ -148,37 +155,107 @@ const AdminDashboard = () => {
     });
   };
   
-  // Nouvelle fonction pour gérer la visualisation des avis
+  // Fonctions de gestion des avis
   const handleViewReview = (review: any) => {
     setActiveReview(review);
     setReviewDialogOpen(true);
   };
   
-  // Modifier la fonction de publication des avis pour mettre à jour l'état local aussi
   const handlePublishReview = (id: number, shouldPublish: boolean) => {
-    // Mettre à jour l'état local
-    const updatedReviews = reviews.map(review => 
-      review.id === id ? { ...review, published: shouldPublish } : review
-    );
-    
-    // Dans un environnement réel, on sauvegarderait dans la base de données ici
-    
-    // Si l'avis actif est celui qui a été modifié, mettre à jour son état
-    if (activeReview && activeReview.id === id) {
-      setActiveReview({ ...activeReview, published: shouldPublish });
+    try {
+      // Mettre à jour le statut de l'avis
+      const updatedReviews = ReviewService.updateReviewStatus(id, shouldPublish);
+      setReviews(updatedReviews);
+      
+      // Si l'avis actif est celui qui a été modifié, mettre à jour son état
+      if (activeReview && activeReview.id === id) {
+        setActiveReview({ ...activeReview, published: shouldPublish });
+      }
+      
+      toast({
+        title: shouldPublish ? "Avis publié" : "Avis masqué",
+        description: `L'avis #${id} a été ${shouldPublish ? "publié" : "masqué"}.`,
+      });
+    } catch (error) {
+      console.error('Error updating review status:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour de l'avis.",
+        variant: "destructive",
+      });
     }
-    
-    toast({
-      title: shouldPublish ? "Avis publié" : "Avis masqué",
-      description: `L'avis #${id} a été ${shouldPublish ? "publié" : "masqué"}.`,
-    });
   };
   
-  const handleContentEdit = (id: number) => {
-    toast({
-      title: "Éditeur ouvert",
-      description: `Modification du contenu #${id}.`,
-    });
+  // Fonctions de gestion du contenu
+  const handleAddContent = () => {
+    setActiveContentItem(null);
+    setContentDialogOpen(true);
+  };
+  
+  const handleEditContent = (contentItem: any) => {
+    setActiveContentItem(contentItem);
+    setContentDialogOpen(true);
+  };
+  
+  const handleSaveContent = (contentItem: any) => {
+    try {
+      let updatedContent;
+      
+      if (contentItem.id) {
+        // Mise à jour d'un élément existant
+        updatedContent = ContentService.updateContent(contentItem.id, contentItem);
+        toast({
+          title: "Contenu mis à jour",
+          description: "Le contenu a été modifié avec succès.",
+        });
+      } else {
+        // Ajout d'un nouvel élément
+        const newItem = ContentService.addContent(contentItem);
+        updatedContent = [...contentItems, newItem];
+        toast({
+          title: "Contenu ajouté",
+          description: "Le nouveau contenu a été ajouté avec succès.",
+        });
+      }
+      
+      setContentItems(updatedContent);
+    } catch (error) {
+      console.error('Error saving content:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'enregistrement du contenu.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleConfirmDeleteContent = (id: number) => {
+    setContentToDelete(id);
+    setDeleteContentDialogOpen(true);
+  };
+  
+  const handleDeleteContent = () => {
+    if (!contentToDelete) return;
+    
+    try {
+      const updatedContent = ContentService.deleteContent(contentToDelete);
+      setContentItems(updatedContent);
+      
+      toast({
+        title: "Contenu supprimé",
+        description: "Le contenu a été supprimé avec succès.",
+      });
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression du contenu.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteContentDialogOpen(false);
+      setContentToDelete(null);
+    }
   };
 
   const handleViewRequest = (request: any) => {
@@ -746,104 +823,142 @@ L'équipe NASSER TRAVEL HORIZON
             </div>
           </TabsContent>
 
-          {/* Avis - SECTION MODIFIÉE */}
+          {/* Avis - Mise à jour complète avec fonctionnalités opérationnelles */}
           <TabsContent value="reviews">
             <Card>
-              <CardHeader>
-                <CardTitle>Avis clients</CardTitle>
-                <CardDescription>
-                  Gérez les avis clients laissés sur le site
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Avis clients</CardTitle>
+                  <CardDescription>
+                    Gérez les avis clients laissés sur le site
+                  </CardDescription>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {reviews.filter(r => r.published).length} avis publiés / {reviews.length} total
+                </p>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Nom</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Note</TableHead>
-                      <TableHead>Message</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {reviews.map((review) => (
-                      <TableRow key={review.id}>
-                        <TableCell>{review.id}</TableCell>
-                        <TableCell>{review.name}</TableCell>
-                        <TableCell>{review.email}</TableCell>
-                        <TableCell>{review.rating}/5</TableCell>
-                        <TableCell className="max-w-[200px] truncate">{review.message}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            review.published ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                          }`}>
-                            {review.published ? "Publié" : "Non publié"}
-                          </span>
-                        </TableCell>
-                        <TableCell className="space-x-2">
-                          <button 
-                            className="text-sm text-blue-600 hover:underline"
-                            onClick={() => handleViewReview(review)}
-                          >
-                            Voir
-                          </button>
-                          <button 
-                            className="text-sm text-green-600 hover:underline ml-2"
-                            onClick={() => handlePublishReview(review.id, !review.published)}
-                          >
-                            {review.published ? "Masquer" : "Publier"}
-                          </button>
-                        </TableCell>
+                {reviews.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p>Aucun avis client pour le moment</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Nom</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Note</TableHead>
+                        <TableHead>Message</TableHead>
+                        <TableHead>Statut</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {reviews.map((review) => (
+                        <TableRow key={review.id}>
+                          <TableCell>{review.id}</TableCell>
+                          <TableCell>{review.name}</TableCell>
+                          <TableCell>{review.email}</TableCell>
+                          <TableCell>
+                            <div className="flex">{renderStars(review.rating)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[200px] truncate">{review.message}</TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              review.published ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                            }`}>
+                              {review.published ? "Publié" : "Non publié"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="space-x-2">
+                            <button 
+                              className="text-sm text-blue-600 hover:underline"
+                              onClick={() => handleViewReview(review)}
+                            >
+                              Voir
+                            </button>
+                            <button 
+                              className="text-sm text-green-600 hover:underline ml-2"
+                              onClick={() => handlePublishReview(review.id, !review.published)}
+                            >
+                              {review.published ? "Masquer" : "Publier"}
+                            </button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
           
-          {/* Contenu */}
+          {/* Contenu - Mise à jour avec fonctionnalités opérationnelles */}
           <TabsContent value="content">
             <Card>
-              <CardHeader>
-                <CardTitle>Gestion du contenu</CardTitle>
-                <CardDescription>
-                  Modifiez le contenu des pages du site
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Gestion du contenu</CardTitle>
+                  <CardDescription>
+                    Modifiez le contenu des pages du site
+                  </CardDescription>
+                </div>
+                <Button onClick={handleAddContent}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter
+                </Button>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Titre</TableHead>
-                      <TableHead>Page</TableHead>
-                      <TableHead>Contenu</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {contentItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.id}</TableCell>
-                        <TableCell>{item.title}</TableCell>
-                        <TableCell>{item.page}</TableCell>
-                        <TableCell className="max-w-[300px] truncate">{item.content}</TableCell>
-                        <TableCell>
-                          <button 
-                            className="text-sm text-blue-600 hover:underline"
-                            onClick={() => handleContentEdit(item.id)}
-                          >
-                            Modifier
-                          </button>
-                        </TableCell>
+                {contentItems.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p>Aucun contenu pour le moment</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Titre</TableHead>
+                        <TableHead>Page</TableHead>
+                        <TableHead>Contenu</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {contentItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>{item.id}</TableCell>
+                          <TableCell>{item.title}</TableCell>
+                          <TableCell>{item.page}</TableCell>
+                          <TableCell className="max-w-[300px] truncate">{item.content}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => handleEditContent(item)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => handleConfirmDeleteContent(item.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -984,6 +1099,32 @@ L'équipe NASSER TRAVEL HORIZON
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* Formulaire d'ajout/édition de contenu */}
+      <ContentForm 
+        isOpen={contentDialogOpen}
+        onClose={() => setContentDialogOpen(false)}
+        onSave={handleSaveContent}
+        contentItem={activeContentItem}
+      />
+      
+      {/* Dialogue de confirmation de suppression */}
+      <AlertDialog open={deleteContentDialogOpen} onOpenChange={setDeleteContentDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce contenu ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteContent} className="bg-red-600 hover:bg-red-700">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 };
