@@ -61,7 +61,7 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
               request?.travelClass === 'first' ? 'Première classe' :
               request?.travelClass
             }</p>
-            {request?.budget && <p><strong>Budget estimé:</strong> {request.budget}</p>}
+            {request?.budget && <p><strong>Budget estimé:</strong> {request.budget} FCFA</p>}
           </div>
         </div>
       </div>
@@ -75,7 +75,7 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
       
       <div className="text-center text-sm text-gray-500 mt-12 pt-6 border-t">
         <p>NASSER TRAVEL HORIZON</p>
-        <p>Tél: +235 66 00 00 00 | Email: contact@nassertravel.com</p>
+        <p>Tél: +235 66 38 69 37 | Email: contact@nassertravelhorizon.com</p>
         <p>NDjamena, Tchad</p>
       </div>
     </div>

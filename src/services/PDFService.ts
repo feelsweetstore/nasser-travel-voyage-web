@@ -1,5 +1,5 @@
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
 /**
@@ -127,7 +127,14 @@ class PDFService {
         content.travelClass;
       
       pdf.text(`Classe: ${travelClass}`, 20, yPos);
-      yPos += 15;
+      yPos += 6;
+      
+      if (content.budget) {
+        pdf.text(`Budget estimé: ${content.budget} FCFA`, 20, yPos);
+        yPos += 9;
+      } else {
+        yPos += 3;
+      }
       
       // Réponse
       if (content.response) {
@@ -144,7 +151,7 @@ class PDFService {
     }
     
     // Pied de page
-    const pageCount = pdf.internal.getNumberOfPages();
+    const pageCount = pdf.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       pdf.setPage(i);
       pdf.setFontSize(10);
@@ -154,7 +161,7 @@ class PDFService {
       const footerY = pdf.internal.pageSize.getHeight() - 10;
       
       // Informations de contact
-      pdf.text('NASSER TRAVEL HORIZON | Tél: +235 66 00 00 00 | Email: contact@nassertravel.com', 105, footerY - 5, { align: 'center' });
+      pdf.text('NASSER TRAVEL HORIZON | Tél: +235 66 38 69 37 | Email: contact@nassertravelhorizon.com', 105, footerY - 5, { align: 'center' });
       
       // Numéro de page
       pdf.text(`Page ${i} sur ${pageCount}`, 105, footerY, { align: 'center' });

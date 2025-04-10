@@ -166,12 +166,110 @@ const AdminDashboard = () => {
     setActiveRequest(null);
   };
 
+  const formatDate = (dateString: string | undefined): string => {
+    if (!dateString) return 'Non spécifiée';
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch (e) {
+      return 'Date invalide';
+    }
+  };
+
+  const getTravelClassInFrench = (travelClass: string): string => {
+    switch (travelClass) {
+      case 'economy': return 'Économique';
+      case 'premium': return 'Premium Economy';
+      case 'business': return 'Business';
+      case 'first': return 'Première classe';
+      default: return travelClass || 'Non spécifiée';
+    }
+  };
+
   const handleOpenResponseDialog = () => {
     if (activeRequest) {
       // Préremplir avec un modèle de réponse selon le type de demande
-      const template = activeRequest.type === 'quote' 
-        ? `Cher(e) ${activeRequest.fullName},\n\nMerci pour votre demande de devis pour ${activeRequest.destination}.\n\nVoici notre offre personnalisée:\n- \n- \n- \n\nPrix total: \n\nCette offre est valable jusqu'au \n\nCordialement,\nL'équipe NASSER TRAVEL HORIZON`
-        : `Cher(e) ${activeRequest.fullName},\n\nMerci pour votre demande de réservation pour ${activeRequest.destination}.\n\nVotre réservation est confirmée avec les détails suivants:\n- \n- \n- \n\nMontant total: \n\nCordialement,\nL'équipe NASSER TRAVEL HORIZON`;
+      const destination = activeRequest.destination || '[Destination]';
+      const fullName = activeRequest.fullName || '[Nom du client]';
+      const departureDate = formatDate(activeRequest.departureDate);
+      const returnDate = formatDate(activeRequest.returnDate);
+      const passengers = activeRequest.passengers || '1';
+      const travelClass = getTravelClassInFrench(activeRequest.travelClass);
+      const budget = activeRequest.budget ? `${activeRequest.budget} FCFA` : '[Budget non spécifié]';
+      
+      let template = '';
+      
+      if (activeRequest.type === 'quote') {
+        template = `Objet : Votre devis pour un voyage vers ${destination} – NASSER TRAVEL HORIZON
+
+Cher(e) ${fullName},
+
+Nous vous remercions pour votre demande de devis concernant votre voyage vers ${destination}, du ${departureDate} au ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
+
+Voici notre proposition personnalisée :
+
+✈️ Détails de l'offre (à remplir par l'agence)
+
+Vol : [Compagnie aérienne]
+
+Bagages : [Bagages inclus]
+
+Temps de vol : [Durée estimée]
+
+Escale(s) : [Oui / Non / Nombre]
+
+💰 Prix total : 
+📅 Offre valable jusqu'au : [Date limite]
+🎯 Budget client estimé : ${budget}
+
+Veuillez noter que les tarifs de vols sont flexibles et peuvent changer a tout moment.
+Cependant, merci de bien vouloir nous confirmer votre accord afin de finaliser la réservation et garantir la disponibilité au tarif indiqué.
+ 
+Si vous souhaitez modifier certaines informations (dates, classe, destination, etc.), n'hésitez pas à nous le faire savoir.
+
+Cordialement,
+L'équipe NASSER TRAVEL HORIZON
+📞 Tél : +235 66 38 69 37
+📧 Email : contact@nassertravelhorizon.com
+📍 N'Djamena, Tchad`;
+      } else {
+        template = `Objet : Votre réservation de billet pour ${destination} – NASSER TRAVEL HORIZON
+
+Cher(e) ${fullName},
+
+Nous avons bien reçu votre demande de réservation de billet à destination de ${destination}, pour un départ prévu le ${departureDate} et un retour le ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
+
+Voici les détails de votre réservation en cours de traitement :
+
+✈️ Détails du vol proposé (à compléter par l'agence)
+
+Compagnie aérienne : [Nom de la compagnie]
+
+Heure de départ : [Heure]
+
+Heure d'arrivée : [Heure]
+
+Escale(s) : [Oui / Non / Détails]
+
+Bagages inclus : [Poids / type]
+
+Numéro de vol : [XXXX]
+
+💰 Tarif total : [Montant en FCFA]
+📅 Validité de la réservation : [Date limite de confirmation]
+
+Afin de finaliser votre réservation, merci de bien vouloir :
+✅ Confirmer votre accord par retour de message via notre e-mail.
+✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).
+✅ Procéder au paiement dans le délai mentionné ci-dessus
+
+Si vous avez des questions ou souhaitez ajuster certains détails de votre voyage, notre équipe reste à votre entière disposition.
+
+Cordialement,
+L'équipe NASSER TRAVEL HORIZON
+📞 Tél : +235 66 38 69 37
+📧 Email : contact@nassertravelhorizon.com
+📍 N'Djamena, Tchad`;
+      }
       
       setResponseText(template);
       setResponseDialogOpen(true);
@@ -561,6 +659,9 @@ const AdminDashboard = () => {
                                 activeRequest.travelClass === 'first' ? 'Première classe' :
                                 activeRequest.travelClass
                               }</p>
+                              {activeRequest.type === 'quote' && activeRequest.budget && 
+                                <p><strong>Budget estimé:</strong> {activeRequest.budget} FCFA</p>
+                              }
                             </div>
                           </div>
                         </div>
@@ -787,7 +888,7 @@ const AdminDashboard = () => {
             <Textarea 
               value={responseText} 
               onChange={(e) => setResponseText(e.target.value)} 
-              rows={12}
+              rows={16}
               placeholder="Rédigez votre réponse ici..."
               className="font-mono"
             />
