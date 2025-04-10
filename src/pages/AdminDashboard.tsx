@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +25,10 @@ const AdminDashboard = () => {
   const [responseText, setResponseText] = useState('');
   const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
   const pdfTemplateRef = useRef<HTMLDivElement>(null);
+  
+  // Ajouter un nouvel état pour gérer le dialogue de détail des avis
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [activeReview, setActiveReview] = useState<any>(null);
   
   // Mock data for this example
   const reviews = [
@@ -144,7 +147,26 @@ const AdminDashboard = () => {
     });
   };
   
+  // Nouvelle fonction pour gérer la visualisation des avis
+  const handleViewReview = (review: any) => {
+    setActiveReview(review);
+    setReviewDialogOpen(true);
+  };
+  
+  // Modifier la fonction de publication des avis pour mettre à jour l'état local aussi
   const handlePublishReview = (id: number, shouldPublish: boolean) => {
+    // Mettre à jour l'état local
+    const updatedReviews = reviews.map(review => 
+      review.id === id ? { ...review, published: shouldPublish } : review
+    );
+    
+    // Dans un environnement réel, on sauvegarderait dans la base de données ici
+    
+    // Si l'avis actif est celui qui a été modifié, mettre à jour son état
+    if (activeReview && activeReview.id === id) {
+      setActiveReview({ ...activeReview, published: shouldPublish });
+    }
+    
     toast({
       title: shouldPublish ? "Avis publié" : "Avis masqué",
       description: `L'avis #${id} a été ${shouldPublish ? "publié" : "masqué"}.`,
@@ -385,6 +407,13 @@ L'équipe NASSER TRAVEL HORIZON
         variant: "destructive",
       });
     }
+  };
+
+  // Fonction qui génère un rang d'étoiles pour l'affichage des avis
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }).map((_, index) => (
+      <span key={index} className={index < rating ? "text-yellow-500" : "text-gray-300"}>★</span>
+    ));
   };
 
   return (
@@ -716,7 +745,7 @@ L'équipe NASSER TRAVEL HORIZON
             </div>
           </TabsContent>
 
-          {/* Avis */}
+          {/* Avis - SECTION MODIFIÉE */}
           <TabsContent value="reviews">
             <Card>
               <CardHeader>
@@ -756,182 +785,10 @@ L'équipe NASSER TRAVEL HORIZON
                         <TableCell className="space-x-2">
                           <button 
                             className="text-sm text-blue-600 hover:underline"
-                            onClick={() => toast({
-                              title: "Détails de l'avis",
-                              description: `"${review.message}"`,
-                            })}
+                            onClick={() => handleViewReview(review)}
                           >
                             Voir
                           </button>
                           <button 
                             className="text-sm text-green-600 hover:underline ml-2"
-                            onClick={() => handlePublishReview(review.id, !review.published)}
-                          >
-                            {review.published ? "Masquer" : "Publier"}
-                          </button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Contenu */}
-          <TabsContent value="content">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestion du contenu</CardTitle>
-                <CardDescription>
-                  Modifiez les textes et contenus du site
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Titre</TableHead>
-                      <TableHead>Page</TableHead>
-                      <TableHead>Contenu</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {contentItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.title}</TableCell>
-                        <TableCell>{item.page}</TableCell>
-                        <TableCell className="max-w-[300px] truncate">{item.content}</TableCell>
-                        <TableCell>
-                          <button 
-                            className="text-sm text-blue-600 hover:underline"
-                            onClick={() => handleContentEdit(item.id)}
-                          >
-                            Modifier
-                          </button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Statistiques */}
-          <TabsContent value="stats">
-            <Card>
-              <CardHeader>
-                <CardTitle>Statistiques du site</CardTitle>
-                <CardDescription>
-                  Aperçu des performances du site
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold">{stats.visits}</div>
-                      <p className="text-sm text-gray-500">Visites totales</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold">{stats.pageViews}</div>
-                      <p className="text-sm text-gray-500">Pages vues</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold">{stats.bookings}</div>
-                      <p className="text-sm text-gray-500">Réservations</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold">{stats.topPage}</div>
-                      <p className="text-sm text-gray-500">Page la plus visitée</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold">{stats.conversionRate}</div>
-                      <p className="text-sm text-gray-500">Taux de conversion</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-green-600">{stats.growth}</div>
-                      <p className="text-sm text-gray-500">Croissance</p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-      
-      {/* Dialogue de réponse */}
-      <Dialog open={responseDialogOpen} onOpenChange={setResponseDialogOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              Répondre à {activeRequest?.type === 'quote' ? 'la demande de devis' : 'la réservation'} de {activeRequest?.fullName}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 my-4">
-            <p className="text-sm text-gray-500">
-              Rédigez votre réponse ci-dessous. Cette réponse sera enregistrée et pourra être téléchargée au format PDF.
-            </p>
-            <Textarea 
-              value={responseText} 
-              onChange={(e) => setResponseText(e.target.value)} 
-              rows={16}
-              placeholder="Rédigez votre réponse ici..."
-              className="font-mono"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setResponseDialogOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handleSendResponse}>
-              Envoyer la réponse
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Aperçu PDF Dialog */}
-      <Dialog open={pdfPreviewOpen} onOpenChange={setPdfPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Aperçu du PDF
-            </DialogTitle>
-          </DialogHeader>
-          
-          <ResponsePDFTemplate 
-            ref={pdfTemplateRef}
-            request={activeRequest}
-            response={activeRequest?.response || ''}
-          />
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPdfPreviewOpen(false)}>
-              Fermer
-            </Button>
-            <Button onClick={handleDownloadPDF}>
-              <Download className="h-4 w-4 mr-2" />
-              Télécharger
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </main>
-  );
-};
-
-export default AdminDashboard;
+                            onClick={() => handlePublishReview(review.id,

@@ -34,7 +34,32 @@ class PDFService {
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
     
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    // Vérifier si le contenu est plus grand qu'une page
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    
+    if (pdfHeight <= pageHeight) {
+      // Si le contenu tient sur une page
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    } else {
+      // Si le contenu dépasse une page, le découper sur plusieurs pages
+      let heightLeft = pdfHeight;
+      let position = 0;
+      let page = 1;
+      
+      // Ajouter la première page
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pageHeight;
+      
+      // Ajouter des pages supplémentaires si nécessaire
+      while (heightLeft > 0) {
+        position = -pageHeight * page;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pageHeight;
+        page++;
+      }
+    }
+    
     pdf.save(`${filename}.pdf`);
   }
 
@@ -78,9 +103,33 @@ class PDFService {
     if (typeof content === 'string') {
       // Diviser le texte en lignes pour qu'il s'adapte à la page
       const splitText = pdf.splitTextToSize(content, 170);
-      pdf.text(splitText, 20, 60);
+      
+      // Calculer si le contenu va dépasser la page
+      const textHeight = splitText.length * 5; // Estimation approximative de la hauteur du texte
+      const availableHeight = pdf.internal.pageSize.getHeight() - 70; // Espace disponible après l'en-tête
+      
+      if (textHeight > availableHeight) {
+        // Utiliser addPage et setPage pour gérer le contenu sur plusieurs pages
+        let currentY = 60;
+        const maxY = pdf.internal.pageSize.getHeight() - 20;
+        
+        for (let i = 0; i < splitText.length; i++) {
+          if (currentY > maxY) {
+            pdf.addPage();
+            currentY = 20; // Reset Y position on new page
+          }
+          
+          pdf.text(splitText[i], 20, currentY);
+          currentY += 5; // Line height
+        }
+      } else {
+        // Si le contenu tient sur une page
+        pdf.text(splitText, 20, 60);
+      }
     } else if (typeof content === 'object') {
       let yPos = 60;
+      const maxY = pdf.internal.pageSize.getHeight() - 20;
+      let currentPage = 1;
       
       // Information client
       pdf.setFontSize(12);
@@ -90,34 +139,41 @@ class PDFService {
       
       pdf.setFontSize(11);
       pdf.setTextColor(0, 0, 0);
-      pdf.text(`Nom: ${content.fullName}`, 20, yPos);
-      yPos += 6;
-      pdf.text(`Email: ${content.email}`, 20, yPos);
-      yPos += 6;
-      pdf.text(`Téléphone: ${content.whatsapp || content.phone || 'Non spécifié'}`, 20, yPos);
-      yPos += 10;
+      
+      // Vérifier si on doit passer à une nouvelle page
+      const addContent = (text: string, y: number): number => {
+        if (y > maxY) {
+          pdf.addPage();
+          currentPage++;
+          return 20; // Reset Y position
+        }
+        
+        pdf.text(text, 20, y);
+        return y + 6;
+      };
+      
+      yPos = addContent(`Nom: ${content.fullName}`, yPos);
+      yPos = addContent(`Email: ${content.email}`, yPos);
+      yPos = addContent(`Téléphone: ${content.whatsapp || content.phone || 'Non spécifié'}`, yPos);
+      yPos += 4;
       
       // Détails du voyage
       pdf.setFontSize(12);
       pdf.setTextColor(0, 72, 186);
-      pdf.text('Détails du voyage:', 20, yPos);
-      yPos += 8;
+      yPos = addContent('Détails du voyage:', yPos);
+      yPos += 2;
       
       pdf.setFontSize(11);
       pdf.setTextColor(0, 0, 0);
-      pdf.text(`Destination: ${content.destination}`, 20, yPos);
-      yPos += 6;
+      yPos = addContent(`Destination: ${content.destination}`, yPos);
       
       const departureDate = content.departureDate ? new Date(content.departureDate).toLocaleDateString() : 'Non spécifiée';
-      pdf.text(`Date de départ: ${departureDate}`, 20, yPos);
-      yPos += 6;
+      yPos = addContent(`Date de départ: ${departureDate}`, yPos);
       
       const returnDate = content.returnDate ? new Date(content.returnDate).toLocaleDateString() : 'Non spécifiée';
-      pdf.text(`Date de retour: ${returnDate}`, 20, yPos);
-      yPos += 6;
+      yPos = addContent(`Date de retour: ${returnDate}`, yPos);
       
-      pdf.text(`Nombre de passagers: ${content.passengers}`, 20, yPos);
-      yPos += 6;
+      yPos = addContent(`Nombre de passagers: ${content.passengers}`, yPos);
       
       const travelClass = 
         content.travelClass === 'economy' ? 'Économique' :
@@ -126,32 +182,34 @@ class PDFService {
         content.travelClass === 'first' ? 'Première classe' :
         content.travelClass;
       
-      pdf.text(`Classe: ${travelClass}`, 20, yPos);
-      yPos += 6;
+      yPos = addContent(`Classe: ${travelClass}`, yPos);
       
+      // Afficher le budget si disponible
       if (content.budget) {
-        pdf.text(`Budget estimé: ${content.budget} FCFA`, 20, yPos);
-        yPos += 9;
-      } else {
-        yPos += 3;
+        yPos = addContent(`Budget estimé: ${content.budget} FCFA`, yPos);
       }
+      
+      yPos += 4;
       
       // Réponse
       if (content.response) {
         pdf.setFontSize(12);
         pdf.setTextColor(0, 72, 186);
-        pdf.text('Notre réponse:', 20, yPos);
-        yPos += 8;
+        yPos = addContent('Notre réponse:', yPos);
+        yPos += 2;
         
         pdf.setFontSize(11);
         pdf.setTextColor(0, 0, 0);
         const splitResponse = pdf.splitTextToSize(content.response, 170);
-        pdf.text(splitResponse, 20, yPos);
+        
+        for (let i = 0; i < splitResponse.length; i++) {
+          yPos = addContent(splitResponse[i], yPos);
+        }
       }
     }
     
     // Pied de page
-    const pageCount = pdf.getNumberOfPages();
+    const pageCount = pdf.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       pdf.setPage(i);
       pdf.setFontSize(10);
