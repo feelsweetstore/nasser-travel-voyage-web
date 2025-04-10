@@ -84,17 +84,17 @@ class OnlineReservationService {
   }
   
   /**
-   * Update a reservation or quote status
+   * Update a reservation or quote
    * @param id - The reservation ID
-   * @param status - The new status
+   * @param updatedData - The updated data
    */
-  static async updateStatus(id: string, status: string): Promise<void> {
+  static async updateReservation(id: string, updatedData: any): Promise<void> {
     // Simulate an API call with a delay
     await new Promise(resolve => setTimeout(resolve, 500));
     
     const reservations = JSON.parse(localStorage.getItem('reservations') || '[]');
     const updatedReservations = reservations.map((res: any) => 
-      res.id === id ? { ...res, status } : res
+      res.id === id ? { ...res, ...updatedData } : res
     );
     
     localStorage.setItem('reservations', JSON.stringify(updatedReservations));

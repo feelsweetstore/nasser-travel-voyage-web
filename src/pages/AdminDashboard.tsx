@@ -1,12 +1,18 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Users, MessageSquare, FileText, BarChart2, Switch as SwitchIcon } from 'lucide-react';
+import { Settings, Users, MessageSquare, FileText, BarChart2, Download, Eye, Send } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import OnlineReservationService from '../services/OnlineReservationService';
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import PDFService from '../services/PDFService';
+import ResponsePDFTemplate from '../components/pdf/ResponsePDFTemplate';
 
 const AdminDashboard = () => {
   const { toast } = useToast();
@@ -15,6 +21,11 @@ const AdminDashboard = () => {
   const [testimonialsEnabled, setTestimonialsEnabled] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [requests, setRequests] = useState<any[]>([]);
+  const [activeRequest, setActiveRequest] = useState<any>(null);
+  const [responseDialogOpen, setResponseDialogOpen] = useState(false);
+  const [responseText, setResponseText] = useState('');
+  const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
+  const pdfTemplateRef = useRef<HTMLDivElement>(null);
   
   // Mock data for this example
   const reviews = [
@@ -147,6 +158,137 @@ const AdminDashboard = () => {
     });
   };
 
+  const handleViewRequest = (request: any) => {
+    setActiveRequest(request);
+  };
+
+  const handleCloseDetails = () => {
+    setActiveRequest(null);
+  };
+
+  const handleOpenResponseDialog = () => {
+    if (activeRequest) {
+      // Préremplir avec un modèle de réponse selon le type de demande
+      const template = activeRequest.type === 'quote' 
+        ? `Cher(e) ${activeRequest.fullName},\n\nMerci pour votre demande de devis pour ${activeRequest.destination}.\n\nVoici notre offre personnalisée:\n- \n- \n- \n\nPrix total: \n\nCette offre est valable jusqu'au \n\nCordialement,\nL'équipe NASSER TRAVEL HORIZON`
+        : `Cher(e) ${activeRequest.fullName},\n\nMerci pour votre demande de réservation pour ${activeRequest.destination}.\n\nVotre réservation est confirmée avec les détails suivants:\n- \n- \n- \n\nMontant total: \n\nCordialement,\nL'équipe NASSER TRAVEL HORIZON`;
+      
+      setResponseText(template);
+      setResponseDialogOpen(true);
+    }
+  };
+
+  const handleSendResponse = async () => {
+    if (!activeRequest || !responseText) return;
+
+    try {
+      // Stocker la réponse dans la demande
+      const updatedRequests = requests.map(req => 
+        req.id === activeRequest.id 
+          ? { 
+              ...req, 
+              response: responseText,
+              responseDate: new Date().toISOString(),
+              status: "traité" 
+            } 
+          : req
+      );
+      
+      setRequests(updatedRequests);
+      localStorage.setItem('reservations', JSON.stringify(updatedRequests));
+      
+      // Mettre à jour activeRequest avec la réponse
+      setActiveRequest({
+        ...activeRequest,
+        response: responseText,
+        responseDate: new Date().toISOString(),
+        status: "traité"
+      });
+      
+      setResponseDialogOpen(false);
+      
+      toast({
+        title: "Réponse envoyée",
+        description: "Votre réponse a été enregistrée et envoyée au client.",
+      });
+    } catch (error) {
+      console.error('Error sending response:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi de la réponse.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const generatePDF = () => {
+    if (!activeRequest) return;
+    
+    try {
+      // Générer le PDF avec les données
+      setPdfPreviewOpen(true);
+      
+      // Le PDF sera généré quand l'utilisateur cliquera sur télécharger
+      // dans la fenêtre d'aperçu
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la génération du PDF.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleDownloadPDF = () => {
+    if (!activeRequest || !pdfTemplateRef.current) return;
+    
+    try {
+      // Utiliser html2canvas et jsPDF pour générer le PDF
+      const filename = `${activeRequest.type === 'quote' ? 'devis' : 'reservation'}-${activeRequest.id}`;
+      
+      PDFService.generatePDF('pdfTemplate', filename);
+      
+      toast({
+        title: "PDF téléchargé",
+        description: "Le document a été téléchargé avec succès.",
+      });
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors du téléchargement du PDF.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleDirectPDFDownload = () => {
+    if (!activeRequest) return;
+    
+    try {
+      // Générer directement le PDF sans aperçu
+      const filename = `${activeRequest.type === 'quote' ? 'devis' : 'reservation'}-${activeRequest.id}`;
+      
+      PDFService.generateResponsePDF({
+        ...activeRequest,
+        response: activeRequest.response
+      }, activeRequest.type === 'quote' ? 'Devis Personnalisé' : 'Confirmation de Réservation', filename);
+      
+      toast({
+        title: "PDF téléchargé",
+        description: "Le document a été téléchargé avec succès.",
+      });
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors du téléchargement du PDF.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <main className="bg-white py-10">
       <div className="container-custom">
@@ -232,209 +374,245 @@ const AdminDashboard = () => {
 
           {/* Demandes */}
           <TabsContent value="requests">
-            <Card>
-              <CardHeader>
-                <CardTitle>Demandes de réservation et devis</CardTitle>
-                <CardDescription>
-                  Gérez les demandes de réservation et de devis reçues via les formulaires
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="all">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="all">Toutes les demandes</TabsTrigger>
-                    <TabsTrigger value="reservations">Réservations</TabsTrigger>
-                    <TabsTrigger value="quotes">Devis</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="all">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Nom</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Destination</TableHead>
-                          <TableHead>Date de création</TableHead>
-                          <TableHead>Statut</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Liste des demandes */}
+              <div className="md:col-span-1">
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle>Demandes reçues</CardTitle>
+                    <CardDescription>
+                      Réservations et devis
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <Tabs defaultValue="all" className="px-6">
+                      <TabsList className="mb-4 w-full">
+                        <TabsTrigger value="all" className="flex-1">Toutes</TabsTrigger>
+                        <TabsTrigger value="reservations" className="flex-1">Réservations</TabsTrigger>
+                        <TabsTrigger value="quotes" className="flex-1">Devis</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="all" className="max-h-[70vh] overflow-y-auto">
                         {requests.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={8} className="text-center py-8 text-gray-500">
-                              Aucune demande pour le moment
-                            </TableCell>
-                          </TableRow>
+                          <div className="text-center py-8 text-gray-500">
+                            Aucune demande pour le moment
+                          </div>
                         ) : (
-                          requests.map((request) => (
-                            <TableRow key={request.id}>
-                              <TableCell className="font-mono text-xs">{request.id.substring(0, 8)}...</TableCell>
-                              <TableCell>
-                                <Badge variant={request.type === 'quote' ? 'outline' : 'default'}>
-                                  {request.type === 'quote' ? 'Devis' : 'Réservation'}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>{request.fullName}</TableCell>
-                              <TableCell>{request.email}</TableCell>
-                              <TableCell>{request.destination}</TableCell>
-                              <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
-                              <TableCell>
-                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                  request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                  request.status === "traité" ? "bg-green-100 text-green-800" :
-                                  request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
-                                  "bg-gray-100 text-gray-800"
-                                }`}>
-                                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col space-y-1">
-                                  <button 
-                                    className="text-sm text-blue-600 hover:underline"
-                                    onClick={() => handleStatusChange(request.id, "traité")}
-                                  >
-                                    Marquer traité
-                                  </button>
-                                  <button 
-                                    className="text-sm text-yellow-600 hover:underline"
-                                    onClick={() => handleStatusChange(request.id, "en attente")}
-                                  >
-                                    Marquer en attente
-                                  </button>
+                          <div className="space-y-2 pb-4">
+                            {requests.map((request) => (
+                              <div 
+                                key={request.id} 
+                                className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                onClick={() => handleViewRequest(request)}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-medium">{request.fullName}</h4>
+                                    <p className="text-sm text-gray-500">{request.destination}</p>
+                                  </div>
+                                  <Badge variant={request.type === 'quote' ? 'outline' : 'default'} className="ml-2">
+                                    {request.type === 'quote' ? 'Devis' : 'Réservation'}
+                                  </Badge>
                                 </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
+                                <div className="flex justify-between items-center mt-2">
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(request.createdAt).toLocaleDateString()}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-xs ${
+                                    request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                    request.status === "traité" ? "bg-green-100 text-green-800" :
+                                    request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                    "bg-gray-100 text-gray-800"
+                                  }`}>
+                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         )}
-                      </TableBody>
-                    </Table>
-                  </TabsContent>
-                  <TabsContent value="reservations">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID</TableHead>
-                          <TableHead>Nom</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Destination</TableHead>
-                          <TableHead>Date de création</TableHead>
-                          <TableHead>Statut</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+                      </TabsContent>
+                      
+                      <TabsContent value="reservations" className="max-h-[70vh] overflow-y-auto">
                         {requests.filter(r => r.type !== 'quote').length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                              Aucune réservation pour le moment
-                            </TableCell>
-                          </TableRow>
+                          <div className="text-center py-8 text-gray-500">
+                            Aucune réservation pour le moment
+                          </div>
                         ) : (
-                          requests.filter(r => r.type !== 'quote').map((request) => (
-                            <TableRow key={request.id}>
-                              <TableCell className="font-mono text-xs">{request.id.substring(0, 8)}...</TableCell>
-                              <TableCell>{request.fullName}</TableCell>
-                              <TableCell>{request.email}</TableCell>
-                              <TableCell>{request.destination}</TableCell>
-                              <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
-                              <TableCell>
-                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                  request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                  request.status === "traité" ? "bg-green-100 text-green-800" :
-                                  request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
-                                  "bg-gray-100 text-gray-800"
-                                }`}>
-                                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col space-y-1">
-                                  <button 
-                                    className="text-sm text-blue-600 hover:underline"
-                                    onClick={() => handleStatusChange(request.id, "traité")}
-                                  >
-                                    Marquer traité
-                                  </button>
-                                  <button 
-                                    className="text-sm text-yellow-600 hover:underline"
-                                    onClick={() => handleStatusChange(request.id, "en attente")}
-                                  >
-                                    Marquer en attente
-                                  </button>
+                          <div className="space-y-2 pb-4">
+                            {requests.filter(r => r.type !== 'quote').map((request) => (
+                              <div 
+                                key={request.id} 
+                                className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                onClick={() => handleViewRequest(request)}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-medium">{request.fullName}</h4>
+                                    <p className="text-sm text-gray-500">{request.destination}</p>
+                                  </div>
                                 </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
+                                <div className="flex justify-between items-center mt-2">
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(request.createdAt).toLocaleDateString()}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-xs ${
+                                    request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                    request.status === "traité" ? "bg-green-100 text-green-800" :
+                                    request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                    "bg-gray-100 text-gray-800"
+                                  }`}>
+                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         )}
-                      </TableBody>
-                    </Table>
-                  </TabsContent>
-                  <TabsContent value="quotes">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID</TableHead>
-                          <TableHead>Nom</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Destination</TableHead>
-                          <TableHead>Date de création</TableHead>
-                          <TableHead>Statut</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+                      </TabsContent>
+                      
+                      <TabsContent value="quotes" className="max-h-[70vh] overflow-y-auto">
                         {requests.filter(r => r.type === 'quote').length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                              Aucune demande de devis pour le moment
-                            </TableCell>
-                          </TableRow>
+                          <div className="text-center py-8 text-gray-500">
+                            Aucune demande de devis pour le moment
+                          </div>
                         ) : (
-                          requests.filter(r => r.type === 'quote').map((request) => (
-                            <TableRow key={request.id}>
-                              <TableCell className="font-mono text-xs">{request.id.substring(0, 8)}...</TableCell>
-                              <TableCell>{request.fullName}</TableCell>
-                              <TableCell>{request.email}</TableCell>
-                              <TableCell>{request.destination}</TableCell>
-                              <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
-                              <TableCell>
-                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                  request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                  request.status === "traité" ? "bg-green-100 text-green-800" :
-                                  request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
-                                  "bg-gray-100 text-gray-800"
-                                }`}>
-                                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col space-y-1">
-                                  <button 
-                                    className="text-sm text-blue-600 hover:underline"
-                                    onClick={() => handleStatusChange(request.id, "traité")}
-                                  >
-                                    Marquer traité
-                                  </button>
-                                  <button 
-                                    className="text-sm text-yellow-600 hover:underline"
-                                    onClick={() => handleStatusChange(request.id, "en attente")}
-                                  >
-                                    Marquer en attente
-                                  </button>
+                          <div className="space-y-2 pb-4">
+                            {requests.filter(r => r.type === 'quote').map((request) => (
+                              <div 
+                                key={request.id} 
+                                className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                onClick={() => handleViewRequest(request)}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-medium">{request.fullName}</h4>
+                                    <p className="text-sm text-gray-500">{request.destination}</p>
+                                  </div>
                                 </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
+                                <div className="flex justify-between items-center mt-2">
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(request.createdAt).toLocaleDateString()}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-xs ${
+                                    request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                    request.status === "traité" ? "bg-green-100 text-green-800" :
+                                    request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                    "bg-gray-100 text-gray-800"
+                                  }`}>
+                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         )}
-                      </TableBody>
-                    </Table>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Détails de la demande */}
+              <div className="md:col-span-2">
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle>Détails de la demande</CardTitle>
+                    <CardDescription>
+                      {activeRequest ? 
+                        `${activeRequest.type === 'quote' ? 'Demande de devis' : 'Réservation'} - ${activeRequest.fullName}` : 
+                        'Sélectionnez une demande pour voir les détails'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!activeRequest ? (
+                      <div className="text-center py-12 text-gray-500">
+                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                        <p>Veuillez sélectionner une demande dans la liste</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Informations client</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p><strong>Nom:</strong> {activeRequest.fullName}</p>
+                              <p><strong>Email:</strong> {activeRequest.email}</p>
+                              <p><strong>Téléphone:</strong> {activeRequest.whatsapp || activeRequest.phone}</p>
+                              <p><strong>Date de demande:</strong> {new Date(activeRequest.createdAt).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Détails du voyage</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p><strong>Destination:</strong> {activeRequest.destination}</p>
+                              <p>
+                                <strong>Date de départ:</strong> {activeRequest.departureDate ? new Date(activeRequest.departureDate).toLocaleDateString() : 'Non spécifiée'}
+                              </p>
+                              <p>
+                                <strong>Date de retour:</strong> {activeRequest.returnDate ? new Date(activeRequest.returnDate).toLocaleDateString() : 'Non spécifiée'}
+                              </p>
+                              <p><strong>Nombre de passagers:</strong> {activeRequest.passengers}</p>
+                              <p><strong>Classe:</strong> {
+                                activeRequest.travelClass === 'economy' ? 'Économique' :
+                                activeRequest.travelClass === 'premium' ? 'Premium Economy' :
+                                activeRequest.travelClass === 'business' ? 'Business' :
+                                activeRequest.travelClass === 'first' ? 'Première classe' :
+                                activeRequest.travelClass
+                              }</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {activeRequest.message && (
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Message du client</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p>{activeRequest.message}</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {activeRequest.response ? (
+                          <div>
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-500 mb-1">Votre réponse</h3>
+                              <div className="flex gap-2">
+                                <Button variant="outline" size="sm" onClick={() => generatePDF()}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Aperçu PDF
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={handleDirectPDFDownload}>
+                                  <Download className="h-4 w-4 mr-2" />
+                                  Télécharger PDF
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="bg-nasser-primary/5 border border-nasser-primary/20 p-4 rounded-md">
+                              <p className="whitespace-pre-line">{activeRequest.response}</p>
+                              <p className="text-xs text-gray-500 mt-2">
+                                Envoyée le {new Date(activeRequest.responseDate).toLocaleDateString()} à {new Date(activeRequest.responseDate).toLocaleTimeString()}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end space-x-2">
+                            <Button variant="outline" onClick={handleCloseDetails}>
+                              Fermer
+                            </Button>
+                            <Button onClick={handleOpenResponseDialog}>
+                              <Send className="h-4 w-4 mr-2" />
+                              Répondre
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Avis */}
@@ -593,6 +771,64 @@ const AdminDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Dialogue de réponse */}
+      <Dialog open={responseDialogOpen} onOpenChange={setResponseDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>
+              Répondre à {activeRequest?.type === 'quote' ? 'la demande de devis' : 'la réservation'} de {activeRequest?.fullName}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 my-4">
+            <p className="text-sm text-gray-500">
+              Rédigez votre réponse ci-dessous. Cette réponse sera enregistrée et pourra être téléchargée au format PDF.
+            </p>
+            <Textarea 
+              value={responseText} 
+              onChange={(e) => setResponseText(e.target.value)} 
+              rows={12}
+              placeholder="Rédigez votre réponse ici..."
+              className="font-mono"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResponseDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendResponse}>
+              Envoyer la réponse
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Aperçu PDF Dialog */}
+      <Dialog open={pdfPreviewOpen} onOpenChange={setPdfPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Aperçu du PDF
+            </DialogTitle>
+          </DialogHeader>
+          
+          <ResponsePDFTemplate 
+            ref={pdfTemplateRef}
+            request={activeRequest}
+            response={activeRequest?.response || ''}
+          />
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPdfPreviewOpen(false)}>
+              Fermer
+            </Button>
+            <Button onClick={handleDownloadPDF}>
+              <Download className="h-4 w-4 mr-2" />
+              Télécharger
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 };
