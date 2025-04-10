@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -791,4 +792,200 @@ L'équipe NASSER TRAVEL HORIZON
                           </button>
                           <button 
                             className="text-sm text-green-600 hover:underline ml-2"
-                            onClick={() => handlePublishReview(review.id,
+                            onClick={() => handlePublishReview(review.id, !review.published)}
+                          >
+                            {review.published ? "Masquer" : "Publier"}
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Contenu */}
+          <TabsContent value="content">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gestion du contenu</CardTitle>
+                <CardDescription>
+                  Modifiez le contenu des pages du site
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Titre</TableHead>
+                      <TableHead>Page</TableHead>
+                      <TableHead>Contenu</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {contentItems.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{item.id}</TableCell>
+                        <TableCell>{item.title}</TableCell>
+                        <TableCell>{item.page}</TableCell>
+                        <TableCell className="max-w-[300px] truncate">{item.content}</TableCell>
+                        <TableCell>
+                          <button 
+                            className="text-sm text-blue-600 hover:underline"
+                            onClick={() => handleContentEdit(item.id)}
+                          >
+                            Modifier
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Statistiques */}
+          <TabsContent value="stats">
+            <Card>
+              <CardHeader>
+                <CardTitle>Statistiques du site</CardTitle>
+                <CardDescription>
+                  Performances et analytiques
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-lg">Visites</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 p-4">
+                      <p className="text-3xl font-bold">{stats.visits}</p>
+                      <p className="text-sm text-gray-500">{stats.growth}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-lg">Pages vues</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 p-4">
+                      <p className="text-3xl font-bold">{stats.pageViews}</p>
+                      <p className="text-sm text-gray-500">Page la plus visitée: {stats.topPage}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-lg">Réservations</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 p-4">
+                      <p className="text-3xl font-bold">{stats.bookings}</p>
+                      <p className="text-sm text-gray-500">Taux de conversion: {stats.conversionRate}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+      
+      {/* Dialogue de réponse */}
+      <Dialog open={responseDialogOpen} onOpenChange={setResponseDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Répondre à la demande</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea 
+              value={responseText} 
+              onChange={(e) => setResponseText(e.target.value)} 
+              className="min-h-[300px] font-mono text-sm"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResponseDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendResponse}>
+              <Send className="h-4 w-4 mr-2" />
+              Envoyer la réponse
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialogue d'aperçu PDF */}
+      <Dialog open={pdfPreviewOpen} onOpenChange={setPdfPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Aperçu du PDF</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div ref={pdfTemplateRef} id="pdfTemplate" className="border p-8 rounded-md bg-white">
+              <ResponsePDFTemplate request={activeRequest} response={activeRequest?.response || ''} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPdfPreviewOpen(false)}>
+              Fermer
+            </Button>
+            <Button onClick={handleDownloadPDF}>
+              <Download className="h-4 w-4 mr-2" />
+              Télécharger
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialogue de détail d'avis */}
+      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Détail de l'avis</DialogTitle>
+          </DialogHeader>
+          {activeReview && (
+            <div className="py-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-lg">{activeReview.name}</h3>
+                  <p className="text-gray-500">{activeReview.email}</p>
+                </div>
+                <Badge variant={activeReview.published ? "default" : "outline"}>
+                  {activeReview.published ? "Publié" : "Non publié"}
+                </Badge>
+              </div>
+              
+              <div>
+                <div className="flex mb-2">
+                  {renderStars(activeReview.rating)}
+                  <span className="ml-2 text-sm text-gray-500">{activeReview.rating}/5</span>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <p className="italic">"{activeReview.message}"</p>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setReviewDialogOpen(false)}>
+                  Fermer
+                </Button>
+                <Button 
+                  variant={activeReview.published ? "destructive" : "default"}
+                  onClick={() => handlePublishReview(activeReview.id, !activeReview.published)}
+                >
+                  {activeReview.published ? "Masquer l'avis" : "Publier l'avis"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </main>
+  );
+};
+
+export default AdminDashboard;
