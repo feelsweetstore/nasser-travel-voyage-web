@@ -11,46 +11,9 @@ class ContentService {
   static initialize(): void {
     if (!localStorage.getItem(this.STORAGE_KEY)) {
       const defaultContent = [
-        { 
-          id: 1, 
-          title: "Texte d'accueil", 
-          page: "Accueil", 
-          type: "text",
-          content: "Bienvenue chez NASSER TRAVEL HORIZON, votre partenaire de confiance pour tous vos voyages. Nous vous offrons des services personnalisés pour rendre chaque voyage inoubliable." 
-        },
-        { 
-          id: 2, 
-          title: "À propos", 
-          page: "À propos", 
-          type: "text",
-          content: "NASSER TRAVEL HORIZON est une agence de voyage basée à N'Djamena, Tchad. Nous proposons des services de réservation de billets d'avion, d'hôtels et d'organisation de voyages sur mesure depuis plus de 5 ans." 
-        },
-        { 
-          id: 3, 
-          title: "Services", 
-          page: "Services", 
-          type: "text",
-          content: "Nous offrons une gamme complète de services pour répondre à tous vos besoins de voyage : réservation de billets, organisation de séjours, assistance visa, transferts aéroport et bien plus encore." 
-        },
-        {
-          id: 4,
-          title: "Logo",
-          page: "Global",
-          type: "image",
-          imageUrl: "/placeholder.svg",
-          content: "Logo Nasser Travel Horizon"
-        },
-        {
-          id: 5,
-          title: "Coordonnées",
-          page: "Contact",
-          type: "contact",
-          address: "Avenue Charles de Gaulle, N'Djamena, Tchad",
-          phone: "+235 66 38 69 37",
-          email: "contact@nassertravelhorizon.com",
-          whatsapp: "+235 66 38 69 37",
-          hours: "Lundi-Vendredi: 8h-17h\nSamedi: 9h-13h\nDimanche: Fermé"
-        }
+        { id: 1, title: "Texte d'accueil", page: "Accueil", content: "Bienvenue chez NASSER TRAVEL HORIZON, votre partenaire de confiance pour tous vos voyages. Nous vous offrons des services personnalisés pour rendre chaque voyage inoubliable." },
+        { id: 2, title: "À propos", page: "À propos", content: "NASSER TRAVEL HORIZON est une agence de voyage basée à N'Djamena, Tchad. Nous proposons des services de réservation de billets d'avion, d'hôtels et d'organisation de voyages sur mesure depuis plus de 5 ans." },
+        { id: 3, title: "Services", page: "Services", content: "Nous offrons une gamme complète de services pour répondre à tous vos besoins de voyage : réservation de billets, organisation de séjours, assistance visa, transferts aéroport et bien plus encore." },
       ];
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(defaultContent));
     }
@@ -84,25 +47,6 @@ class ContentService {
   static getContentByPage(page: string): any[] {
     const content = this.getContent();
     return content.filter(item => item.page === page);
-  }
-  
-  /**
-   * Récupère le contenu d'un type spécifique
-   * @param type - Type de contenu (text, image, etc.)
-   * @returns Liste des éléments de ce type de contenu
-   */
-  static getContentByType(type: string): any[] {
-    const content = this.getContent();
-    return content.filter(item => item.type === type);
-  }
-  
-  /**
-   * Récupère les informations de contact
-   * @returns Les informations de contact ou null si non trouvées
-   */
-  static getContactInfo(): any | null {
-    const content = this.getContent();
-    return content.find(item => item.type === 'contact') || null;
   }
   
   /**
