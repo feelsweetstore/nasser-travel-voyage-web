@@ -18,6 +18,8 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
   const [title, setTitle] = useState('');
   const [page, setPage] = useState('Accueil');
   const [content, setContent] = useState('');
+  const [type, setType] = useState('text');
+  const [category, setCategory] = useState('general');
   const isEditing = Boolean(contentItem);
 
   useEffect(() => {
@@ -25,11 +27,15 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
       setTitle(contentItem.title || '');
       setPage(contentItem.page || 'Accueil');
       setContent(contentItem.content || '');
+      setType(contentItem.type || 'text');
+      setCategory(contentItem.category || 'general');
     } else {
       // Réinitialiser le formulaire pour un nouvel élément
       setTitle('');
       setPage('Accueil');
       setContent('');
+      setType('text');
+      setCategory('general');
     }
   }, [contentItem, isOpen]);
 
@@ -40,7 +46,9 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
       ...(contentItem || {}),
       title,
       page,
-      content
+      content,
+      type,
+      category
     };
 
     onSave(newContentItem);
@@ -64,31 +72,85 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
             />
           </div>
           
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="page">Page</Label>
+              <Select value={page} onValueChange={setPage}>
+                <SelectTrigger id="page">
+                  <SelectValue placeholder="Sélectionner une page" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Accueil">Accueil</SelectItem>
+                  <SelectItem value="À propos">À propos</SelectItem>
+                  <SelectItem value="Services">Services</SelectItem>
+                  <SelectItem value="Contact">Contact</SelectItem>
+                  <SelectItem value="FAQ">FAQ</SelectItem>
+                  <SelectItem value="Global">Global (toutes les pages)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="type">Type de contenu</Label>
+              <Select value={type} onValueChange={setType}>
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="Type de contenu" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="text">Texte</SelectItem>
+                  <SelectItem value="hours">Heures d'ouverture</SelectItem>
+                  <SelectItem value="contact">Coordonnées</SelectItem>
+                  <SelectItem value="link">Lien</SelectItem>
+                  <SelectItem value="image">Image (URL)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
           <div className="grid gap-2">
-            <Label htmlFor="page">Page</Label>
-            <Select value={page} onValueChange={setPage}>
-              <SelectTrigger id="page">
-                <SelectValue placeholder="Sélectionner une page" />
+            <Label htmlFor="category">Catégorie</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Catégorie" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Accueil">Accueil</SelectItem>
-                <SelectItem value="À propos">À propos</SelectItem>
-                <SelectItem value="Services">Services</SelectItem>
-                <SelectItem value="Contact">Contact</SelectItem>
-                <SelectItem value="FAQ">FAQ</SelectItem>
+                <SelectItem value="general">Général</SelectItem>
+                <SelectItem value="header">En-tête</SelectItem>
+                <SelectItem value="footer">Pied de page</SelectItem>
+                <SelectItem value="hero">Section Hero</SelectItem>
+                <SelectItem value="services">Services</SelectItem>
+                <SelectItem value="about">À propos</SelectItem>
+                <SelectItem value="contact">Contact</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           <div className="grid gap-2">
             <Label htmlFor="content">Contenu</Label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Contenu à afficher"
-              rows={8}
-            />
+            {type === 'text' || type === 'hours' || type === 'contact' ? (
+              <Textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder={
+                  type === 'text' ? "Contenu à afficher" : 
+                  type === 'hours' ? "Lundi: 08:00-18:00\nMardi: 08:00-18:00\n..." : 
+                  "Adresse, téléphone, email, etc."
+                }
+                rows={8}
+              />
+            ) : (
+              <Input
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder={
+                  type === 'link' ? "URL du lien" : 
+                  type === 'image' ? "URL de l'image" : 
+                  "Contenu"
+                }
+              />
+            )}
           </div>
         </div>
         <DialogFooter>

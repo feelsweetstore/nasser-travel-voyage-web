@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Users, MessageSquare, FileText, BarChart2, Download, Eye, Send, Plus, Pencil, Trash } from 'lucide-react';
+import { Settings, Users, MessageSquare, FileText, BarChart2, Download, Eye, Send, Plus, Pencil, Trash, Mail } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import ResponsePDFTemplate from '../components/pdf/ResponsePDFTemplate';
 import ReviewService from '../services/ReviewService';
 import ContentService from '../services/ContentService';
 import ContentForm from '../components/admin/ContentForm';
+import ContactService from '../services/ContactService';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const AdminDashboard = () => {
@@ -42,6 +43,12 @@ const AdminDashboard = () => {
   const [activeContentItem, setActiveContentItem] = useState<any>(null);
   const [deleteContentDialogOpen, setDeleteContentDialogOpen] = useState(false);
   const [contentToDelete, setContentToDelete] = useState<number | null>(null);
+
+  // État pour la gestion des messages de contact
+  const [contactMessages, setContactMessages] = useState<any[]>([]);
+  const [activeContactMessage, setActiveContactMessage] = useState<any>(null);
+  const [contactResponseDialogOpen, setContactResponseDialogOpen] = useState(false);
+  const [contactResponseText, setContactResponseText] = useState('');
 
   // Stats mock data
   const stats = {
@@ -78,6 +85,10 @@ const AdminDashboard = () => {
         // Charger le contenu du site
         const siteContent = ContentService.getContent();
         setContentItems(siteContent);
+        
+        // Charger les messages de contact
+        const messages = ContactService.getMessages();
+        setContactMessages(messages);
       } catch (error) {
         console.error('Error loading settings:', error);
       } finally {
@@ -494,6 +505,114 @@ L'équipe NASSER TRAVEL HORIZON
     ));
   };
 
+  // Fonctions de gestion des messages de contact
+  const handleViewContactMessage = (message: any) => {
+    setActiveContactMessage(message);
+  };
+  
+  const handleCloseContactDetails = () => {
+    setActiveContactMessage(null);
+  };
+  
+  const handleOpenContactResponseDialog = () => {
+    if (activeContactMessage) {
+      // Préremplir avec un modèle de réponse
+      const template = `Objet : Réponse à votre message - NASSER TRAVEL HORIZON
+
+Cher(e) ${activeContactMessage.name},
+
+Nous vous remercions pour votre message concernant "${activeContactMessage.subject || 'votre demande'}".
+
+[Votre réponse personnalisée ici]
+
+N'hésitez pas à nous contacter si vous avez d'autres questions.
+
+Cordialement,
+L'équipe NASSER TRAVEL HORIZON
+📞 Tél : +235 66 38 69 37
+📧 Email : contact@nassertravelhorizon.com
+📍 N'Djamena, Tchad`;
+      
+      setContactResponseText(template);
+      setContactResponseDialogOpen(true);
+    }
+  };
+  
+  const handleSendContactResponse = async () => {
+    if (!activeContactMessage || !contactResponseText) return;
+
+    try {
+      // Stocker la réponse dans le message
+      const updatedMessages = contactMessages.map(msg => 
+        msg.id === activeContactMessage.id 
+          ? { 
+              ...msg, 
+              response: contactResponseText,
+              responseDate: new Date().toISOString(),
+              status: "traité" 
+            } 
+          : msg
+      );
+      
+      // Mise à jour dans le service
+      ContactService.updateMessage(activeContactMessage.id, {
+        response: contactResponseText,
+        responseDate: new Date().toISOString(),
+        status: "traité"
+      });
+      
+      setContactMessages(updatedMessages);
+      
+      // Mettre à jour activeContactMessage avec la réponse
+      setActiveContactMessage({
+        ...activeContactMessage,
+        response: contactResponseText,
+        responseDate: new Date().toISOString(),
+        status: "traité"
+      });
+      
+      setContactResponseDialogOpen(false);
+      
+      toast({
+        title: "Réponse envoyée",
+        description: "Votre réponse a été enregistrée et envoyée au client.",
+      });
+    } catch (error) {
+      console.error('Error sending contact response:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi de la réponse.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleContactPDFDownload = () => {
+    if (!activeContactMessage) return;
+    
+    try {
+      // Générer le PDF pour le message de contact
+      const filename = `contact-${activeContactMessage.id}`;
+      
+      PDFService.generateResponsePDF({
+        ...activeContactMessage,
+        response: activeContactMessage.response
+      }, 'Réponse à votre message', filename);
+      
+      toast({
+        title: "PDF téléchargé",
+        description: "Le document a été téléchargé avec succès.",
+      });
+    } catch (error) {
+      console.error('Error downloading contact PDF:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors du téléchargement du PDF.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <main className="bg-white py-10">
       <div className="container-custom">
@@ -507,7 +626,7 @@ L'équipe NASSER TRAVEL HORIZON
         </div>
 
         <Tabs defaultValue="settings" className="w-full">
-          <TabsList className="grid grid-cols-5 mb-8">
+          <TabsList className="grid grid-cols-6 mb-8">
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               <span className="hidden md:inline">Paramètres</span>
@@ -515,6 +634,10 @@ L'équipe NASSER TRAVEL HORIZON
             <TabsTrigger value="requests" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden md:inline">Demandes</span>
+            </TabsTrigger>
+            <TabsTrigger value="contacts" className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              <span className="hidden md:inline">Contacts</span>
             </TabsTrigger>
             <TabsTrigger value="reviews" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
@@ -823,6 +946,137 @@ L'équipe NASSER TRAVEL HORIZON
             </div>
           </TabsContent>
 
+          {/* Contacts */}
+          <TabsContent value="contacts">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Liste des messages de contact */}
+              <div className="md:col-span-1">
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle>Messages de contact</CardTitle>
+                    <CardDescription>
+                      Demandes et messages reçus via le formulaire de contact
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="px-6">
+                      <div className="max-h-[70vh] overflow-y-auto">
+                        {contactMessages.length === 0 ? (
+                          <div className="text-center py-8 text-gray-500">
+                            Aucun message pour le moment
+                          </div>
+                        ) : (
+                          <div className="space-y-2 pb-4">
+                            {contactMessages.map((message) => (
+                              <div 
+                                key={message.id} 
+                                className={`p-3 rounded-md cursor-pointer ${activeContactMessage?.id === message.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                onClick={() => handleViewContactMessage(message)}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-medium">{message.name}</h4>
+                                    <p className="text-sm text-gray-500">{message.subject || 'Sans objet'}</p>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center mt-2">
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(message.createdAt).toLocaleDateString()}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-xs ${
+                                    message.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                    message.status === "traité" ? "bg-green-100 text-green-800" :
+                                    message.status === "lu" ? "bg-gray-100 text-gray-800" :
+                                    "bg-gray-100 text-gray-800"
+                                  }`}>
+                                    {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Détails du message */}
+              <div className="md:col-span-2">
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle>Détails du message</CardTitle>
+                    <CardDescription>
+                      {activeContactMessage ? 
+                        `Message de ${activeContactMessage.name}` : 
+                        'Sélectionnez un message pour voir les détails'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!activeContactMessage ? (
+                      <div className="text-center py-12 text-gray-500">
+                        <Mail className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                        <p>Veuillez sélectionner un message dans la liste</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Informations expéditeur</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p><strong>Nom:</strong> {activeContactMessage.name}</p>
+                              <p><strong>Email:</strong> {activeContactMessage.email}</p>
+                              {activeContactMessage.phone && <p><strong>Téléphone:</strong> {activeContactMessage.phone}</p>}
+                              <p><strong>Date du message:</strong> {new Date(activeContactMessage.createdAt).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Détails du message</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p><strong>Objet:</strong> {activeContactMessage.subject || 'Sans objet'}</p>
+                              <p className="mt-2"><strong>Message:</strong></p>
+                              <p className="mt-1">{activeContactMessage.message}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {activeContactMessage.response ? (
+                          <div>
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-500 mb-1">Votre réponse</h3>
+                              <Button variant="outline" size="sm" onClick={handleContactPDFDownload}>
+                                <Download className="h-4 w-4 mr-2" />
+                                Télécharger PDF
+                              </Button>
+                            </div>
+                            <div className="bg-nasser-primary/5 border border-nasser-primary/20 p-4 rounded-md">
+                              <p className="whitespace-pre-line">{activeContactMessage.response}</p>
+                              <p className="text-xs text-gray-500 mt-2">
+                                Envoyée le {new Date(activeContactMessage.responseDate).toLocaleDateString()} à {new Date(activeContactMessage.responseDate).toLocaleTimeString()}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end space-x-2">
+                            <Button variant="outline" onClick={handleCloseContactDetails}>
+                              Fermer
+                            </Button>
+                            <Button onClick={handleOpenContactResponseDialog}>
+                              <Send className="h-4 w-4 mr-2" />
+                              Répondre
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
           {/* Avis - Mise à jour complète avec fonctionnalités opérationnelles */}
           <TabsContent value="reviews">
             <Card>
@@ -896,7 +1150,7 @@ L'équipe NASSER TRAVEL HORIZON
             </Card>
           </TabsContent>
           
-          {/* Contenu - Mise à jour avec fonctionnalités opérationnelles */}
+          {/* Contenu - Mise à jour avec fonctionnalités complètes */}
           <TabsContent value="content">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -924,6 +1178,8 @@ L'équipe NASSER TRAVEL HORIZON
                         <TableHead>ID</TableHead>
                         <TableHead>Titre</TableHead>
                         <TableHead>Page</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Catégorie</TableHead>
                         <TableHead>Contenu</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -934,6 +1190,8 @@ L'équipe NASSER TRAVEL HORIZON
                           <TableCell>{item.id}</TableCell>
                           <TableCell>{item.title}</TableCell>
                           <TableCell>{item.page}</TableCell>
+                          <TableCell>{item.type || 'text'}</TableCell>
+                          <TableCell>{item.category || 'general'}</TableCell>
                           <TableCell className="max-w-[300px] truncate">{item.content}</TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-2">
@@ -1026,6 +1284,31 @@ L'équipe NASSER TRAVEL HORIZON
               Annuler
             </Button>
             <Button onClick={handleSendResponse}>
+              <Send className="h-4 w-4 mr-2" />
+              Envoyer la réponse
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialogue de réponse au message de contact */}
+      <Dialog open={contactResponseDialogOpen} onOpenChange={setContactResponseDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Répondre au message</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea 
+              value={contactResponseText} 
+              onChange={(e) => setContactResponseText(e.target.value)} 
+              className="min-h-[300px] font-mono text-sm"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setContactResponseDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendContactResponse}>
               <Send className="h-4 w-4 mr-2" />
               Envoyer la réponse
             </Button>
