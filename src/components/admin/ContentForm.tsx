@@ -6,12 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ContentService, { ContentItem } from '@/services/ContentService';
 
 interface ContentFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (content: any) => void;
-  contentItem?: any;
+  onSave: (content: Partial<ContentItem>) => void;
+  contentItem?: ContentItem;
 }
 
 const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, contentItem }) => {
@@ -20,9 +21,18 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
   const [content, setContent] = useState('');
   const [type, setType] = useState('text');
   const [category, setCategory] = useState('general');
+  const [availablePages, setAvailablePages] = useState<string[]>([]);
+  const [availableTypes, setAvailableTypes] = useState<string[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  
   const isEditing = Boolean(contentItem);
 
   useEffect(() => {
+    // Charger les listes de valeurs disponibles
+    setAvailablePages(ContentService.getAvailablePages());
+    setAvailableTypes(ContentService.getAvailableTypes());
+    setAvailableCategories(ContentService.getAvailableCategories());
+    
     if (contentItem) {
       setTitle(contentItem.title || '');
       setPage(contentItem.page || 'Accueil');
@@ -55,6 +65,41 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
     onClose();
   };
 
+  // Fonction pour obtenir un placeholder selon le type
+  const getPlaceholder = () => {
+    switch (type) {
+      case 'text':
+        return "Contenu à afficher";
+      case 'hours':
+        return "Lundi: 08:00-18:00\nMardi: 08:00-18:00\n...";
+      case 'contact':
+        return "Adresse, téléphone, email, etc.";
+      case 'legal':
+        return "Texte des mentions légales";
+      case 'terms':
+        return "Texte des conditions générales de vente";
+      case 'privacy':
+        return "Texte de la politique de confidentialité";
+      case 'faq':
+        return "Question: Comment réserver?\nRéponse: Vous pouvez...";
+      case 'link':
+        return "URL du lien";
+      case 'image':
+      case 'logo':
+      case 'background':
+        return "URL de l'image";
+      case 'service':
+        return "Description du service";
+      default:
+        return "Contenu";
+    }
+  };
+
+  // Détermine si un type nécessite un textarea ou un input
+  const needsTextarea = (contentType: string) => {
+    return ['text', 'hours', 'contact', 'legal', 'terms', 'privacy', 'faq', 'service'].includes(contentType);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[550px]">
@@ -80,6 +125,9 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                   <SelectValue placeholder="Sélectionner une page" />
                 </SelectTrigger>
                 <SelectContent>
+                  {availablePages.map(pageName => (
+                    <SelectItem key={pageName} value={pageName}>{pageName}</SelectItem>
+                  ))}
                   <SelectItem value="Accueil">Accueil</SelectItem>
                   <SelectItem value="À propos">À propos</SelectItem>
                   <SelectItem value="Services">Services</SelectItem>
@@ -101,6 +149,9 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                   <SelectValue placeholder="Type de contenu" />
                 </SelectTrigger>
                 <SelectContent>
+                  {availableTypes.map(contentType => (
+                    <SelectItem key={contentType} value={contentType}>{contentType}</SelectItem>
+                  ))}
                   <SelectItem value="text">Texte</SelectItem>
                   <SelectItem value="hours">Heures d'ouverture</SelectItem>
                   <SelectItem value="contact">Coordonnées</SelectItem>
@@ -113,6 +164,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                   <SelectItem value="legal">Mentions légales</SelectItem>
                   <SelectItem value="terms">CGV</SelectItem>
                   <SelectItem value="privacy">Politique de confidentialité</SelectItem>
+                  <SelectItem value="gallery">Galerie</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -125,6 +177,9 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                 <SelectValue placeholder="Catégorie" />
               </SelectTrigger>
               <SelectContent>
+                {availableCategories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
                 <SelectItem value="general">Général</SelectItem>
                 <SelectItem value="header">En-tête</SelectItem>
                 <SelectItem value="footer">Pied de page</SelectItem>
@@ -134,27 +189,19 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                 <SelectItem value="contact">Contact</SelectItem>
                 <SelectItem value="gallery">Galerie</SelectItem>
                 <SelectItem value="legal">Mentions légales</SelectItem>
+                <SelectItem value="faq">FAQ</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           <div className="grid gap-2">
             <Label htmlFor="content">Contenu</Label>
-            {type === 'text' || type === 'hours' || type === 'contact' || type === 'legal' || type === 'terms' || type === 'privacy' || type === 'faq' ? (
+            {needsTextarea(type) ? (
               <Textarea
                 id="content"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder={
-                  type === 'text' ? "Contenu à afficher" : 
-                  type === 'hours' ? "Lundi: 08:00-18:00\nMardi: 08:00-18:00\n..." : 
-                  type === 'contact' ? "Adresse, téléphone, email, etc." :
-                  type === 'legal' ? "Texte des mentions légales" :
-                  type === 'terms' ? "Texte des conditions générales de vente" :
-                  type === 'privacy' ? "Texte de la politique de confidentialité" :
-                  type === 'faq' ? "Question: Comment réserver?\nRéponse: Vous pouvez..." :
-                  "Contenu"
-                }
+                placeholder={getPlaceholder()}
                 rows={8}
               />
             ) : (
@@ -162,14 +209,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                 id="content"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder={
-                  type === 'link' ? "URL du lien" : 
-                  type === 'image' ? "URL de l'image" : 
-                  type === 'logo' ? "URL du logo" :
-                  type === 'background' ? "URL de l'image de fond" :
-                  type === 'service' ? "Nom du service" :
-                  "Contenu"
-                }
+                placeholder={getPlaceholder()}
               />
             )}
           </div>

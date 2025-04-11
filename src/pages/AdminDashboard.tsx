@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Users, MessageSquare, FileText, BarChart2, Download, Eye, Send, Plus, Pencil, Trash, Mail } from 'lucide-react';
+import { Settings, Users, MessageSquare, FileText, BarChart2, Download, Eye, Send, Plus, Pencil, Trash, Mail, Layout, Image, Text, LayoutDashboard } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
@@ -14,10 +14,11 @@ import { Textarea } from "@/components/ui/textarea";
 import PDFService from '../services/PDFService';
 import ResponsePDFTemplate from '../components/pdf/ResponsePDFTemplate';
 import ReviewService from '../services/ReviewService';
-import ContentService from '../services/ContentService';
+import ContentService, { ContentItem } from '../services/ContentService';
 import ContentForm from '../components/admin/ContentForm';
 import ContactService from '../services/ContactService';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 
 const AdminDashboard = () => {
   const { toast } = useToast();
@@ -37,12 +38,19 @@ const AdminDashboard = () => {
   const [activeReview, setActiveReview] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   
-  // État pour la gestion du contenu
-  const [contentItems, setContentItems] = useState<any[]>([]);
+  // État pour la gestion du contenu du site
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [contentDialogOpen, setContentDialogOpen] = useState(false);
-  const [activeContentItem, setActiveContentItem] = useState<any>(null);
+  const [activeContentItem, setActiveContentItem] = useState<ContentItem | undefined>(undefined);
   const [deleteContentDialogOpen, setDeleteContentDialogOpen] = useState(false);
   const [contentToDelete, setContentToDelete] = useState<number | null>(null);
+  const [contentSearchQuery, setContentSearchQuery] = useState('');
+  const [contentFilterPage, setContentFilterPage] = useState<string>('');
+  const [contentFilterType, setContentFilterType] = useState<string>('');
+  const [contentFilterCategory, setContentFilterCategory] = useState<string>('');
+  const [availablePages, setAvailablePages] = useState<string[]>([]);
+  const [availableTypes, setAvailableTypes] = useState<string[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   // État pour la gestion des messages de contact
   const [contactMessages, setContactMessages] = useState<any[]>([]);
@@ -85,6 +93,11 @@ const AdminDashboard = () => {
         // Charger le contenu du site
         const siteContent = ContentService.getContent();
         setContentItems(siteContent);
+        
+        // Charger les valeurs disponibles pour les filtres
+        setAvailablePages(ContentService.getAvailablePages());
+        setAvailableTypes(ContentService.getAvailableTypes());
+        setAvailableCategories(ContentService.getAvailableCategories());
         
         // Charger les messages de contact
         const messages = ContactService.getMessages();
@@ -197,18 +210,18 @@ const AdminDashboard = () => {
     }
   };
   
-  // Fonctions de gestion du contenu
+  // Fonctions de gestion du contenu du site
   const handleAddContent = () => {
-    setActiveContentItem(null);
+    setActiveContentItem(undefined);
     setContentDialogOpen(true);
   };
   
-  const handleEditContent = (contentItem: any) => {
+  const handleEditContent = (contentItem: ContentItem) => {
     setActiveContentItem(contentItem);
     setContentDialogOpen(true);
   };
   
-  const handleSaveContent = (contentItem: any) => {
+  const handleSaveContent = (contentItem: Partial<ContentItem>) => {
     try {
       let updatedContent;
       
@@ -221,7 +234,7 @@ const AdminDashboard = () => {
         });
       } else {
         // Ajout d'un nouvel élément
-        const newItem = ContentService.addContent(contentItem);
+        const newItem = ContentService.addContent(contentItem as Omit<ContentItem, 'id'>);
         updatedContent = [...contentItems, newItem];
         toast({
           title: "Contenu ajouté",
@@ -230,6 +243,11 @@ const AdminDashboard = () => {
       }
       
       setContentItems(updatedContent);
+      
+      // Mettre à jour les listes de valeurs disponibles
+      setAvailablePages(ContentService.getAvailablePages());
+      setAvailableTypes(ContentService.getAvailableTypes());
+      setAvailableCategories(ContentService.getAvailableCategories());
     } catch (error) {
       console.error('Error saving content:', error);
       toast({
@@ -252,6 +270,11 @@ const AdminDashboard = () => {
       const updatedContent = ContentService.deleteContent(contentToDelete);
       setContentItems(updatedContent);
       
+      // Mettre à jour les listes de valeurs disponibles
+      setAvailablePages(ContentService.getAvailablePages());
+      setAvailableTypes(ContentService.getAvailableTypes());
+      setAvailableCategories(ContentService.getAvailableCategories());
+      
       toast({
         title: "Contenu supprimé",
         description: "Le contenu a été supprimé avec succès.",
@@ -267,6 +290,28 @@ const AdminDashboard = () => {
       setDeleteContentDialogOpen(false);
       setContentToDelete(null);
     }
+  };
+  
+  // Filtre le contenu selon les critères de recherche
+  const filteredContent = contentItems.filter(item => {
+    const matchesSearch = contentSearchQuery 
+      ? item.title.toLowerCase().includes(contentSearchQuery.toLowerCase()) || 
+        item.content.toLowerCase().includes(contentSearchQuery.toLowerCase())
+      : true;
+      
+    const matchesPage = contentFilterPage ? item.page === contentFilterPage : true;
+    const matchesType = contentFilterType ? item.type === contentFilterType : true;
+    const matchesCategory = contentFilterCategory ? item.category === contentFilterCategory : true;
+    
+    return matchesSearch && matchesPage && matchesType && matchesCategory;
+  });
+  
+  // Réinitialise tous les filtres de contenu
+  const resetContentFilters = () => {
+    setContentSearchQuery('');
+    setContentFilterPage('');
+    setContentFilterType('');
+    setContentFilterCategory('');
   };
 
   const handleViewRequest = (request: any) => {
@@ -626,7 +671,7 @@ L'équipe NASSER TRAVEL HORIZON
         </div>
 
         <Tabs defaultValue="settings" className="w-full">
-          <TabsList className="grid grid-cols-6 mb-8">
+          <TabsList className="grid grid-cols-5 mb-8">
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               <span className="hidden md:inline">Paramètres</span>
@@ -643,13 +688,9 @@ L'équipe NASSER TRAVEL HORIZON
               <MessageSquare className="h-4 w-4" />
               <span className="hidden md:inline">Avis</span>
             </TabsTrigger>
-            <TabsTrigger value="content" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              <span className="hidden md:inline">Contenu</span>
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-2">
-              <BarChart2 className="h-4 w-4" />
-              <span className="hidden md:inline">Statistiques</span>
+            <TabsTrigger value="site-content" className="flex items-center gap-2">
+              <LayoutDashboard className="h-4 w-4" />
+              <span className="hidden md:inline">Contenu du site</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1150,26 +1191,100 @@ L'équipe NASSER TRAVEL HORIZON
             </Card>
           </TabsContent>
           
-          {/* Contenu - Mise à jour avec fonctionnalités complètes */}
-          <TabsContent value="content">
+          {/* Contenu du site - Nouvel onglet complet */}
+          <TabsContent value="site-content">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Gestion du contenu</CardTitle>
+                  <CardTitle>Gestion du contenu du site</CardTitle>
                   <CardDescription>
-                    Modifiez le contenu des pages du site
+                    Modifiez tous les contenus du site (textes, images, logos, etc.)
                   </CardDescription>
                 </div>
                 <Button onClick={handleAddContent}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Ajouter
+                  Ajouter du contenu
                 </Button>
               </CardHeader>
               <CardContent>
-                {contentItems.length === 0 ? (
+                <div className="mb-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <Input 
+                        placeholder="Rechercher par titre ou contenu" 
+                        value={contentSearchQuery}
+                        onChange={(e) => setContentSearchQuery(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Select value={contentFilterPage} onValueChange={setContentFilterPage}>
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue placeholder="Toutes les pages" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Toutes les pages</SelectItem>
+                          {availablePages.map((page) => (
+                            <SelectItem key={page} value={page}>{page}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={contentFilterType} onValueChange={setContentFilterType}>
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue placeholder="Tous les types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Tous les types</SelectItem>
+                          {availableTypes.map((type) => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={contentFilterCategory} onValueChange={setContentFilterCategory}>
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue placeholder="Toutes les catégories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Toutes les catégories</SelectItem>
+                          {availableCategories.map((category) => (
+                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <Button variant="outline" onClick={resetContentFilters} size="icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-gray-500">
+                      {filteredContent.length} éléments de contenu {filteredContent.length !== contentItems.length && `(filtré sur ${contentItems.length} total)`}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" className="gap-1" onClick={() => {}}>
+                        <Text className="h-4 w-4" />
+                        <span className="hidden sm:inline">Textes</span>
+                      </Button>
+                      <Button variant="ghost" size="sm" className="gap-1" onClick={() => {}}>
+                        <Image className="h-4 w-4" />
+                        <span className="hidden sm:inline">Images</span>
+                      </Button>
+                      <Button variant="ghost" size="sm" className="gap-1" onClick={() => {}}>
+                        <Layout className="h-4 w-4" />
+                        <span className="hidden sm:inline">Mise en page</span>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                {filteredContent.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                    <p>Aucun contenu pour le moment</p>
+                    <p>Aucun contenu ne correspond à vos critères de recherche</p>
                   </div>
                 ) : (
                   <Table>
@@ -1185,14 +1300,35 @@ L'équipe NASSER TRAVEL HORIZON
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {contentItems.map((item) => (
+                      {filteredContent.map((item) => (
                         <TableRow key={item.id}>
                           <TableCell>{item.id}</TableCell>
                           <TableCell>{item.title}</TableCell>
                           <TableCell>{item.page}</TableCell>
-                          <TableCell>{item.type || 'text'}</TableCell>
-                          <TableCell>{item.category || 'general'}</TableCell>
-                          <TableCell className="max-w-[300px] truncate">{item.content}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={
+                              item.type === 'text' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                              item.type === 'logo' || item.type === 'image' || item.type === 'background' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                              item.type === 'service' ? 'bg-green-50 text-green-700 border-green-200' :
+                              item.type === 'faq' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                              'bg-gray-50 text-gray-700 border-gray-200'
+                            }>
+                              {item.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{item.category}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">
+                            {item.type === 'image' || item.type === 'logo' || item.type === 'background' ? (
+                              <div className="flex items-center space-x-2">
+                                <div className="w-8 h-8 bg-gray-100 rounded overflow-hidden">
+                                  <img src={item.content} alt={item.title} className="w-full h-full object-cover" />
+                                </div>
+                                <span className="truncate">{item.content}</span>
+                              </div>
+                            ) : (
+                              item.content
+                            )}
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-2">
                               <Button 
@@ -1217,49 +1353,6 @@ L'équipe NASSER TRAVEL HORIZON
                     </TableBody>
                   </Table>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          {/* Statistiques */}
-          <TabsContent value="stats">
-            <Card>
-              <CardHeader>
-                <CardTitle>Statistiques du site</CardTitle>
-                <CardDescription>
-                  Performances et analytiques
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card>
-                    <CardHeader className="p-4">
-                      <CardTitle className="text-lg">Visites</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 p-4">
-                      <p className="text-3xl font-bold">{stats.visits}</p>
-                      <p className="text-sm text-gray-500">{stats.growth}</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="p-4">
-                      <CardTitle className="text-lg">Pages vues</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 p-4">
-                      <p className="text-3xl font-bold">{stats.pageViews}</p>
-                      <p className="text-sm text-gray-500">Page la plus visitée: {stats.topPage}</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="p-4">
-                      <CardTitle className="text-lg">Réservations</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 p-4">
-                      <p className="text-3xl font-bold">{stats.bookings}</p>
-                      <p className="text-sm text-gray-500">Taux de conversion: {stats.conversionRate}</p>
-                    </CardContent>
-                  </Card>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
