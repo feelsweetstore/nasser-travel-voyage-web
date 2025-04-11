@@ -313,71 +313,49 @@ const AdminDashboard = () => {
 
 Cher(e) ${fullName},
 
-Nous vous remercions pour votre demande de devis concernant votre voyage vers ${destination}, du ${departureDate} au ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
-
-Voici notre proposition personnalisée :
-
-✈️ Détails de l'offre (à remplir par l'agence)
-
-Vol : [Compagnie aérienne]
-
-Bagages : [Bagages inclus]
-
-Temps de vol : [Durée estimée]
-
-Escale(s) : [Oui / Non / Nombre]
-
-💰 Prix total : 
-📅 Offre valable jusqu'au : [Date limite]
-🎯 Budget client estimé : ${budget}
-
-Veuillez noter que les tarifs de vols sont flexibles et peuvent changer a tout moment.
-Cependant, merci de bien vouloir nous confirmer votre accord afin de finaliser la réservation et garantir la disponibilité au tarif indiqué.
- 
-Si vous souhaitez modifier certaines informations (dates, classe, destination, etc.), n'hésitez pas à nous le faire savoir.
-
-Cordialement,
-L'équipe NASSER TRAVEL HORIZON
-📞 Tél : +235 66 38 69 37
-📧 Email : contact@nassertravelhorizon.com
+Nous vous remercions pour votre demande de devis concernant votre voyage vers ${destination}, du ${departureDate} au ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).\n
+Voici notre proposition personnalisée :\n
+✈️ Détails de l'offre (à remplir par l'agence)\n
+Vol : [Compagnie aérienne]\n
+Bagages : [Bagages inclus]\n
+Temps de vol : [Durée estimée]\n
+Escale(s) : [Oui / Non / Nombre]\n
+💰 Prix total : \n
+📅 Offre valable jusqu'au : [Date limite]\n
+🎯 Budget client estimé : ${budget}\n
+Veuillez noter que les tarifs de vols sont flexibles et peuvent changer a tout moment.\n
+Cependant, merci de bien vouloir nous confirmer votre accord afin de finaliser la réservation et garantir la disponibilité au tarif indiqué.\n 
+Si vous souhaitez modifier certaines informations (dates, classe, destination, etc.), n'hésitez pas à nous le faire savoir.\n
+Cordialement,\n
+L'équipe NASSER TRAVEL HORIZON\n
+📞 Tél : +235 66 38 69 37\n
+📧 Email : contact@nassertravelhorizon.com\n
 📍 N'Djamena, Tchad`;
       } else {
         template = `Objet : Votre réservation de billet pour ${destination} – NASSER TRAVEL HORIZON
 
 Cher(e) ${fullName},
 
-Nous avons bien reçu votre demande de réservation de billet à destination de ${destination}, pour un départ prévu le ${departureDate} et un retour le ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
-
-Voici les détails de votre réservation en cours de traitement :
-
-✈️ Détails du vol proposé (à compléter par l'agence)
-
-Compagnie aérienne : [Nom de la compagnie]
-
-Heure de départ : [Heure]
-
-Heure d'arrivée : [Heure]
-
-Escale(s) : [Oui / Non / Détails]
-
-Bagages inclus : [Poids / type]
-
-Numéro de vol : [XXXX]
-
-💰 Tarif total : [Montant en FCFA]
-📅 Validité de la réservation : [Date limite de confirmation]
-
-Afin de finaliser votre réservation, merci de bien vouloir :
-✅ Confirmer votre accord par retour de message via notre e-mail.
-✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).
-✅ Procéder au paiement dans le délai mentionné ci-dessus
-
-Si vous avez des questions ou souhaitez ajuster certains détails de votre voyage, notre équipe reste à votre entière disposition.
-
-Cordialement,
-L'équipe NASSER TRAVEL HORIZON
-📞 Tél : +235 66 38 69 37
-📧 Email : contact@nassertravelhorizon.com
+Nous avons bien reçu votre demande de réservation de billet à destination de ${destination}, pour un départ prévu le ${departureDate} et un retour le ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).\n
+Voici les détails de votre réservation en cours de traitement :\n
+✈️ Détails du vol proposé (à compléter par l'agence)\n
+Compagnie aérienne : [Nom de la compagnie]\n
+Heure de départ : [Heure]\n
+Heure d'arrivée : [Heure]\n
+Escale(s) : [Oui / Non / Détails]\n
+Bagages inclus : [Poids / type]\n
+Numéro de vol : [XXXX]\n
+💰 Tarif total : [Montant en FCFA]\n
+📅 Validité de la réservation : [Date limite de confirmation]\n
+Afin de finaliser votre réservation, merci de bien vouloir :\n
+✅ Confirmer votre accord par retour de message via notre e-mail.\n
+✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).\n
+✅ Procéder au paiement dans le délai mentionné ci-dessus\n
+Si vous avez des questions ou souhaitez ajuster certains détails de votre voyage, notre équipe reste à votre entière disposition.\n
+Cordialement,\n
+L'équipe NASSER TRAVEL HORIZON\n
+📞 Tél : +235 66 38 69 37\n
+📧 Email : contact@nassertravelhorizon.com\n
 📍 N'Djamena, Tchad`;
       }
       
@@ -520,16 +498,13 @@ L'équipe NASSER TRAVEL HORIZON
 
 Cher(e) ${activeContactMessage.name},
 
-Nous vous remercions pour votre message concernant "${activeContactMessage.subject || 'votre demande'}".
-
-[Votre réponse personnalisée ici]
-
-N'hésitez pas à nous contacter si vous avez d'autres questions.
-
-Cordialement,
-L'équipe NASSER TRAVEL HORIZON
-📞 Tél : +235 66 38 69 37
-📧 Email : contact@nassertravelhorizon.com
+Nous vous remercions pour votre message concernant "${activeContactMessage.subject || 'votre demande'}".\n
+[Votre réponse personnalisée ici]\n
+N'hésitez pas à nous contacter si vous avez d'autres questions.\n
+Cordialement,\n
+L'équipe NASSER TRAVEL HORIZON\n
+📞 Tél : +235 66 38 69 37\n
+📧 Email : contact@nassertravelhorizon.com\n
 📍 N'Djamena, Tchad`;
       
       setContactResponseText(template);
@@ -838,6 +813,3 @@ L'équipe NASSER TRAVEL HORIZON
                             <h3 className="text-sm font-medium text-gray-500 mb-1">Informations client</h3>
                             <div className="bg-gray-50 p-4 rounded-md">
                               <p><strong>Nom:</strong> {activeRequest.fullName}</p>
-                              <p><strong>Email:</strong> {activeRequest.email}</p>
-                              <p><strong>Téléphone:</strong> {activeRequest.whatsapp || activeRequest.phone}</p>
-                              <p><strong>Date de demande:</strong> {new Date(
