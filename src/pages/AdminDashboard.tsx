@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Users, MessageSquare, FileText, BarChart2, Download, Eye, Send, Plus, Pencil, Trash, Mail } from 'lucide-react';
+import { Settings, Users, MessageSquare, FileText, BarChart2, Download, Eye, Send, Plus, Pencil, Trash } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
@@ -15,7 +16,6 @@ import ResponsePDFTemplate from '../components/pdf/ResponsePDFTemplate';
 import ReviewService from '../services/ReviewService';
 import ContentService from '../services/ContentService';
 import ContentForm from '../components/admin/ContentForm';
-import ContactService from '../services/ContactService';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const AdminDashboard = () => {
@@ -42,12 +42,6 @@ const AdminDashboard = () => {
   const [activeContentItem, setActiveContentItem] = useState<any>(null);
   const [deleteContentDialogOpen, setDeleteContentDialogOpen] = useState(false);
   const [contentToDelete, setContentToDelete] = useState<number | null>(null);
-
-  // État pour la gestion des messages de contact
-  const [contactMessages, setContactMessages] = useState<any[]>([]);
-  const [activeContactMessage, setActiveContactMessage] = useState<any>(null);
-  const [contactResponseDialogOpen, setContactResponseDialogOpen] = useState(false);
-  const [contactResponseText, setContactResponseText] = useState('');
 
   // Stats mock data
   const stats = {
@@ -84,10 +78,6 @@ const AdminDashboard = () => {
         // Charger le contenu du site
         const siteContent = ContentService.getContent();
         setContentItems(siteContent);
-        
-        // Charger les messages de contact
-        const messages = ContactService.getMessages();
-        setContactMessages(messages);
       } catch (error) {
         console.error('Error loading settings:', error);
       } finally {
@@ -504,124 +494,6 @@ L'équipe NASSER TRAVEL HORIZON
     ));
   };
 
-  // Fonctions de gestion des messages de contact
-  const handleViewContactMessage = (message: any) => {
-    setActiveContactMessage(message);
-  };
-  
-  const handleCloseContactDetails = () => {
-    setActiveContactMessage(null);
-  };
-  
-  const handleOpenContactResponseDialog = () => {
-    if (activeContactMessage) {
-      // Préremplir avec un modèle de réponse
-      const template = `Objet : Réponse à votre message - NASSER TRAVEL HORIZON
-
-Cher(e) ${activeContactMessage.name},
-
-Nous vous remercions pour votre message concernant "${activeContactMessage.subject || 'votre demande'}".
-
-[Votre réponse personnalisée ici]
-
-N'hésitez pas à nous contacter si vous avez d'autres questions.
-
-Cordialement,
-
-L'équipe NASSER TRAVEL HORIZON
-
-📞 Tél : +235 66 38 69 37
-
-📧 Email : contact@nassertravelhorizon.com
-
-📍 N'Djamena, Tchad`;
-      
-      setContactResponseText(template);
-      setContactResponseDialogOpen(true);
-    }
-  };
-  
-  const handleSendContactResponse = async () => {
-    if (!activeContactMessage || !contactResponseText) return;
-
-    try {
-      // Stocker la réponse dans le message
-      const updatedMessages = contactMessages.map(msg => 
-        msg.id === activeContactMessage.id 
-          ? { 
-              ...msg, 
-              response: contactResponseText,
-              responseDate: new Date().toISOString(),
-              status: "traité" 
-            } 
-          : msg
-      );
-      
-      // Mise à jour dans le service
-      ContactService.updateMessage(activeContactMessage.id, {
-        response: contactResponseText,
-        responseDate: new Date().toISOString(),
-        status: "traité"
-      });
-      
-      setContactMessages(updatedMessages);
-      
-      // Mettre à jour activeContactMessage avec la réponse
-      setActiveContactMessage({
-        ...activeContactMessage,
-        response: contactResponseText,
-        responseDate: new Date().toISOString(),
-        status: "traité"
-      });
-      
-      setContactResponseDialogOpen(false);
-      
-      toast({
-        title: "Réponse envoyée",
-        description: "Votre réponse a été enregistrée et envoyée au client.",
-      });
-    } catch (error) {
-      console.error('Error sending contact response:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi de la réponse.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Fonction pour générer un PDF de réponse au message de contact
-  const handleContactPdfDownload = () => {
-    if (!activeContactMessage) return;
-    
-    try {
-      // Générer directement le PDF sans aperçu
-      const filename = `contact-${activeContactMessage.id}`;
-      
-      PDFService.generateResponsePDF({
-        fullName: activeContactMessage.name,
-        email: activeContactMessage.email,
-        message: activeContactMessage.message,
-        subject: activeContactMessage.subject,
-        createdAt: activeContactMessage.createdAt,
-        response: activeContactMessage.response,
-        responseDate: activeContactMessage.responseDate
-      }, 'Réponse à votre demande de contact', filename);
-      
-      toast({
-        title: "PDF téléchargé",
-        description: "La réponse a été téléchargée au format PDF.",
-      });
-    } catch (error) {
-      console.error('Error downloading contact PDF:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la génération du PDF.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <main className="bg-white py-10">
       <div className="container-custom">
@@ -635,7 +507,7 @@ L'équipe NASSER TRAVEL HORIZON
         </div>
 
         <Tabs defaultValue="settings" className="w-full">
-          <TabsList className="grid grid-cols-6 mb-8">
+          <TabsList className="grid grid-cols-5 mb-8">
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               <span className="hidden md:inline">Paramètres</span>
@@ -643,10 +515,6 @@ L'équipe NASSER TRAVEL HORIZON
             <TabsTrigger value="requests" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden md:inline">Demandes</span>
-            </TabsTrigger>
-            <TabsTrigger value="contacts" className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              <span className="hidden md:inline">Contacts</span>
             </TabsTrigger>
             <TabsTrigger value="reviews" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
@@ -858,4 +726,407 @@ L'équipe NASSER TRAVEL HORIZON
                     <CardDescription>
                       {activeRequest ? 
                         `${activeRequest.type === 'quote' ? 'Demande de devis' : 'Réservation'} - ${activeRequest.fullName}` : 
-                        'Sélectionnez
+                        'Sélectionnez une demande pour voir les détails'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!activeRequest ? (
+                      <div className="text-center py-12 text-gray-500">
+                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                        <p>Veuillez sélectionner une demande dans la liste</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Informations client</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p><strong>Nom:</strong> {activeRequest.fullName}</p>
+                              <p><strong>Email:</strong> {activeRequest.email}</p>
+                              <p><strong>Téléphone:</strong> {activeRequest.whatsapp || activeRequest.phone}</p>
+                              <p><strong>Date de demande:</strong> {new Date(activeRequest.createdAt).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Détails du voyage</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p><strong>Destination:</strong> {activeRequest.destination}</p>
+                              <p>
+                                <strong>Date de départ:</strong> {activeRequest.departureDate ? new Date(activeRequest.departureDate).toLocaleDateString() : 'Non spécifiée'}
+                              </p>
+                              <p>
+                                <strong>Date de retour:</strong> {activeRequest.returnDate ? new Date(activeRequest.returnDate).toLocaleDateString() : 'Non spécifiée'}
+                              </p>
+                              <p><strong>Nombre de passagers:</strong> {activeRequest.passengers}</p>
+                              <p><strong>Classe:</strong> {
+                                activeRequest.travelClass === 'economy' ? 'Économique' :
+                                activeRequest.travelClass === 'premium' ? 'Premium Economy' :
+                                activeRequest.travelClass === 'business' ? 'Business' :
+                                activeRequest.travelClass === 'first' ? 'Première classe' :
+                                activeRequest.travelClass
+                              }</p>
+                              {activeRequest.type === 'quote' && activeRequest.budget && 
+                                <p><strong>Budget estimé:</strong> {activeRequest.budget} FCFA</p>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {activeRequest.message && (
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Message du client</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p>{activeRequest.message}</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {activeRequest.response ? (
+                          <div>
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-500 mb-1">Votre réponse</h3>
+                              <div className="flex gap-2">
+                                <Button variant="outline" size="sm" onClick={() => generatePDF()}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Aperçu PDF
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={handleDirectPDFDownload}>
+                                  <Download className="h-4 w-4 mr-2" />
+                                  Télécharger PDF
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="bg-nasser-primary/5 border border-nasser-primary/20 p-4 rounded-md">
+                              <p className="whitespace-pre-line">{activeRequest.response}</p>
+                              <p className="text-xs text-gray-500 mt-2">
+                                Envoyée le {new Date(activeRequest.responseDate).toLocaleDateString()} à {new Date(activeRequest.responseDate).toLocaleTimeString()}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end space-x-2">
+                            <Button variant="outline" onClick={handleCloseDetails}>
+                              Fermer
+                            </Button>
+                            <Button onClick={handleOpenResponseDialog}>
+                              <Send className="h-4 w-4 mr-2" />
+                              Répondre
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Avis - Mise à jour complète avec fonctionnalités opérationnelles */}
+          <TabsContent value="reviews">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Avis clients</CardTitle>
+                  <CardDescription>
+                    Gérez les avis clients laissés sur le site
+                  </CardDescription>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {reviews.filter(r => r.published).length} avis publiés / {reviews.length} total
+                </p>
+              </CardHeader>
+              <CardContent>
+                {reviews.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p>Aucun avis client pour le moment</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Nom</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Note</TableHead>
+                        <TableHead>Message</TableHead>
+                        <TableHead>Statut</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reviews.map((review) => (
+                        <TableRow key={review.id}>
+                          <TableCell>{review.id}</TableCell>
+                          <TableCell>{review.name}</TableCell>
+                          <TableCell>{review.email}</TableCell>
+                          <TableCell>
+                            <div className="flex">{renderStars(review.rating)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[200px] truncate">{review.message}</TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              review.published ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                            }`}>
+                              {review.published ? "Publié" : "Non publié"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="space-x-2">
+                            <button 
+                              className="text-sm text-blue-600 hover:underline"
+                              onClick={() => handleViewReview(review)}
+                            >
+                              Voir
+                            </button>
+                            <button 
+                              className="text-sm text-green-600 hover:underline ml-2"
+                              onClick={() => handlePublishReview(review.id, !review.published)}
+                            >
+                              {review.published ? "Masquer" : "Publier"}
+                            </button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Contenu - Mise à jour avec fonctionnalités opérationnelles */}
+          <TabsContent value="content">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Gestion du contenu</CardTitle>
+                  <CardDescription>
+                    Modifiez le contenu des pages du site
+                  </CardDescription>
+                </div>
+                <Button onClick={handleAddContent}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {contentItems.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p>Aucun contenu pour le moment</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Titre</TableHead>
+                        <TableHead>Page</TableHead>
+                        <TableHead>Contenu</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {contentItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>{item.id}</TableCell>
+                          <TableCell>{item.title}</TableCell>
+                          <TableCell>{item.page}</TableCell>
+                          <TableCell className="max-w-[300px] truncate">{item.content}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => handleEditContent(item)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => handleConfirmDeleteContent(item.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Statistiques */}
+          <TabsContent value="stats">
+            <Card>
+              <CardHeader>
+                <CardTitle>Statistiques du site</CardTitle>
+                <CardDescription>
+                  Performances et analytiques
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-lg">Visites</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 p-4">
+                      <p className="text-3xl font-bold">{stats.visits}</p>
+                      <p className="text-sm text-gray-500">{stats.growth}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-lg">Pages vues</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 p-4">
+                      <p className="text-3xl font-bold">{stats.pageViews}</p>
+                      <p className="text-sm text-gray-500">Page la plus visitée: {stats.topPage}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-lg">Réservations</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 p-4">
+                      <p className="text-3xl font-bold">{stats.bookings}</p>
+                      <p className="text-sm text-gray-500">Taux de conversion: {stats.conversionRate}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+      
+      {/* Dialogue de réponse */}
+      <Dialog open={responseDialogOpen} onOpenChange={setResponseDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Répondre à la demande</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea 
+              value={responseText} 
+              onChange={(e) => setResponseText(e.target.value)} 
+              className="min-h-[300px] font-mono text-sm"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResponseDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendResponse}>
+              <Send className="h-4 w-4 mr-2" />
+              Envoyer la réponse
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialogue d'aperçu PDF */}
+      <Dialog open={pdfPreviewOpen} onOpenChange={setPdfPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Aperçu du PDF</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div ref={pdfTemplateRef} id="pdfTemplate" className="border p-8 rounded-md bg-white">
+              <ResponsePDFTemplate request={activeRequest} response={activeRequest?.response || ''} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPdfPreviewOpen(false)}>
+              Fermer
+            </Button>
+            <Button onClick={handleDownloadPDF}>
+              <Download className="h-4 w-4 mr-2" />
+              Télécharger
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialogue de détail d'avis */}
+      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Détail de l'avis</DialogTitle>
+          </DialogHeader>
+          {activeReview && (
+            <div className="py-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-lg">{activeReview.name}</h3>
+                  <p className="text-gray-500">{activeReview.email}</p>
+                </div>
+                <Badge variant={activeReview.published ? "default" : "outline"}>
+                  {activeReview.published ? "Publié" : "Non publié"}
+                </Badge>
+              </div>
+              
+              <div>
+                <div className="flex mb-2">
+                  {renderStars(activeReview.rating)}
+                  <span className="ml-2 text-sm text-gray-500">{activeReview.rating}/5</span>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <p className="italic">"{activeReview.message}"</p>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setReviewDialogOpen(false)}>
+                  Fermer
+                </Button>
+                <Button 
+                  variant={activeReview.published ? "destructive" : "default"}
+                  onClick={() => handlePublishReview(activeReview.id, !activeReview.published)}
+                >
+                  {activeReview.published ? "Masquer l'avis" : "Publier l'avis"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Formulaire d'ajout/édition de contenu */}
+      <ContentForm 
+        isOpen={contentDialogOpen}
+        onClose={() => setContentDialogOpen(false)}
+        onSave={handleSaveContent}
+        contentItem={activeContentItem}
+      />
+      
+      {/* Dialogue de confirmation de suppression */}
+      <AlertDialog open={deleteContentDialogOpen} onOpenChange={setDeleteContentDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce contenu ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteContent} className="bg-red-600 hover:bg-red-700">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </main>
+  );
+};
+
+export default AdminDashboard;
