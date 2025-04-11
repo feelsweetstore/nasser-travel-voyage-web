@@ -85,6 +85,10 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                   <SelectItem value="Services">Services</SelectItem>
                   <SelectItem value="Contact">Contact</SelectItem>
                   <SelectItem value="FAQ">FAQ</SelectItem>
+                  <SelectItem value="Galerie">Galerie</SelectItem>
+                  <SelectItem value="Mentions légales">Mentions légales</SelectItem>
+                  <SelectItem value="CGV">CGV</SelectItem>
+                  <SelectItem value="Politique de confidentialité">Politique de confidentialité</SelectItem>
                   <SelectItem value="Global">Global (toutes les pages)</SelectItem>
                 </SelectContent>
               </Select>
@@ -102,6 +106,13 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                   <SelectItem value="contact">Coordonnées</SelectItem>
                   <SelectItem value="link">Lien</SelectItem>
                   <SelectItem value="image">Image (URL)</SelectItem>
+                  <SelectItem value="logo">Logo (URL)</SelectItem>
+                  <SelectItem value="background">Image de fond (URL)</SelectItem>
+                  <SelectItem value="service">Service</SelectItem>
+                  <SelectItem value="faq">FAQ</SelectItem>
+                  <SelectItem value="legal">Mentions légales</SelectItem>
+                  <SelectItem value="terms">CGV</SelectItem>
+                  <SelectItem value="privacy">Politique de confidentialité</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -121,13 +132,15 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                 <SelectItem value="services">Services</SelectItem>
                 <SelectItem value="about">À propos</SelectItem>
                 <SelectItem value="contact">Contact</SelectItem>
+                <SelectItem value="gallery">Galerie</SelectItem>
+                <SelectItem value="legal">Mentions légales</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           <div className="grid gap-2">
             <Label htmlFor="content">Contenu</Label>
-            {type === 'text' || type === 'hours' || type === 'contact' ? (
+            {type === 'text' || type === 'hours' || type === 'contact' || type === 'legal' || type === 'terms' || type === 'privacy' || type === 'faq' ? (
               <Textarea
                 id="content"
                 value={content}
@@ -135,7 +148,12 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                 placeholder={
                   type === 'text' ? "Contenu à afficher" : 
                   type === 'hours' ? "Lundi: 08:00-18:00\nMardi: 08:00-18:00\n..." : 
-                  "Adresse, téléphone, email, etc."
+                  type === 'contact' ? "Adresse, téléphone, email, etc." :
+                  type === 'legal' ? "Texte des mentions légales" :
+                  type === 'terms' ? "Texte des conditions générales de vente" :
+                  type === 'privacy' ? "Texte de la politique de confidentialité" :
+                  type === 'faq' ? "Question: Comment réserver?\nRéponse: Vous pouvez..." :
+                  "Contenu"
                 }
                 rows={8}
               />
@@ -147,6 +165,9 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                 placeholder={
                   type === 'link' ? "URL du lien" : 
                   type === 'image' ? "URL de l'image" : 
+                  type === 'logo' ? "URL du logo" :
+                  type === 'background' ? "URL de l'image de fond" :
+                  type === 'service' ? "Nom du service" :
                   "Contenu"
                 }
               />
