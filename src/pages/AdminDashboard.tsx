@@ -169,7 +169,6 @@ const AdminDashboard = () => {
     });
   };
   
-  // Fonctions de gestion des avis
   const handleViewReview = (review: any) => {
     setActiveReview(review);
     setReviewDialogOpen(true);
@@ -200,7 +199,6 @@ const AdminDashboard = () => {
     }
   };
   
-  // Fonctions de gestion du contenu du site
   const handleEditContent = (contentItem: ContentItem) => {
     setActiveContentItem(contentItem);
     setContentDialogOpen(true);
@@ -230,7 +228,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Filtre le contenu selon la recherche et l'onglet actif
   const filteredContent = contentItems.filter(item => {
     const matchesSearch = searchTerm 
       ? item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -285,76 +282,9 @@ const AdminDashboard = () => {
       let template = '';
       
       if (activeRequest.type === 'quote') {
-        template = `Objet : Votre devis pour un voyage vers ${destination} – NASSER TRAVEL HORIZON
-
-Cher(e) ${fullName},
-
-Nous vous remercions pour votre demande de devis concernant votre voyage vers ${destination}, du ${departureDate} au ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
-
-Voici notre proposition personnalisée :
-
-✈️ Détails de l'offre (à remplir par l'agence)
-
-Vol : [Compagnie aérienne]
-
-Bagages : [Bagages inclus]
-
-Temps de vol : [Durée estimée]
-
-Escale(s) : [Oui / Non / Nombre]
-
-💰 Prix total : 
-📅 Offre valable jusqu'au : [Date limite]
-🎯 Budget client estimé : ${budget}
-
-Veuillez noter que les tarifs de vols sont flexibles et peuvent changer a tout moment.
-Cependant, merci de bien vouloir nous confirmer votre accord afin de finaliser la réservation et garantir la disponibilité au tarif indiqué.
- 
-Si vous souhaitez modifier certaines informations (dates, classe, destination, etc.), n'hésitez pas à nous le faire savoir.
-
-Cordialement,
-L'équipe NASSER TRAVEL HORIZON
-📞 Tél : +235 66 38 69 37
-📧 Email : contact@nassertravelhorizon.com
-📍 N'Djamena, Tchad`;
+        template = `Objet : Votre devis pour un voyage vers ${destination} – NASSER TRAVEL HORIZON\n\nCher(e) ${fullName},\n\nNous vous remercions pour votre demande de devis concernant votre voyage vers ${destination}, du ${departureDate} au ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).\n\nVoici notre proposition personnalisée :\n\n✈️ Détails de l'offre (à remplir par l'agence)\n\nVol : [Compagnie aérienne]\n\nBagages : [Bagages inclus]\n\nTemps de vol : [Durée estimée]\n\nEscale(s) : [Oui / Non / Nombre]\n\n💰 Prix total : \n📅 Offre valable jusqu'au : [Date limite]\n🎯 Budget client estimé : ${budget}\n\nVeuillez noter que les tarifs de vols sont flexibles et peuvent changer a tout moment.\nCependant, merci de bien vouloir nous confirmer votre accord afin de finaliser la réservation et garantir la disponibilité au tarif indiqué.\n \nSi vous souhaitez modifier certaines informations (dates, classe, destination, etc.), n'hésitez pas à nous le faire savoir.\n\nCordialement,\nL'équipe NASSER TRAVEL HORIZON\n📞 Tél : +235 66 38 69 37\n📧 Email : contact@nassertravelhorizon.com\n📍 N'Djamena, Tchad`;
       } else {
-        template = `Objet : Votre réservation de billet pour ${destination} – NASSER TRAVEL HORIZON
-
-Cher(e) ${fullName},
-
-Nous avons bien reçu votre demande de réservation de billet à destination de ${destination}, pour un départ prévu le ${departureDate} et un retour le ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
-
-Voici les détails de votre réservation en cours de traitement :
-
-✈️ Détails du vol proposé (à compléter par l'agence)
-
-Compagnie aérienne : [Nom de la compagnie]
-
-Heure de départ : [Heure]
-
-Heure d'arrivée : [Heure]
-
-Escale(s) : [Oui / Non / Détails]
-
-Bagages inclus : [Poids / type]
-
-Numéro de vol : [XXXX]
-
-💰 Tarif total : [Montant en FCFA]
-📅 Validité de la réservation : [Date limite de confirmation]
-
-Afin de finaliser votre réservation, merci de bien vouloir :
-✅ Confirmer votre accord par retour de message via notre e-mail.
-✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).
-✅ Procéder au paiement dans le délai mentionné ci-dessus
-
-Si vous avez des questions ou souhaitez ajuster certains détails de votre voyage, notre équipe reste à votre entière disposition.
-
-Cordialement,
-L'équipe NASSER TRAVEL HORIZON
-📞 Tél : +235 66 38 69 37
-📧 Email : contact@nassertravelhorizon.com
-📍 N'Djamena, Tchad`;
+        template = `Objet : Votre réservation de billet pour ${destination} – NASSER TRAVEL HORIZON\n\nCher(e) ${fullName},\n\nNous avons bien reçu votre demande de réservation de billet à destination de ${destination}, pour un départ prévu le ${departureDate} et un retour le ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).\n\nVoici les détails de votre réservation en cours de traitement :\n\n✈️ Détails du vol proposé (à compléter par l'agence)\n\nCompagnie aérienne : [Nom de la compagnie]\n\nHeure de départ : [Heure]\n\nHeure d'arrivée : [Heure]\n\nEscale(s) : [Oui / Non / Détails]\n\nBagages inclus : [Poids / type]\n\nNuméro de vol : [XXXX]\n\n💰 Tarif total : [Montant en FCFA]\n📅 Validité de la réservation : [Date limite de confirmation]\n\nAfin de finaliser votre réservation, merci de bien vouloir :\n✅ Confirmer votre accord par retour de message via notre e-mail.\n✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).\n✅ Procéder au paiement dans le délai mentionné ci-dessus\n\nSi vous avez des questions ou souhaitez ajuster certains détails de votre voyage, notre équipe reste à votre entière disposition.\n\nCordialement,\nL'équipe NASSER TRAVEL HORIZON\n📞 Tél : +235 66 38 69 37\n📧 Email : contact@nassertravelhorizon.com\n📍 N'Djamena, Tchad`;
       }
       
       setResponseText(template);
@@ -473,14 +403,12 @@ L'équipe NASSER TRAVEL HORIZON
     }
   };
 
-  // Fonction qui génère un rang d'étoiles pour l'affichage des avis
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }).map((_, index) => (
       <span key={index} className={index < rating ? "text-yellow-500" : "text-gray-300"}>★</span>
     ));
   };
 
-  // Fonctions de gestion des messages de contact
   const handleViewContactMessage = (message: any) => {
     setActiveContactMessage(message);
   };
@@ -492,21 +420,7 @@ L'équipe NASSER TRAVEL HORIZON
   const handleOpenContactResponseDialog = () => {
     if (activeContactMessage) {
       // Préremplir avec un modèle de réponse
-      const template = `Objet : Réponse à votre message - NASSER TRAVEL HORIZON
-
-Cher(e) ${activeContactMessage.name},
-
-Nous vous remercions pour votre message concernant "${activeContactMessage.subject || 'votre demande'}".
-
-[Votre réponse personnalisée ici]
-
-N'hésitez pas à nous contacter si vous avez d'autres questions.
-
-Cordialement,
-L'équipe NASSER TRAVEL HORIZON
-📞 Tél : +235 66 38 69 37
-📧 Email : contact@nassertravelhorizon.com
-📍 N'Djamena, Tchad`;
+      const template = `Objet : Réponse à votre message - NASSER TRAVEL HORIZON\n\nCher(e) ${activeContactMessage.name},\n\nNous vous remercions pour votre message concernant "${activeContactMessage.subject || 'votre demande'}\".\n\n[Votre réponse personnalisée ici]\n\nN'hésitez pas à nous contacter si vous avez d'autres questions.\n\nCordialement,\nL'équipe NASSER TRAVEL HORIZON\n📞 Tél : +235 66 38 69 37\n📧 Email : contact@nassertravelhorizon.com\n📍 N'Djamena, Tchad`;
       
       setContactResponseText(template);
       setContactResponseDialogOpen(true);
@@ -624,7 +538,6 @@ L'équipe NASSER TRAVEL HORIZON
             </TabsTrigger>
           </TabsList>
 
-          {/* Paramètres */}
           <TabsContent value="settings">
             <Card>
               <CardHeader>
@@ -671,10 +584,8 @@ L'équipe NASSER TRAVEL HORIZON
             </Card>
           </TabsContent>
 
-          {/* Demandes */}
           <TabsContent value="requests">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Liste des demandes */}
               <div className="md:col-span-1">
                 <Card className="h-full">
                   <CardHeader>
@@ -812,7 +723,6 @@ L'équipe NASSER TRAVEL HORIZON
                 </Card>
               </div>
               
-              {/* Détails de la demande */}
               <div className="md:col-span-2">
                 <Card className="h-full">
                   <CardHeader>
@@ -835,4 +745,524 @@ L'équipe NASSER TRAVEL HORIZON
                           <div>
                             <h3 className="text-sm font-medium text-gray-500 mb-1">Informations client</h3>
                             <div className="bg-gray-50 p-4 rounded-md">
-                              <p
+                              <p>
+                                <span className="font-medium">Nom du client :</span> {activeRequest.fullName}
+                              </p>
+                              <p>
+                                <span className="font-medium">Destination :</span> {activeRequest.destination}
+                              </p>
+                              <p>
+                                <span className="font-medium">Date de départ :</span> {formatDate(activeRequest.departureDate)}
+                              </p>
+                              <p>
+                                <span className="font-medium">Date de retour :</span> {formatDate(activeRequest.returnDate)}
+                              </p>
+                              <p>
+                                <span className="font-medium">Nombre de passagers :</span> {activeRequest.passengers}
+                              </p>
+                              <p>
+                                <span className="font-medium">Classe :</span> {getTravelClassInFrench(activeRequest.travelClass)}
+                              </p>
+                              <p>
+                                <span className="font-medium">Budget :</span> {activeRequest.budget ? `${activeRequest.budget} FCFA` : '[Budget non spécifié]'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="contacts">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1">
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle>Messages de contact</CardTitle>
+                    <CardDescription>
+                      Tous les messages reçus
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <Tabs defaultValue="all" className="px-6">
+                      <TabsList className="mb-4 w-full">
+                        <TabsTrigger value="all" className="flex-1">Toutes</TabsTrigger>
+                        <TabsTrigger value="new" className="flex-1">Nouveaux</TabsTrigger>
+                        <TabsTrigger value="read" className="flex-1">Lus</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="all" className="max-h-[70vh] overflow-y-auto">
+                        {contactMessages.length === 0 ? (
+                          <div className="text-center py-8 text-gray-500">
+                            Aucun message pour le moment
+                          </div>
+                        ) : (
+                          <div className="space-y-2 pb-4">
+                            {contactMessages.map((message) => (
+                              <div 
+                                key={message.id} 
+                                className={`p-3 rounded-md cursor-pointer ${activeContactMessage?.id === message.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                onClick={() => handleViewContactMessage(message)}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-medium">{message.name}</h4>
+                                    <p className="text-sm text-gray-500">{message.subject}</p>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center mt-2">
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(message.createdAt).toLocaleDateString()}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-xs ${
+                                    message.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                    message.status === "lu" ? "bg-green-100 text-green-800" :
+                                    "bg-gray-100 text-gray-800"
+                                  }`}>
+                                    {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </TabsContent>
+                      
+                      <TabsContent value="new" className="max-h-[70vh] overflow-y-auto">
+                        {contactMessages.filter(m => m.status === "nouveau").length === 0 ? (
+                          <div className="text-center py-8 text-gray-500">
+                            Aucun nouveau message pour le moment
+                          </div>
+                        ) : (
+                          <div className="space-y-2 pb-4">
+                            {contactMessages.filter(m => m.status === "nouveau").map((message) => (
+                              <div 
+                                key={message.id} 
+                                className={`p-3 rounded-md cursor-pointer ${activeContactMessage?.id === message.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                onClick={() => handleViewContactMessage(message)}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-medium">{message.name}</h4>
+                                    <p className="text-sm text-gray-500">{message.subject}</p>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center mt-2">
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(message.createdAt).toLocaleDateString()}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-xs ${
+                                    message.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                    message.status === "lu" ? "bg-green-100 text-green-800" :
+                                    "bg-gray-100 text-gray-800"
+                                  }`}>
+                                    {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </TabsContent>
+                      
+                      <TabsContent value="read" className="max-h-[70vh] overflow-y-auto">
+                        {contactMessages.filter(m => m.status === "lu").length === 0 ? (
+                          <div className="text-center py-8 text-gray-500">
+                            Aucun message lu pour le moment
+                          </div>
+                        ) : (
+                          <div className="space-y-2 pb-4">
+                            {contactMessages.filter(m => m.status === "lu").map((message) => (
+                              <div 
+                                key={message.id} 
+                                className={`p-3 rounded-md cursor-pointer ${activeContactMessage?.id === message.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                onClick={() => handleViewContactMessage(message)}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-medium">{message.name}</h4>
+                                    <p className="text-sm text-gray-500">{message.subject}</p>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center mt-2">
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(message.createdAt).toLocaleDateString()}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-xs ${
+                                    message.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                    message.status === "lu" ? "bg-green-100 text-green-800" :
+                                    "bg-gray-100 text-gray-800"
+                                  }`}>
+                                    {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="md:col-span-2">
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle>Détails du message</CardTitle>
+                    <CardDescription>
+                      {activeContactMessage ? 
+                        `Message de ${activeContactMessage.name}` : 
+                        'Sélectionnez un message pour voir les détails'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!activeContactMessage ? (
+                      <div className="text-center py-12 text-gray-500">
+                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                        <p>Veuillez sélectionner un message dans la liste</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Informations du message</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p>
+                                <span className="font-medium">Nom du client :</span> {activeContactMessage.name}
+                              </p>
+                              <p>
+                                <span className="font-medium">Sujet :</span> {activeContactMessage.subject}
+                              </p>
+                              <p>
+                                <span className="font-medium">Date :</span> {new Date(activeContactMessage.createdAt).toLocaleDateString()}
+                              </p>
+                              <p>
+                                <span className="font-medium">Statut :</span> {activeContactMessage.status.charAt(0).toUpperCase() + activeContactMessage.status.slice(1)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="reviews">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1">
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle>Avis clients</CardTitle>
+                    <CardDescription>
+                      Tous les avis clients
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <Tabs defaultValue="all" className="px-6">
+                      <TabsList className="mb-4 w-full">
+                        <TabsTrigger value="all" className="flex-1">Tous</TabsTrigger>
+                        <TabsTrigger value="published" className="flex-1">Publiés</TabsTrigger>
+                        <TabsTrigger value="unpublished" className="flex-1">Non publiés</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="all" className="max-h-[70vh] overflow-y-auto">
+                        {reviews.length === 0 ? (
+                          <div className="text-center py-8 text-gray-500">
+                            Aucun avis pour le moment
+                          </div>
+                        ) : (
+                          <div className="space-y-2 pb-4">
+                            {reviews.map((review) => (
+                              <div 
+                                key={review.id} 
+                                className={`p-3 rounded-md cursor-pointer ${activeReview?.id === review.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                onClick={() => handleViewReview(review)}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-medium">{review.fullName}</h4>
+                                    <p className="text-sm text-gray-500">{review.destination}</p>
+                                  </div>
+                                  <Badge variant={review.published ? 'outline' : 'default'} className="ml-2">
+                                    {review.published ? 'Publié' : 'Non publié'}
+                                  </Badge>
+                                </div>
+                                <div className="flex justify-between items-center mt-2">
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(review.createdAt).toLocaleDateString()}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-xs ${
+                                    review.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                    review.status === "traité" ? "bg-green-100 text-green-800" :
+                                    review.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                    "bg-gray-100 text-gray-800"
+                                  }`}>
+                                    {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </TabsContent>
+                      
+                      <TabsContent value="published" className="max-h-[70vh] overflow-y-auto">
+                        {reviews.filter(r => r.published).length === 0 ? (
+                          <div className="text-center py-8 text-gray-500">
+                            Aucun avis publié pour le moment
+                          </div>
+                        ) : (
+                          <div className="space-y-2 pb-4">
+                            {reviews.filter(r => r.published).map((review) => (
+                              <div 
+                                key={review.id} 
+                                className={`p-3 rounded-md cursor-pointer ${activeReview?.id === review.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                onClick={() => handleViewReview(review)}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-medium">{review.fullName}</h4>
+                                    <p className="text-sm text-gray-500">{review.destination}</p>
+                                  </div>
+                                  <Badge variant={review.published ? 'outline' : 'default'} className="ml-2">
+                                    {review.published ? 'Publié' : 'Non publié'}
+                                  </Badge>
+                                </div>
+                                <div className="flex justify-between items-center mt-2">
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(review.createdAt).toLocaleDateString()}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-xs ${
+                                    review.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                    review.status === "traité" ? "bg-green-100 text-green-800" :
+                                    review.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                    "bg-gray-100 text-gray-800"
+                                  }`}>
+                                    {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </TabsContent>
+                      
+                      <TabsContent value="unpublished" className="max-h-[70vh] overflow-y-auto">
+                        {reviews.filter(r => !r.published).length === 0 ? (
+                          <div className="text-center py-8 text-gray-500">
+                            Aucun avis non publié pour le moment
+                          </div>
+                        ) : (
+                          <div className="space-y-2 pb-4">
+                            {reviews.filter(r => !r.published).map((review) => (
+                              <div 
+                                key={review.id} 
+                                className={`p-3 rounded-md cursor-pointer ${activeReview?.id === review.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                onClick={() => handleViewReview(review)}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-medium">{review.fullName}</h4>
+                                    <p className="text-sm text-gray-500">{review.destination}</p>
+                                  </div>
+                                  <Badge variant={review.published ? 'outline' : 'default'} className="ml-2">
+                                    {review.published ? 'Publié' : 'Non publié'}
+                                  </Badge>
+                                </div>
+                                <div className="flex justify-between items-center mt-2">
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(review.createdAt).toLocaleDateString()}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-xs ${
+                                    review.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                    review.status === "traité" ? "bg-green-100 text-green-800" :
+                                    review.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                    "bg-gray-100 text-gray-800"
+                                  }`}>
+                                    {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="md:col-span-2">
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle>Détails de l'avis</CardTitle>
+                    <CardDescription>
+                      {activeReview ? 
+                        `Avis de ${activeReview.fullName}` : 
+                        'Sélectionnez un avis pour voir les détails'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!activeReview ? (
+                      <div className="text-center py-12 text-gray-500">
+                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                        <p>Veuillez sélectionner un avis dans la liste</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Informations de l'avis</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p>
+                                <span className="font-medium">Nom du client :</span> {activeReview.fullName}
+                              </p>
+                              <p>
+                                <span className="font-medium">Destination :</span> {activeReview.destination}
+                              </p>
+                              <p>
+                                <span className="font-medium">Date :</span> {new Date(activeReview.createdAt).toLocaleDateString()}
+                              </p>
+                              <p>
+                                <span className="font-medium">Statut :</span> {activeReview.status.charAt(0).toUpperCase() + activeReview.status.slice(1)}
+                              </p>
+                              <p>
+                                <span className="font-medium">Note :</span> {activeReview.rating}
+                              </p>
+                              <p>
+                                <span className="font-medium">Commentaire :</span> {activeReview.comment}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="site-content">
+            <div className="grid grid-cols-1 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Gestion du contenu du site</CardTitle>
+                  <CardDescription>
+                    Modifier le contenu des pages du site
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4 flex flex-col space-y-2 md:space-y-0 md:flex-row md:space-x-2 md:items-center">
+                    <Input 
+                      placeholder="Rechercher un contenu..." 
+                      className="flex-1" 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <Select 
+                      value={activeContentTab} 
+                      onValueChange={(value) => setActiveContentTab(value)}
+                    >
+                      <SelectTrigger className="w-full md:w-[200px]">
+                        <SelectValue placeholder="Toutes les pages" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Toutes les pages</SelectItem>
+                        <SelectItem value="Global">Global</SelectItem>
+                        <SelectItem value="Accueil">Accueil</SelectItem>
+                        <SelectItem value="Services">Services</SelectItem>
+                        <SelectItem value="Galerie">Galerie</SelectItem>
+                        <SelectItem value="FAQ">FAQ</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {filteredContent.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <Layout className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                      <p>Aucun contenu ne correspond à votre recherche</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      {filteredContent.map((item) => (
+                        <div key={item.id} className="border rounded-md p-4 flex flex-col h-full relative group">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h3 className="font-medium">{item.title}</h3>
+                              <p className="text-xs text-gray-500">
+                                {item.page} {item.type === 'logo' ? '- Logo' : 
+                                 item.type === 'text' ? '- Texte' : 
+                                 item.type === 'image' ? '- Image' : 
+                                 item.type === 'gallery' ? '- Galerie' : 
+                                 item.type === 'service' ? '- Service' : 
+                                 item.type === 'faq' ? '- FAQ' : ''}
+                              </p>
+                            </div>
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleEditContent(item)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Pencil className="h-4 w-4" />
+                                <span className="sr-only">Modifier</span>
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="flex-1 text-sm">
+                            {item.type === 'text' || item.type === 'service' || item.type === 'faq' ? (
+                              <p className="line-clamp-3 text-gray-600">{item.content}</p>
+                            ) : (item.type === 'logo' || item.type === 'image' || item.type === 'gallery') ? (
+                              <div className="flex justify-center items-center bg-gray-100 rounded-md h-24 overflow-hidden">
+                                <img 
+                                  src={item.content} 
+                                  alt={item.title} 
+                                  className="max-h-full max-w-full object-contain"
+                                />
+                              </div>
+                            ) : (
+                              <p className="line-clamp-3 text-gray-600">{item.content}</p>
+                            )}
+                          </div>
+                          <div className="mt-3 flex justify-end">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleEditContent(item)}
+                            >
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Modifier
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <ContentForm 
+        isOpen={contentDialogOpen}
+        onClose={() => setContentDialogOpen(false)}
+        onSave={handleSaveContent}
+        contentItem={activeContentItem}
+      />
+    </main>
+  );
+};
+
+export default AdminDashboard;
