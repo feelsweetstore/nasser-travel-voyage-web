@@ -6,15 +6,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ContentItem } from '../../services/ContentService';
 
 interface ContentFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (content: any) => void;
-  contentItem?: any;
+  onSave: (content: ContentItem) => void;
+  contentItem?: ContentItem;
+  currentPage?: string;
 }
 
-const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, contentItem }) => {
+const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, contentItem, currentPage }) => {
   const [title, setTitle] = useState('');
   const [page, setPage] = useState('Accueil');
   const [content, setContent] = useState('');
@@ -32,18 +34,19 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
     } else {
       // Réinitialiser le formulaire pour un nouvel élément
       setTitle('');
-      setPage('Accueil');
+      // Si une page courante est définie, l'utiliser comme valeur par défaut
+      setPage(currentPage || 'Accueil');
       setContent('');
       setType('text');
       setCategory('general');
     }
-  }, [contentItem, isOpen]);
+  }, [contentItem, isOpen, currentPage]);
 
   const handleSave = () => {
     if (!title.trim() || !content.trim()) return;
 
     const newContentItem = {
-      ...(contentItem || {}),
+      ...(contentItem || { id: 0 }),
       title,
       page,
       content,
@@ -51,8 +54,109 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
       category
     };
 
-    onSave(newContentItem);
+    onSave(newContentItem as ContentItem);
     onClose();
+  };
+
+  // Configuration des options de type de contenu en fonction de la page actuelle
+  const getTypeOptions = () => {
+    const baseTypes = [
+      { value: "text", label: "Texte" },
+      { value: "image", label: "Image (URL)" },
+    ];
+
+    // Ajout des types spécifiques en fonction de la page
+    switch (page) {
+      case 'Accueil':
+        return [
+          ...baseTypes,
+          { value: "logo", label: "Logo (URL)" },
+          { value: "background", label: "Image de fond (URL)" },
+        ];
+      case 'À propos':
+        return [
+          ...baseTypes,
+          { value: "quote", label: "Citation" },
+        ];
+      case 'FAQ':
+        return [
+          ...baseTypes,
+          { value: "faq-question", label: "Question FAQ" },
+          { value: "faq-answer", label: "Réponse FAQ" },
+        ];
+      case 'Global':
+        return [
+          ...baseTypes,
+          { value: "logo", label: "Logo (URL)" },
+          { value: "hours", label: "Heures d'ouverture" },
+          { value: "contact", label: "Coordonnées" },
+        ];
+      case 'Mentions légales':
+        return [
+          ...baseTypes,
+          { value: "legal", label: "Mentions légales" },
+        ];
+      case 'Politique de confidentialité':
+        return [
+          ...baseTypes,
+          { value: "privacy", label: "Politique de confidentialité" },
+        ];
+      case 'CGV':
+        return [
+          ...baseTypes,
+          { value: "terms", label: "CGV" },
+        ];
+      default:
+        return baseTypes;
+    }
+  };
+
+  // Configuration des options de catégorie en fonction de la page actuelle
+  const getCategoryOptions = () => {
+    const baseCategories = [
+      { value: "general", label: "Général" },
+      { value: "header", label: "En-tête" },
+    ];
+
+    // Ajout des catégories spécifiques en fonction de la page
+    switch (page) {
+      case 'Accueil':
+        return [
+          ...baseCategories,
+          { value: "hero", label: "Section Hero" },
+          { value: "services", label: "Services" },
+        ];
+      case 'À propos':
+        return [
+          ...baseCategories,
+          { value: "history", label: "Notre Histoire" },
+          { value: "team", label: "Notre Équipe" },
+          { value: "founder", label: "Fondateur" },
+          { value: "values", label: "Nos Valeurs" },
+          { value: "trust", label: "Pourquoi nous faire confiance" },
+        ];
+      case 'Galerie':
+        return [
+          ...baseCategories,
+          { value: "gallery", label: "Galerie d'images" },
+        ];
+      case 'FAQ':
+        return [
+          ...baseCategories,
+          { value: "general", label: "Questions générales" },
+          { value: "payment", label: "Paiement" },
+          { value: "cancellation", label: "Annulations" },
+          { value: "services", label: "Services additionnels" },
+        ];
+      case 'Global':
+        return [
+          ...baseCategories,
+          { value: "footer", label: "Pied de page" },
+          { value: "legal", label: "Mentions légales" },
+        ];
+      default:
+        return baseCategories;
+    }
   };
 
   return (
@@ -82,13 +186,11 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                 <SelectContent>
                   <SelectItem value="Accueil">Accueil</SelectItem>
                   <SelectItem value="À propos">À propos</SelectItem>
-                  <SelectItem value="Services">Services</SelectItem>
-                  <SelectItem value="Contact">Contact</SelectItem>
-                  <SelectItem value="FAQ">FAQ</SelectItem>
                   <SelectItem value="Galerie">Galerie</SelectItem>
+                  <SelectItem value="FAQ">FAQ</SelectItem>
                   <SelectItem value="Mentions légales">Mentions légales</SelectItem>
-                  <SelectItem value="CGV">CGV</SelectItem>
                   <SelectItem value="Politique de confidentialité">Politique de confidentialité</SelectItem>
+                  <SelectItem value="CGV">CGV</SelectItem>
                   <SelectItem value="Global">Global (toutes les pages)</SelectItem>
                 </SelectContent>
               </Select>
@@ -101,18 +203,9 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                   <SelectValue placeholder="Type de contenu" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="text">Texte</SelectItem>
-                  <SelectItem value="hours">Heures d'ouverture</SelectItem>
-                  <SelectItem value="contact">Coordonnées</SelectItem>
-                  <SelectItem value="link">Lien</SelectItem>
-                  <SelectItem value="image">Image (URL)</SelectItem>
-                  <SelectItem value="logo">Logo (URL)</SelectItem>
-                  <SelectItem value="background">Image de fond (URL)</SelectItem>
-                  <SelectItem value="service">Service</SelectItem>
-                  <SelectItem value="faq">FAQ</SelectItem>
-                  <SelectItem value="legal">Mentions légales</SelectItem>
-                  <SelectItem value="terms">CGV</SelectItem>
-                  <SelectItem value="privacy">Politique de confidentialité</SelectItem>
+                  {getTypeOptions().map(option => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -125,34 +218,30 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                 <SelectValue placeholder="Catégorie" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="general">Général</SelectItem>
-                <SelectItem value="header">En-tête</SelectItem>
-                <SelectItem value="footer">Pied de page</SelectItem>
-                <SelectItem value="hero">Section Hero</SelectItem>
-                <SelectItem value="services">Services</SelectItem>
-                <SelectItem value="about">À propos</SelectItem>
-                <SelectItem value="contact">Contact</SelectItem>
-                <SelectItem value="gallery">Galerie</SelectItem>
-                <SelectItem value="legal">Mentions légales</SelectItem>
+                {getCategoryOptions().map(option => (
+                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           
           <div className="grid gap-2">
             <Label htmlFor="content">Contenu</Label>
-            {type === 'text' || type === 'hours' || type === 'contact' || type === 'legal' || type === 'terms' || type === 'privacy' || type === 'faq' ? (
+            {type === 'text' || type === 'quote' || type === 'hours' || type === 'contact' || type === 'legal' || type === 'terms' || type === 'privacy' || type === 'faq-question' || type === 'faq-answer' ? (
               <Textarea
                 id="content"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder={
                   type === 'text' ? "Contenu à afficher" : 
+                  type === 'quote' ? "Citation à afficher" :
                   type === 'hours' ? "Lundi: 08:00-18:00\nMardi: 08:00-18:00\n..." : 
                   type === 'contact' ? "Adresse, téléphone, email, etc." :
                   type === 'legal' ? "Texte des mentions légales" :
                   type === 'terms' ? "Texte des conditions générales de vente" :
                   type === 'privacy' ? "Texte de la politique de confidentialité" :
-                  type === 'faq' ? "Question: Comment réserver?\nRéponse: Vous pouvez..." :
+                  type === 'faq-question' ? "Question: Comment réserver?" :
+                  type === 'faq-answer' ? "Réponse: Vous pouvez..." :
                   "Contenu"
                 }
                 rows={8}
@@ -163,11 +252,9 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder={
-                  type === 'link' ? "URL du lien" : 
                   type === 'image' ? "URL de l'image" : 
                   type === 'logo' ? "URL du logo" :
                   type === 'background' ? "URL de l'image de fond" :
-                  type === 'service' ? "Nom du service" :
                   "Contenu"
                 }
               />
