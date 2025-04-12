@@ -21,18 +21,10 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
   const [content, setContent] = useState('');
   const [type, setType] = useState('text');
   const [category, setCategory] = useState('general');
-  const [availablePages, setAvailablePages] = useState<string[]>([]);
-  const [availableTypes, setAvailableTypes] = useState<string[]>([]);
-  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   
   const isEditing = Boolean(contentItem);
 
   useEffect(() => {
-    // Charger les listes de valeurs disponibles
-    setAvailablePages(ContentService.getAvailablePages());
-    setAvailableTypes(ContentService.getAvailableTypes());
-    setAvailableCategories(ContentService.getAvailableCategories());
-    
     if (contentItem) {
       setTitle(contentItem.title || '');
       setPage(contentItem.page || 'Accueil');
@@ -104,7 +96,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Modifier le contenu' : 'Ajouter un nouveau contenu'}</DialogTitle>
+          <DialogTitle>Modifier le contenu</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -114,84 +106,8 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Titre du contenu"
+              readOnly={isEditing}
             />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="page">Page</Label>
-              <Select value={page} onValueChange={setPage}>
-                <SelectTrigger id="page">
-                  <SelectValue placeholder="Sélectionner une page" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availablePages.map(pageName => (
-                    <SelectItem key={pageName} value={pageName}>{pageName}</SelectItem>
-                  ))}
-                  <SelectItem value="Accueil">Accueil</SelectItem>
-                  <SelectItem value="À propos">À propos</SelectItem>
-                  <SelectItem value="Services">Services</SelectItem>
-                  <SelectItem value="Contact">Contact</SelectItem>
-                  <SelectItem value="FAQ">FAQ</SelectItem>
-                  <SelectItem value="Galerie">Galerie</SelectItem>
-                  <SelectItem value="Mentions légales">Mentions légales</SelectItem>
-                  <SelectItem value="CGV">CGV</SelectItem>
-                  <SelectItem value="Politique de confidentialité">Politique de confidentialité</SelectItem>
-                  <SelectItem value="Global">Global (toutes les pages)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="type">Type de contenu</Label>
-              <Select value={type} onValueChange={setType}>
-                <SelectTrigger id="type">
-                  <SelectValue placeholder="Type de contenu" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableTypes.map(contentType => (
-                    <SelectItem key={contentType} value={contentType}>{contentType}</SelectItem>
-                  ))}
-                  <SelectItem value="text">Texte</SelectItem>
-                  <SelectItem value="hours">Heures d'ouverture</SelectItem>
-                  <SelectItem value="contact">Coordonnées</SelectItem>
-                  <SelectItem value="link">Lien</SelectItem>
-                  <SelectItem value="image">Image (URL)</SelectItem>
-                  <SelectItem value="logo">Logo (URL)</SelectItem>
-                  <SelectItem value="background">Image de fond (URL)</SelectItem>
-                  <SelectItem value="service">Service</SelectItem>
-                  <SelectItem value="faq">FAQ</SelectItem>
-                  <SelectItem value="legal">Mentions légales</SelectItem>
-                  <SelectItem value="terms">CGV</SelectItem>
-                  <SelectItem value="privacy">Politique de confidentialité</SelectItem>
-                  <SelectItem value="gallery">Galerie</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <div className="grid gap-2">
-            <Label htmlFor="category">Catégorie</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="category">
-                <SelectValue placeholder="Catégorie" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableCategories.map(cat => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
-                <SelectItem value="general">Général</SelectItem>
-                <SelectItem value="header">En-tête</SelectItem>
-                <SelectItem value="footer">Pied de page</SelectItem>
-                <SelectItem value="hero">Section Hero</SelectItem>
-                <SelectItem value="services">Services</SelectItem>
-                <SelectItem value="about">À propos</SelectItem>
-                <SelectItem value="contact">Contact</SelectItem>
-                <SelectItem value="gallery">Galerie</SelectItem>
-                <SelectItem value="legal">Mentions légales</SelectItem>
-                <SelectItem value="faq">FAQ</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           
           <div className="grid gap-2">
