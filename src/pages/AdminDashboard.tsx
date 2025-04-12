@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -300,9 +299,9 @@ const AdminDashboard = () => {
         item.content.toLowerCase().includes(contentSearchQuery.toLowerCase())
       : true;
       
-    const matchesPage = contentFilterPage ? item.page === contentFilterPage : true;
-    const matchesType = contentFilterType ? item.type === contentFilterType : true;
-    const matchesCategory = contentFilterCategory ? item.category === contentFilterCategory : true;
+    const matchesPage = contentFilterPage === '' || contentFilterPage === 'all-pages' ? true : item.page === contentFilterPage;
+    const matchesType = contentFilterType === '' || contentFilterType === 'all-types' ? true : item.type === contentFilterType;
+    const matchesCategory = contentFilterCategory === '' || contentFilterCategory === 'all-categories' ? true : item.category === contentFilterCategory;
     
     return matchesSearch && matchesPage && matchesType && matchesCategory;
   });
@@ -1224,7 +1223,7 @@ L'équipe NASSER TRAVEL HORIZON
                           <SelectValue placeholder="Toutes les pages" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Toutes les pages</SelectItem>
+                          <SelectItem value="all-pages">Toutes les pages</SelectItem>
                           {availablePages.map((page) => (
                             <SelectItem key={page} value={page}>{page}</SelectItem>
                           ))}
@@ -1236,7 +1235,7 @@ L'équipe NASSER TRAVEL HORIZON
                           <SelectValue placeholder="Tous les types" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Tous les types</SelectItem>
+                          <SelectItem value="all-types">Tous les types</SelectItem>
                           {availableTypes.map((type) => (
                             <SelectItem key={type} value={type}>{type}</SelectItem>
                           ))}
@@ -1248,7 +1247,7 @@ L'équipe NASSER TRAVEL HORIZON
                           <SelectValue placeholder="Toutes les catégories" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Toutes les catégories</SelectItem>
+                          <SelectItem value="all-categories">Toutes les catégories</SelectItem>
                           {availableCategories.map((category) => (
                             <SelectItem key={category} value={category}>{category}</SelectItem>
                           ))}
