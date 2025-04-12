@@ -130,6 +130,43 @@ class ContentService {
   }
   
   /**
+   * Ajoute un nouvel élément de contenu
+   * @param contentItem - Nouvel élément à ajouter
+   * @returns Nouvel élément avec ID généré
+   */
+  static addContent(contentItem: Omit<ContentItem, 'id'>): ContentItem {
+    const content = this.getContent();
+    
+    // Générer un nouvel ID
+    const newId = content.length > 0 
+      ? Math.max(...content.map(item => item.id)) + 1 
+      : 1;
+    
+    const newItem: ContentItem = {
+      ...contentItem,
+      id: newId
+    };
+    
+    content.push(newItem);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(content));
+    
+    return newItem;
+  }
+  
+  /**
+   * Supprime un élément de contenu
+   * @param id - ID de l'élément à supprimer
+   * @returns Liste mise à jour du contenu
+   */
+  static deleteContent(id: number): ContentItem[] {
+    const content = this.getContent();
+    const updatedContent = content.filter(item => item.id !== id);
+    
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedContent));
+    return updatedContent;
+  }
+  
+  /**
    * Récupère les pages disponibles dans le contenu
    * @returns Liste des pages uniques
    */
