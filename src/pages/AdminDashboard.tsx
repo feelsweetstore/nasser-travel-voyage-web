@@ -502,6 +502,12 @@ const AdminDashboard = () => {
     }
   };
 
+  // Helper function to safely get the first character capitalized
+  const capitalizeFirstLetter = (text?: string): string => {
+    if (!text) return '';
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
+
   return (
     <main className="bg-white py-10">
       <div className="container-custom">
@@ -617,8 +623,8 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{request.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination}</p>
+                                    <h4 className="font-medium">{request.fullName || 'Sans nom'}</h4>
+                                    <p className="text-sm text-gray-500">{request.destination || 'Destination non spécifiée'}</p>
                                   </div>
                                   <Badge variant={request.type === 'quote' ? 'outline' : 'default'} className="ml-2">
                                     {request.type === 'quote' ? 'Devis' : 'Réservation'}
@@ -626,7 +632,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {new Date(request.createdAt).toLocaleDateString()}
+                                    {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'Date inconnue'}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
@@ -634,7 +640,7 @@ const AdminDashboard = () => {
                                     request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                    {request.status ? capitalizeFirstLetter(request.status) : 'Inconnu'}
                                   </span>
                                 </div>
                               </div>
@@ -658,13 +664,13 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{request.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination}</p>
+                                    <h4 className="font-medium">{request.fullName || 'Sans nom'}</h4>
+                                    <p className="text-sm text-gray-500">{request.destination || 'Destination non spécifiée'}</p>
                                   </div>
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {new Date(request.createdAt).toLocaleDateString()}
+                                    {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'Date inconnue'}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
@@ -672,7 +678,7 @@ const AdminDashboard = () => {
                                     request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                    {request.status ? capitalizeFirstLetter(request.status) : 'Inconnu'}
                                   </span>
                                 </div>
                               </div>
@@ -696,13 +702,13 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{request.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination}</p>
+                                    <h4 className="font-medium">{request.fullName || 'Sans nom'}</h4>
+                                    <p className="text-sm text-gray-500">{request.destination || 'Destination non spécifiée'}</p>
                                   </div>
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {new Date(request.createdAt).toLocaleDateString()}
+                                    {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'Date inconnue'}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
@@ -710,7 +716,7 @@ const AdminDashboard = () => {
                                     request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                    {request.status ? capitalizeFirstLetter(request.status) : 'Inconnu'}
                                   </span>
                                 </div>
                               </div>
@@ -729,7 +735,7 @@ const AdminDashboard = () => {
                     <CardTitle>Détails de la demande</CardTitle>
                     <CardDescription>
                       {activeRequest ? 
-                        `${activeRequest.type === 'quote' ? 'Demande de devis' : 'Réservation'} - ${activeRequest.fullName}` : 
+                        `${activeRequest.type === 'quote' ? 'Demande de devis' : 'Réservation'} - ${activeRequest.fullName || 'Sans nom'}` : 
                         'Sélectionnez une demande pour voir les détails'}
                     </CardDescription>
                   </CardHeader>
@@ -746,10 +752,10 @@ const AdminDashboard = () => {
                             <h3 className="text-sm font-medium text-gray-500 mb-1">Informations client</h3>
                             <div className="bg-gray-50 p-4 rounded-md">
                               <p>
-                                <span className="font-medium">Nom du client :</span> {activeRequest.fullName}
+                                <span className="font-medium">Nom du client :</span> {activeRequest.fullName || 'Non spécifié'}
                               </p>
                               <p>
-                                <span className="font-medium">Destination :</span> {activeRequest.destination}
+                                <span className="font-medium">Destination :</span> {activeRequest.destination || 'Non spécifiée'}
                               </p>
                               <p>
                                 <span className="font-medium">Date de départ :</span> {formatDate(activeRequest.departureDate)}
@@ -758,13 +764,13 @@ const AdminDashboard = () => {
                                 <span className="font-medium">Date de retour :</span> {formatDate(activeRequest.returnDate)}
                               </p>
                               <p>
-                                <span className="font-medium">Nombre de passagers :</span> {activeRequest.passengers}
+                                <span className="font-medium">Nombre de passagers :</span> {activeRequest.passengers || 'Non spécifié'}
                               </p>
                               <p>
-                                <span className="font-medium">Classe :</span> {getTravelClassInFrench(activeRequest.travelClass)}
+                                <span className="font-medium">Classe :</span> {getTravelClassInFrench(activeRequest.travelClass || '')}
                               </p>
                               <p>
-                                <span className="font-medium">Budget :</span> {activeRequest.budget ? `${activeRequest.budget} FCFA` : '[Budget non spécifié]'}
+                                <span className="font-medium">Budget :</span> {activeRequest.budget ? `${activeRequest.budget} FCFA` : 'Non spécifié'}
                               </p>
                             </div>
                           </div>
@@ -810,20 +816,20 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{message.name}</h4>
-                                    <p className="text-sm text-gray-500">{message.subject}</p>
+                                    <h4 className="font-medium">{message.name || 'Sans nom'}</h4>
+                                    <p className="text-sm text-gray-500">{message.subject || 'Sans sujet'}</p>
                                   </div>
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {new Date(message.createdAt).toLocaleDateString()}
+                                    {message.createdAt ? new Date(message.createdAt).toLocaleDateString() : 'Date inconnue'}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     message.status === "nouveau" ? "bg-blue-100 text-blue-800" :
                                     message.status === "lu" ? "bg-green-100 text-green-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+                                    {message.status ? capitalizeFirstLetter(message.status) : 'Inconnu'}
                                   </span>
                                 </div>
                               </div>
@@ -847,20 +853,20 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{message.name}</h4>
-                                    <p className="text-sm text-gray-500">{message.subject}</p>
+                                    <h4 className="font-medium">{message.name || 'Sans nom'}</h4>
+                                    <p className="text-sm text-gray-500">{message.subject || 'Sans sujet'}</p>
                                   </div>
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {new Date(message.createdAt).toLocaleDateString()}
+                                    {message.createdAt ? new Date(message.createdAt).toLocaleDateString() : 'Date inconnue'}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     message.status === "nouveau" ? "bg-blue-100 text-blue-800" :
                                     message.status === "lu" ? "bg-green-100 text-green-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+                                    {message.status ? capitalizeFirstLetter(message.status) : 'Inconnu'}
                                   </span>
                                 </div>
                               </div>
@@ -884,20 +890,20 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{message.name}</h4>
-                                    <p className="text-sm text-gray-500">{message.subject}</p>
+                                    <h4 className="font-medium">{message.name || 'Sans nom'}</h4>
+                                    <p className="text-sm text-gray-500">{message.subject || 'Sans sujet'}</p>
                                   </div>
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {new Date(message.createdAt).toLocaleDateString()}
+                                    {message.createdAt ? new Date(message.createdAt).toLocaleDateString() : 'Date inconnue'}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     message.status === "nouveau" ? "bg-blue-100 text-blue-800" :
                                     message.status === "lu" ? "bg-green-100 text-green-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+                                    {message.status ? capitalizeFirstLetter(message.status) : 'Inconnu'}
                                   </span>
                                 </div>
                               </div>
@@ -916,7 +922,7 @@ const AdminDashboard = () => {
                     <CardTitle>Détails du message</CardTitle>
                     <CardDescription>
                       {activeContactMessage ? 
-                        `Message de ${activeContactMessage.name}` : 
+                        `Message de ${activeContactMessage.name || 'Sans nom'}` : 
                         'Sélectionnez un message pour voir les détails'}
                     </CardDescription>
                   </CardHeader>
@@ -933,16 +939,16 @@ const AdminDashboard = () => {
                             <h3 className="text-sm font-medium text-gray-500 mb-1">Informations du message</h3>
                             <div className="bg-gray-50 p-4 rounded-md">
                               <p>
-                                <span className="font-medium">Nom du client :</span> {activeContactMessage.name}
+                                <span className="font-medium">Nom du client :</span> {activeContactMessage.name || 'Non spécifié'}
                               </p>
                               <p>
-                                <span className="font-medium">Sujet :</span> {activeContactMessage.subject}
+                                <span className="font-medium">Sujet :</span> {activeContactMessage.subject || 'Non spécifié'}
                               </p>
                               <p>
-                                <span className="font-medium">Date :</span> {new Date(activeContactMessage.createdAt).toLocaleDateString()}
+                                <span className="font-medium">Date :</span> {activeContactMessage.createdAt ? new Date(activeContactMessage.createdAt).toLocaleDateString() : 'Date inconnue'}
                               </p>
                               <p>
-                                <span className="font-medium">Statut :</span> {activeContactMessage.status.charAt(0).toUpperCase() + activeContactMessage.status.slice(1)}
+                                <span className="font-medium">Statut :</span> {activeContactMessage.status ? capitalizeFirstLetter(activeContactMessage.status) : 'Inconnu'}
                               </p>
                             </div>
                           </div>
@@ -988,8 +994,8 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{review.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{review.destination}</p>
+                                    <h4 className="font-medium">{review.fullName || 'Sans nom'}</h4>
+                                    <p className="text-sm text-gray-500">{review.destination || 'Destination non spécifiée'}</p>
                                   </div>
                                   <Badge variant={review.published ? 'outline' : 'default'} className="ml-2">
                                     {review.published ? 'Publié' : 'Non publié'}
@@ -997,7 +1003,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {new Date(review.createdAt).toLocaleDateString()}
+                                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date inconnue'}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     review.status === "nouveau" ? "bg-blue-100 text-blue-800" :
@@ -1005,7 +1011,7 @@ const AdminDashboard = () => {
                                     review.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
+                                    {review.status ? capitalizeFirstLetter(review.status) : 'Inconnu'}
                                   </span>
                                 </div>
                               </div>
@@ -1029,8 +1035,8 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{review.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{review.destination}</p>
+                                    <h4 className="font-medium">{review.fullName || 'Sans nom'}</h4>
+                                    <p className="text-sm text-gray-500">{review.destination || 'Destination non spécifiée'}</p>
                                   </div>
                                   <Badge variant={review.published ? 'outline' : 'default'} className="ml-2">
                                     {review.published ? 'Publié' : 'Non publié'}
@@ -1038,7 +1044,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {new Date(review.createdAt).toLocaleDateString()}
+                                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date inconnue'}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     review.status === "nouveau" ? "bg-blue-100 text-blue-800" :
@@ -1046,7 +1052,7 @@ const AdminDashboard = () => {
                                     review.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
+                                    {review.status ? capitalizeFirstLetter(review.status) : 'Inconnu'}
                                   </span>
                                 </div>
                               </div>
@@ -1070,8 +1076,8 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{review.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{review.destination}</p>
+                                    <h4 className="font-medium">{review.fullName || 'Sans nom'}</h4>
+                                    <p className="text-sm text-gray-500">{review.destination || 'Destination non spécifiée'}</p>
                                   </div>
                                   <Badge variant={review.published ? 'outline' : 'default'} className="ml-2">
                                     {review.published ? 'Publié' : 'Non publié'}
@@ -1079,7 +1085,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {new Date(review.createdAt).toLocaleDateString()}
+                                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date inconnue'}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     review.status === "nouveau" ? "bg-blue-100 text-blue-800" :
@@ -1087,7 +1093,7 @@ const AdminDashboard = () => {
                                     review.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
+                                    {review.status ? capitalizeFirstLetter(review.status) : 'Inconnu'}
                                   </span>
                                 </div>
                               </div>
@@ -1106,7 +1112,7 @@ const AdminDashboard = () => {
                     <CardTitle>Détails de l'avis</CardTitle>
                     <CardDescription>
                       {activeReview ? 
-                        `Avis de ${activeReview.fullName}` : 
+                        `Avis de ${activeReview.fullName || 'Sans nom'}` : 
                         'Sélectionnez un avis pour voir les détails'}
                     </CardDescription>
                   </CardHeader>
@@ -1123,22 +1129,22 @@ const AdminDashboard = () => {
                             <h3 className="text-sm font-medium text-gray-500 mb-1">Informations de l'avis</h3>
                             <div className="bg-gray-50 p-4 rounded-md">
                               <p>
-                                <span className="font-medium">Nom du client :</span> {activeReview.fullName}
+                                <span className="font-medium">Nom du client :</span> {activeReview.fullName || 'Non spécifié'}
                               </p>
                               <p>
-                                <span className="font-medium">Destination :</span> {activeReview.destination}
+                                <span className="font-medium">Destination :</span> {activeReview.destination || 'Non spécifiée'}
                               </p>
                               <p>
-                                <span className="font-medium">Date :</span> {new Date(activeReview.createdAt).toLocaleDateString()}
+                                <span className="font-medium">Date :</span> {activeReview.createdAt ? new Date(activeReview.createdAt).toLocaleDateString() : 'Date inconnue'}
                               </p>
                               <p>
-                                <span className="font-medium">Statut :</span> {activeReview.status.charAt(0).toUpperCase() + activeReview.status.slice(1)}
+                                <span className="font-medium">Statut :</span> {activeReview.status ? capitalizeFirstLetter(activeReview.status) : 'Inconnu'}
                               </p>
                               <p>
-                                <span className="font-medium">Note :</span> {activeReview.rating}
+                                <span className="font-medium">Note :</span> {activeReview.rating || 'Non notée'}
                               </p>
                               <p>
-                                <span className="font-medium">Commentaire :</span> {activeReview.comment}
+                                <span className="font-medium">Commentaire :</span> {activeReview.comment || 'Aucun commentaire'}
                               </p>
                             </div>
                           </div>
@@ -1197,9 +1203,9 @@ const AdminDashboard = () => {
                         <div key={item.id} className="border rounded-md p-4 flex flex-col h-full relative group">
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <h3 className="font-medium">{item.title}</h3>
+                              <h3 className="font-medium">{item.title || 'Sans titre'}</h3>
                               <p className="text-xs text-gray-500">
-                                {item.page} {item.type === 'logo' ? '- Logo' : 
+                                {item.page || 'Page non spécifiée'} {item.type === 'logo' ? '- Logo' : 
                                  item.type === 'text' ? '- Texte' : 
                                  item.type === 'image' ? '- Image' : 
                                  item.type === 'gallery' ? '- Galerie' : 
@@ -1221,17 +1227,17 @@ const AdminDashboard = () => {
                           </div>
                           <div className="flex-1 text-sm">
                             {item.type === 'text' || item.type === 'service' || item.type === 'faq' ? (
-                              <p className="line-clamp-3 text-gray-600">{item.content}</p>
+                              <p className="line-clamp-3 text-gray-600">{item.content || 'Contenu vide'}</p>
                             ) : (item.type === 'logo' || item.type === 'image' || item.type === 'gallery') ? (
                               <div className="flex justify-center items-center bg-gray-100 rounded-md h-24 overflow-hidden">
                                 <img 
                                   src={item.content} 
-                                  alt={item.title} 
+                                  alt={item.title || 'Image'} 
                                   className="max-h-full max-w-full object-contain"
                                 />
                               </div>
                             ) : (
-                              <p className="line-clamp-3 text-gray-600">{item.content}</p>
+                              <p className="line-clamp-3 text-gray-600">{item.content || 'Contenu vide'}</p>
                             )}
                           </div>
                           <div className="mt-3 flex justify-end">
