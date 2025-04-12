@@ -21,16 +21,6 @@ class ContentService {
         { id: 8, title: "Mentions légales", page: "Mentions légales", content: "NASSER TRAVEL HORIZON - SARL au capital de 5 000 000 FCFA\nSiège social : Avenue Charles de Gaulle, N'Djamena, Tchad\nRCS N'Djamena : 123456789\nDirecteur de la publication : M. Nasser\nHébergeur : OVH - 2 rue Kellermann - 59100 Roubaix - France", type: "legal", category: "legal" },
         { id: 9, title: "Politique de confidentialité", page: "Politique de confidentialité", content: "Chez NASSER TRAVEL HORIZON, nous nous engageons à protéger et à respecter votre vie privée. Cette politique définit la base sur laquelle les données personnelles que nous collectons auprès de vous, ou que vous nous fournissez, seront traitées par nous.", type: "privacy", category: "legal" },
         { id: 10, title: "CGV", page: "CGV", content: "Les présentes conditions générales de vente régissent les relations contractuelles entre la société NASSER TRAVEL HORIZON et ses clients, dans le cadre de son activité d'agence de voyage.", type: "terms", category: "legal" },
-        { id: 11, title: "Service 1", page: "Services", content: "Réservation de billets d'avion", type: "service", category: "services" },
-        { id: 12, title: "Service 2", page: "Services", content: "Organisation de séjours sur mesure", type: "service", category: "services" },
-        { id: 13, title: "Service 3", page: "Services", content: "Assistance visa", type: "service", category: "services" },
-        { id: 14, title: "Service 4", page: "Services", content: "Transferts aéroport", type: "service", category: "services" },
-        { id: 15, title: "FAQ 1", page: "FAQ", content: "Question: Comment réserver un billet?\nRéponse: Vous pouvez réserver un billet en ligne sur notre site, par téléphone, ou en nous rendant visite à notre agence.", type: "faq", category: "faq" },
-        { id: 16, title: "FAQ 2", page: "FAQ", content: "Question: Quels sont les moyens de paiement acceptés?\nRéponse: Nous acceptons les paiements par carte bancaire, virement bancaire et en espèces à notre agence.", type: "faq", category: "faq" },
-        { id: 17, title: "FAQ 3", page: "FAQ", content: "Question: Comment annuler une réservation?\nRéponse: Pour annuler une réservation, veuillez nous contacter par téléphone ou par email au moins 48h à l'avance.", type: "faq", category: "faq" },
-        { id: 18, title: "Galerie 1", page: "Galerie", content: "/placeholder.svg", type: "gallery", category: "gallery" },
-        { id: 19, title: "Galerie 2", page: "Galerie", content: "/placeholder.svg", type: "gallery", category: "gallery" },
-        { id: 20, title: "Galerie 3", page: "Galerie", content: "/placeholder.svg", type: "gallery", category: "gallery" },
       ];
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(defaultContent));
     }
@@ -40,7 +30,7 @@ class ContentService {
    * Récupère tout le contenu du site
    * @returns Liste des éléments de contenu
    */
-  static getContent(): ContentItem[] {
+  static getContent(): any[] {
     this.initialize();
     const storedContent = localStorage.getItem(this.STORAGE_KEY);
     return JSON.parse(storedContent || '[]');
@@ -51,7 +41,7 @@ class ContentService {
    * @param id - ID de l'élément
    * @returns L'élément de contenu ou null s'il n'existe pas
    */
-  static getContentById(id: number): ContentItem | null {
+  static getContentById(id: number): any | null {
     const content = this.getContent();
     return content.find(item => item.id === id) || null;
   }
@@ -61,7 +51,7 @@ class ContentService {
    * @param page - Nom de la page
    * @returns Liste des éléments de contenu pour la page
    */
-  static getContentByPage(page: string): ContentItem[] {
+  static getContentByPage(page: string): any[] {
     const content = this.getContent();
     // Récupère le contenu spécifique à la page ainsi que le contenu global
     return content.filter(item => item.page === page || item.page === 'Global');
@@ -73,7 +63,7 @@ class ContentService {
    * @param category - Catégorie (header, footer, etc.)
    * @returns Liste des éléments de contenu correspondants
    */
-  static getContentByTypeAndCategory(type: string, category: string): ContentItem[] {
+  static getContentByTypeAndCategory(type: string, category: string): any[] {
     const content = this.getContent();
     return content.filter(item => item.type === type && item.category === category);
   }
@@ -83,7 +73,7 @@ class ContentService {
    * @param type - Type de contenu (text, image, etc.)
    * @returns Liste des éléments de contenu correspondants
    */
-  static getContentByType(type: string): ContentItem[] {
+  static getContentByType(type: string): any[] {
     const content = this.getContent();
     return content.filter(item => item.type === type);
   }
@@ -93,24 +83,26 @@ class ContentService {
    * @param category - Catégorie (header, footer, etc.)
    * @returns Liste des éléments de contenu correspondants
    */
-  static getContentByCategory(category: string): ContentItem[] {
+  static getContentByCategory(category: string): any[] {
     const content = this.getContent();
     return content.filter(item => item.category === category);
   }
   
   /**
-   * Récupère le contenu modifiable de l'interface
-   * @returns Liste filtrée des éléments modifiables
+   * Ajoute un nouvel élément de contenu
+   * @param contentItem - Élément à ajouter
+   * @returns L'élément ajouté avec un ID
    */
-  static getEditableContent(): ContentItem[] {
+  static addContent(contentItem: any): any {
     const content = this.getContent();
-    // Filtrer pour ne montrer que le logo, et les contenus des pages spécifiques
-    return content.filter(item => 
-      // Logo dans l'en-tête
-      (item.type === 'logo' && item.category === 'header') ||
-      // Contenu des pages spécifiques
-      ['Accueil', 'Services', 'Galerie', 'FAQ'].includes(item.page)
-    );
+    const newContentItem = {
+      ...contentItem,
+      id: content.length ? Math.max(...content.map(c => c.id)) + 1 : 1
+    };
+    
+    const updatedContent = [...content, newContentItem];
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedContent));
+    return newContentItem;
   }
   
   /**
@@ -119,7 +111,7 @@ class ContentService {
    * @param contentItem - Nouvelles données
    * @returns Liste mise à jour du contenu
    */
-  static updateContent(id: number, contentItem: Partial<ContentItem>): ContentItem[] {
+  static updateContent(id: number, contentItem: any): any[] {
     const content = this.getContent();
     const updatedContent = content.map(item => 
       item.id === id ? { ...item, ...contentItem } : item
@@ -130,81 +122,17 @@ class ContentService {
   }
   
   /**
-   * Ajoute un nouvel élément de contenu
-   * @param contentItem - Nouvel élément à ajouter
-   * @returns Nouvel élément avec ID généré
-   */
-  static addContent(contentItem: Omit<ContentItem, 'id'>): ContentItem {
-    const content = this.getContent();
-    
-    // Générer un nouvel ID
-    const newId = content.length > 0 
-      ? Math.max(...content.map(item => item.id)) + 1 
-      : 1;
-    
-    const newItem: ContentItem = {
-      ...contentItem,
-      id: newId
-    };
-    
-    content.push(newItem);
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(content));
-    
-    return newItem;
-  }
-  
-  /**
    * Supprime un élément de contenu
    * @param id - ID de l'élément à supprimer
    * @returns Liste mise à jour du contenu
    */
-  static deleteContent(id: number): ContentItem[] {
+  static deleteContent(id: number): any[] {
     const content = this.getContent();
     const updatedContent = content.filter(item => item.id !== id);
     
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedContent));
     return updatedContent;
   }
-  
-  /**
-   * Récupère les pages disponibles dans le contenu
-   * @returns Liste des pages uniques
-   */
-  static getAvailablePages(): string[] {
-    const content = this.getContent();
-    const pages = content.map(item => item.page);
-    return [...new Set(pages)].sort();
-  }
-  
-  /**
-   * Récupère les types de contenu disponibles
-   * @returns Liste des types uniques
-   */
-  static getAvailableTypes(): string[] {
-    const content = this.getContent();
-    const types = content.map(item => item.type);
-    return [...new Set(types)].sort();
-  }
-  
-  /**
-   * Récupère les catégories disponibles
-   * @returns Liste des catégories uniques
-   */
-  static getAvailableCategories(): string[] {
-    const content = this.getContent();
-    const categories = content.map(item => item.category);
-    return [...new Set(categories)].sort();
-  }
-}
-
-// Type pour les éléments de contenu
-export interface ContentItem {
-  id: number;
-  title: string;
-  page: string;
-  content: string;
-  type: string;
-  category: string;
 }
 
 export default ContentService;

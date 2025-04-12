@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Users, MessageSquare, FileText, BarChart2, Download, Eye, Send, Plus, Pencil, Trash, Mail, Layout, Image, Text, LayoutDashboard } from 'lucide-react';
+import { Settings, Users, MessageSquare, FileText, BarChart2, Download, Eye, Send, Plus, Pencil, Trash, Mail } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
@@ -13,12 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import PDFService from '../services/PDFService';
 import ResponsePDFTemplate from '../components/pdf/ResponsePDFTemplate';
 import ReviewService from '../services/ReviewService';
-import ContentService, { ContentItem } from '../services/ContentService';
+import ContentService from '../services/ContentService';
 import ContentForm from '../components/admin/ContentForm';
 import ContactService from '../services/ContactService';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const AdminDashboard = () => {
   const { toast } = useToast();
@@ -38,14 +37,12 @@ const AdminDashboard = () => {
   const [activeReview, setActiveReview] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   
-  // État pour la gestion du contenu du site
-  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  // État pour la gestion du contenu
+  const [contentItems, setContentItems] = useState<any[]>([]);
   const [contentDialogOpen, setContentDialogOpen] = useState(false);
-  const [activeContentItem, setActiveContentItem] = useState<ContentItem | undefined>(undefined);
+  const [activeContentItem, setActiveContentItem] = useState<any>(null);
   const [deleteContentDialogOpen, setDeleteContentDialogOpen] = useState(false);
   const [contentToDelete, setContentToDelete] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeContentTab, setActiveContentTab] = useState('all');
 
   // État pour la gestion des messages de contact
   const [contactMessages, setContactMessages] = useState<any[]>([]);
@@ -85,9 +82,9 @@ const AdminDashboard = () => {
         const clientReviews = ReviewService.getReviews();
         setReviews(clientReviews);
         
-        // Charger le contenu du site modifiable
-        const editableContent = ContentService.getEditableContent();
-        setContentItems(editableContent);
+        // Charger le contenu du site
+        const siteContent = ContentService.getContent();
+        setContentItems(siteContent);
         
         // Charger les messages de contact
         const messages = ContactService.getMessages();
@@ -169,6 +166,7 @@ const AdminDashboard = () => {
     });
   };
   
+  // Fonctions de gestion des avis
   const handleViewReview = (review: any) => {
     setActiveReview(review);
     setReviewDialogOpen(true);
@@ -199,25 +197,39 @@ const AdminDashboard = () => {
     }
   };
   
-  const handleEditContent = (contentItem: ContentItem) => {
+  // Fonctions de gestion du contenu
+  const handleAddContent = () => {
+    setActiveContentItem(null);
+    setContentDialogOpen(true);
+  };
+  
+  const handleEditContent = (contentItem: any) => {
     setActiveContentItem(contentItem);
     setContentDialogOpen(true);
   };
   
-  const handleSaveContent = (contentItem: Partial<ContentItem>) => {
+  const handleSaveContent = (contentItem: any) => {
     try {
-      // Mise à jour d'un élément existant
-      const updatedContent = ContentService.updateContent(contentItem.id!, contentItem);
+      let updatedContent;
       
-      // Filtrer pour ne garder que le contenu éditable
-      const editableUpdatedContent = ContentService.getEditableContent();
+      if (contentItem.id) {
+        // Mise à jour d'un élément existant
+        updatedContent = ContentService.updateContent(contentItem.id, contentItem);
+        toast({
+          title: "Contenu mis à jour",
+          description: "Le contenu a été modifié avec succès.",
+        });
+      } else {
+        // Ajout d'un nouvel élément
+        const newItem = ContentService.addContent(contentItem);
+        updatedContent = [...contentItems, newItem];
+        toast({
+          title: "Contenu ajouté",
+          description: "Le nouveau contenu a été ajouté avec succès.",
+        });
+      }
       
-      setContentItems(editableUpdatedContent);
-      
-      toast({
-        title: "Contenu mis à jour",
-        description: "Le contenu a été modifié avec succès.",
-      });
+      setContentItems(updatedContent);
     } catch (error) {
       console.error('Error saving content:', error);
       toast({
@@ -227,19 +239,35 @@ const AdminDashboard = () => {
       });
     }
   };
-
-  const filteredContent = contentItems.filter(item => {
-    const matchesSearch = searchTerm 
-      ? item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        item.content.toLowerCase().includes(searchTerm.toLowerCase())
-      : true;
-      
-    const matchesTab = activeContentTab === 'all' 
-      ? true 
-      : item.page.toLowerCase() === activeContentTab.toLowerCase();
+  
+  const handleConfirmDeleteContent = (id: number) => {
+    setContentToDelete(id);
+    setDeleteContentDialogOpen(true);
+  };
+  
+  const handleDeleteContent = () => {
+    if (!contentToDelete) return;
     
-    return matchesSearch && matchesTab;
-  });
+    try {
+      const updatedContent = ContentService.deleteContent(contentToDelete);
+      setContentItems(updatedContent);
+      
+      toast({
+        title: "Contenu supprimé",
+        description: "Le contenu a été supprimé avec succès.",
+      });
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression du contenu.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteContentDialogOpen(false);
+      setContentToDelete(null);
+    }
+  };
 
   const handleViewRequest = (request: any) => {
     setActiveRequest(request);
@@ -282,9 +310,76 @@ const AdminDashboard = () => {
       let template = '';
       
       if (activeRequest.type === 'quote') {
-        template = `Objet : Votre devis pour un voyage vers ${destination} – NASSER TRAVEL HORIZON\n\nCher(e) ${fullName},\n\nNous vous remercions pour votre demande de devis concernant votre voyage vers ${destination}, du ${departureDate} au ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).\n\nVoici notre proposition personnalisée :\n\n✈️ Détails de l'offre (à remplir par l'agence)\n\nVol : [Compagnie aérienne]\n\nBagages : [Bagages inclus]\n\nTemps de vol : [Durée estimée]\n\nEscale(s) : [Oui / Non / Nombre]\n\n💰 Prix total : \n📅 Offre valable jusqu'au : [Date limite]\n🎯 Budget client estimé : ${budget}\n\nVeuillez noter que les tarifs de vols sont flexibles et peuvent changer a tout moment.\nCependant, merci de bien vouloir nous confirmer votre accord afin de finaliser la réservation et garantir la disponibilité au tarif indiqué.\n \nSi vous souhaitez modifier certaines informations (dates, classe, destination, etc.), n'hésitez pas à nous le faire savoir.\n\nCordialement,\nL'équipe NASSER TRAVEL HORIZON\n📞 Tél : +235 66 38 69 37\n📧 Email : contact@nassertravelhorizon.com\n📍 N'Djamena, Tchad`;
+        template = `Objet : Votre devis pour un voyage vers ${destination} – NASSER TRAVEL HORIZON
+
+Cher(e) ${fullName},
+
+Nous vous remercions pour votre demande de devis concernant votre voyage vers ${destination}, du ${departureDate} au ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
+
+Voici notre proposition personnalisée :
+
+✈️ Détails de l'offre (à remplir par l'agence)
+
+Vol : [Compagnie aérienne]
+
+Bagages : [Bagages inclus]
+
+Temps de vol : [Durée estimée]
+
+Escale(s) : [Oui / Non / Nombre]
+
+💰 Prix total : 
+📅 Offre valable jusqu'au : [Date limite]
+🎯 Budget client estimé : ${budget}
+
+Veuillez noter que les tarifs de vols sont flexibles et peuvent changer a tout moment.
+Cependant, merci de bien vouloir nous confirmer votre accord afin de finaliser la réservation et garantir la disponibilité au tarif indiqué.
+ 
+Si vous souhaitez modifier certaines informations (dates, classe, destination, etc.), n'hésitez pas à nous le faire savoir.
+
+Cordialement,
+L'équipe NASSER TRAVEL HORIZON
+📞 Tél : +235 66 38 69 37
+📧 Email : contact@nassertravelhorizon.com
+📍 N'Djamena, Tchad`;
       } else {
-        template = `Objet : Votre réservation de billet pour ${destination} – NASSER TRAVEL HORIZON\n\nCher(e) ${fullName},\n\nNous avons bien reçu votre demande de réservation de billet à destination de ${destination}, pour un départ prévu le ${departureDate} et un retour le ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).\n\nVoici les détails de votre réservation en cours de traitement :\n\n✈️ Détails du vol proposé (à compléter par l'agence)\n\nCompagnie aérienne : [Nom de la compagnie]\n\nHeure de départ : [Heure]\n\nHeure d'arrivée : [Heure]\n\nEscale(s) : [Oui / Non / Détails]\n\nBagages inclus : [Poids / type]\n\nNuméro de vol : [XXXX]\n\n💰 Tarif total : [Montant en FCFA]\n📅 Validité de la réservation : [Date limite de confirmation]\n\nAfin de finaliser votre réservation, merci de bien vouloir :\n✅ Confirmer votre accord par retour de message via notre e-mail.\n✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).\n✅ Procéder au paiement dans le délai mentionné ci-dessus\n\nSi vous avez des questions ou souhaitez ajuster certains détails de votre voyage, notre équipe reste à votre entière disposition.\n\nCordialement,\nL'équipe NASSER TRAVEL HORIZON\n📞 Tél : +235 66 38 69 37\n📧 Email : contact@nassertravelhorizon.com\n📍 N'Djamena, Tchad`;
+        template = `Objet : Votre réservation de billet pour ${destination} – NASSER TRAVEL HORIZON
+
+Cher(e) ${fullName},
+
+Nous avons bien reçu votre demande de réservation de billet à destination de ${destination}, pour un départ prévu le ${departureDate} et un retour le ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
+
+Voici les détails de votre réservation en cours de traitement :
+
+✈️ Détails du vol proposé (à compléter par l'agence)
+
+Compagnie aérienne : [Nom de la compagnie]
+
+Heure de départ : [Heure]
+
+Heure d'arrivée : [Heure]
+
+Escale(s) : [Oui / Non / Détails]
+
+Bagages inclus : [Poids / type]
+
+Numéro de vol : [XXXX]
+
+💰 Tarif total : [Montant en FCFA]
+📅 Validité de la réservation : [Date limite de confirmation]
+
+Afin de finaliser votre réservation, merci de bien vouloir :
+✅ Confirmer votre accord par retour de message via notre e-mail.
+✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).
+✅ Procéder au paiement dans le délai mentionné ci-dessus
+
+Si vous avez des questions ou souhaitez ajuster certains détails de votre voyage, notre équipe reste à votre entière disposition.
+
+Cordialement,
+L'équipe NASSER TRAVEL HORIZON
+📞 Tél : +235 66 38 69 37
+📧 Email : contact@nassertravelhorizon.com
+📍 N'Djamena, Tchad`;
       }
       
       setResponseText(template);
@@ -403,12 +498,14 @@ const AdminDashboard = () => {
     }
   };
 
+  // Fonction qui génère un rang d'étoiles pour l'affichage des avis
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }).map((_, index) => (
       <span key={index} className={index < rating ? "text-yellow-500" : "text-gray-300"}>★</span>
     ));
   };
 
+  // Fonctions de gestion des messages de contact
   const handleViewContactMessage = (message: any) => {
     setActiveContactMessage(message);
   };
@@ -420,7 +517,21 @@ const AdminDashboard = () => {
   const handleOpenContactResponseDialog = () => {
     if (activeContactMessage) {
       // Préremplir avec un modèle de réponse
-      const template = `Objet : Réponse à votre message - NASSER TRAVEL HORIZON\n\nCher(e) ${activeContactMessage.name},\n\nNous vous remercions pour votre message concernant "${activeContactMessage.subject || 'votre demande'}\".\n\n[Votre réponse personnalisée ici]\n\nN'hésitez pas à nous contacter si vous avez d'autres questions.\n\nCordialement,\nL'équipe NASSER TRAVEL HORIZON\n📞 Tél : +235 66 38 69 37\n📧 Email : contact@nassertravelhorizon.com\n📍 N'Djamena, Tchad`;
+      const template = `Objet : Réponse à votre message - NASSER TRAVEL HORIZON
+
+Cher(e) ${activeContactMessage.name},
+
+Nous vous remercions pour votre message concernant "${activeContactMessage.subject || 'votre demande'}".
+
+[Votre réponse personnalisée ici]
+
+N'hésitez pas à nous contacter si vous avez d'autres questions.
+
+Cordialement,
+L'équipe NASSER TRAVEL HORIZON
+📞 Tél : +235 66 38 69 37
+📧 Email : contact@nassertravelhorizon.com
+📍 N'Djamena, Tchad`;
       
       setContactResponseText(template);
       setContactResponseDialogOpen(true);
@@ -502,12 +613,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Helper function to safely get the first character capitalized
-  const capitalizeFirstLetter = (text?: string): string => {
-    if (!text) return '';
-    return text.charAt(0).toUpperCase() + text.slice(1);
-  };
-
   return (
     <main className="bg-white py-10">
       <div className="container-custom">
@@ -521,7 +626,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="settings" className="w-full">
-          <TabsList className="grid grid-cols-5 mb-8">
+          <TabsList className="grid grid-cols-6 mb-8">
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               <span className="hidden md:inline">Paramètres</span>
@@ -538,12 +643,17 @@ const AdminDashboard = () => {
               <MessageSquare className="h-4 w-4" />
               <span className="hidden md:inline">Avis</span>
             </TabsTrigger>
-            <TabsTrigger value="site-content" className="flex items-center gap-2">
-              <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden md:inline">Contenu du site</span>
+            <TabsTrigger value="content" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden md:inline">Contenu</span>
+            </TabsTrigger>
+            <TabsTrigger value="stats" className="flex items-center gap-2">
+              <BarChart2 className="h-4 w-4" />
+              <span className="hidden md:inline">Statistiques</span>
             </TabsTrigger>
           </TabsList>
 
+          {/* Paramètres */}
           <TabsContent value="settings">
             <Card>
               <CardHeader>
@@ -590,8 +700,10 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
 
+          {/* Demandes */}
           <TabsContent value="requests">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Liste des demandes */}
               <div className="md:col-span-1">
                 <Card className="h-full">
                   <CardHeader>
@@ -623,8 +735,8 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{request.fullName || 'Sans nom'}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination || 'Destination non spécifiée'}</p>
+                                    <h4 className="font-medium">{request.fullName}</h4>
+                                    <p className="text-sm text-gray-500">{request.destination}</p>
                                   </div>
                                   <Badge variant={request.type === 'quote' ? 'outline' : 'default'} className="ml-2">
                                     {request.type === 'quote' ? 'Devis' : 'Réservation'}
@@ -632,7 +744,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'Date inconnue'}
+                                    {new Date(request.createdAt).toLocaleDateString()}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
@@ -640,7 +752,7 @@ const AdminDashboard = () => {
                                     request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {request.status ? capitalizeFirstLetter(request.status) : 'Inconnu'}
+                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                                   </span>
                                 </div>
                               </div>
@@ -664,13 +776,13 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{request.fullName || 'Sans nom'}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination || 'Destination non spécifiée'}</p>
+                                    <h4 className="font-medium">{request.fullName}</h4>
+                                    <p className="text-sm text-gray-500">{request.destination}</p>
                                   </div>
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'Date inconnue'}
+                                    {new Date(request.createdAt).toLocaleDateString()}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
@@ -678,7 +790,7 @@ const AdminDashboard = () => {
                                     request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {request.status ? capitalizeFirstLetter(request.status) : 'Inconnu'}
+                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                                   </span>
                                 </div>
                               </div>
@@ -702,13 +814,13 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{request.fullName || 'Sans nom'}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination || 'Destination non spécifiée'}</p>
+                                    <h4 className="font-medium">{request.fullName}</h4>
+                                    <p className="text-sm text-gray-500">{request.destination}</p>
                                   </div>
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'Date inconnue'}
+                                    {new Date(request.createdAt).toLocaleDateString()}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
@@ -716,7 +828,7 @@ const AdminDashboard = () => {
                                     request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {request.status ? capitalizeFirstLetter(request.status) : 'Inconnu'}
+                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                                   </span>
                                 </div>
                               </div>
@@ -729,13 +841,14 @@ const AdminDashboard = () => {
                 </Card>
               </div>
               
+              {/* Détails de la demande */}
               <div className="md:col-span-2">
                 <Card className="h-full">
                   <CardHeader>
                     <CardTitle>Détails de la demande</CardTitle>
                     <CardDescription>
                       {activeRequest ? 
-                        `${activeRequest.type === 'quote' ? 'Demande de devis' : 'Réservation'} - ${activeRequest.fullName || 'Sans nom'}` : 
+                        `${activeRequest.type === 'quote' ? 'Demande de devis' : 'Réservation'} - ${activeRequest.fullName}` : 
                         'Sélectionnez une demande pour voir les détails'}
                     </CardDescription>
                   </CardHeader>
@@ -751,30 +864,80 @@ const AdminDashboard = () => {
                           <div>
                             <h3 className="text-sm font-medium text-gray-500 mb-1">Informations client</h3>
                             <div className="bg-gray-50 p-4 rounded-md">
+                              <p><strong>Nom:</strong> {activeRequest.fullName}</p>
+                              <p><strong>Email:</strong> {activeRequest.email}</p>
+                              <p><strong>Téléphone:</strong> {activeRequest.whatsapp || activeRequest.phone}</p>
+                              <p><strong>Date de demande:</strong> {new Date(activeRequest.createdAt).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Détails du voyage</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p><strong>Destination:</strong> {activeRequest.destination}</p>
                               <p>
-                                <span className="font-medium">Nom du client :</span> {activeRequest.fullName || 'Non spécifié'}
+                                <strong>Date de départ:</strong> {activeRequest.departureDate ? new Date(activeRequest.departureDate).toLocaleDateString() : 'Non spécifiée'}
                               </p>
                               <p>
-                                <span className="font-medium">Destination :</span> {activeRequest.destination || 'Non spécifiée'}
+                                <strong>Date de retour:</strong> {activeRequest.returnDate ? new Date(activeRequest.returnDate).toLocaleDateString() : 'Non spécifiée'}
                               </p>
-                              <p>
-                                <span className="font-medium">Date de départ :</span> {formatDate(activeRequest.departureDate)}
-                              </p>
-                              <p>
-                                <span className="font-medium">Date de retour :</span> {formatDate(activeRequest.returnDate)}
-                              </p>
-                              <p>
-                                <span className="font-medium">Nombre de passagers :</span> {activeRequest.passengers || 'Non spécifié'}
-                              </p>
-                              <p>
-                                <span className="font-medium">Classe :</span> {getTravelClassInFrench(activeRequest.travelClass || '')}
-                              </p>
-                              <p>
-                                <span className="font-medium">Budget :</span> {activeRequest.budget ? `${activeRequest.budget} FCFA` : 'Non spécifié'}
-                              </p>
+                              <p><strong>Nombre de passagers:</strong> {activeRequest.passengers}</p>
+                              <p><strong>Classe:</strong> {
+                                activeRequest.travelClass === 'economy' ? 'Économique' :
+                                activeRequest.travelClass === 'premium' ? 'Premium Economy' :
+                                activeRequest.travelClass === 'business' ? 'Business' :
+                                activeRequest.travelClass === 'first' ? 'Première classe' :
+                                activeRequest.travelClass
+                              }</p>
+                              {activeRequest.type === 'quote' && activeRequest.budget && 
+                                <p><strong>Budget estimé:</strong> {activeRequest.budget} FCFA</p>
+                              }
                             </div>
                           </div>
                         </div>
+                        
+                        {activeRequest.message && (
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Message du client</h3>
+                            <div className="bg-gray-50 p-4 rounded-md">
+                              <p>{activeRequest.message}</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {activeRequest.response ? (
+                          <div>
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-500 mb-1">Votre réponse</h3>
+                              <div className="flex gap-2">
+                                <Button variant="outline" size="sm" onClick={() => generatePDF()}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Aperçu PDF
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={handleDirectPDFDownload}>
+                                  <Download className="h-4 w-4 mr-2" />
+                                  Télécharger PDF
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="bg-nasser-primary/5 border border-nasser-primary/20 p-4 rounded-md">
+                              <p className="whitespace-pre-line">{activeRequest.response}</p>
+                              <p className="text-xs text-gray-500 mt-2">
+                                Envoyée le {new Date(activeRequest.responseDate).toLocaleDateString()} à {new Date(activeRequest.responseDate).toLocaleTimeString()}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end space-x-2">
+                            <Button variant="outline" onClick={handleCloseDetails}>
+                              Fermer
+                            </Button>
+                            <Button onClick={handleOpenResponseDialog}>
+                              <Send className="h-4 w-4 mr-2" />
+                              Répondre
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </CardContent>
@@ -783,25 +946,21 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
 
+          {/* Contacts */}
           <TabsContent value="contacts">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Liste des messages de contact */}
               <div className="md:col-span-1">
                 <Card className="h-full">
                   <CardHeader>
                     <CardTitle>Messages de contact</CardTitle>
                     <CardDescription>
-                      Tous les messages reçus
+                      Demandes et messages reçus via le formulaire de contact
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <Tabs defaultValue="all" className="px-6">
-                      <TabsList className="mb-4 w-full">
-                        <TabsTrigger value="all" className="flex-1">Toutes</TabsTrigger>
-                        <TabsTrigger value="new" className="flex-1">Nouveaux</TabsTrigger>
-                        <TabsTrigger value="read" className="flex-1">Lus</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="all" className="max-h-[70vh] overflow-y-auto">
+                    <div className="px-6">
+                      <div className="max-h-[70vh] overflow-y-auto">
                         {contactMessages.length === 0 ? (
                           <div className="text-center py-8 text-gray-500">
                             Aucun message pour le moment
@@ -816,457 +975,439 @@ const AdminDashboard = () => {
                               >
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium">{message.name || 'Sans nom'}</h4>
-                                    <p className="text-sm text-gray-500">{message.subject || 'Sans sujet'}</p>
+                                    <h4 className="font-medium">{message.name}</h4>
+                                    <p className="text-sm text-gray-500">{message.subject || 'Sans objet'}</p>
                                   </div>
                                 </div>
                                 <div className="flex justify-between items-center mt-2">
                                   <span className="text-xs text-gray-500">
-                                    {message.createdAt ? new Date(message.createdAt).toLocaleDateString() : 'Date inconnue'}
+                                    {new Date(message.createdAt).toLocaleDateString()}
                                   </span>
                                   <span className={`px-2 py-1 rounded-full text-xs ${
                                     message.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    message.status === "lu" ? "bg-green-100 text-green-800" :
+                                    message.status === "traité" ? "bg-green-100 text-green-800" :
+                                    message.status === "lu" ? "bg-gray-100 text-gray-800" :
                                     "bg-gray-100 text-gray-800"
                                   }`}>
-                                    {message.status ? capitalizeFirstLetter(message.status) : 'Inconnu'}
+                                    {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
                                   </span>
                                 </div>
                               </div>
                             ))}
                           </div>
                         )}
-                      </TabsContent>
-                      
-                      <TabsContent value="new" className="max-h-[70vh] overflow-y-auto">
-                        {contactMessages.filter(m => m.status === "nouveau").length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucun nouveau message pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {contactMessages.filter(m => m.status === "nouveau").map((message) => (
-                              <div 
-                                key={message.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeContactMessage?.id === message.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewContactMessage(message)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{message.name || 'Sans nom'}</h4>
-                                    <p className="text-sm text-gray-500">{message.subject || 'Sans sujet'}</p>
-                                  </div>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {message.createdAt ? new Date(message.createdAt).toLocaleDateString() : 'Date inconnue'}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    message.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    message.status === "lu" ? "bg-green-100 text-green-800" :
-                                    "bg-gray-100 text-gray-800"
-                                  }`}>
-                                    {message.status ? capitalizeFirstLetter(message.status) : 'Inconnu'}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                      
-                      <TabsContent value="read" className="max-h-[70vh] overflow-y-auto">
-                        {contactMessages.filter(m => m.status === "lu").length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucun message lu pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {contactMessages.filter(m => m.status === "lu").map((message) => (
-                              <div 
-                                key={message.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeContactMessage?.id === message.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewContactMessage(message)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{message.name || 'Sans nom'}</h4>
-                                    <p className="text-sm text-gray-500">{message.subject || 'Sans sujet'}</p>
-                                  </div>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {message.createdAt ? new Date(message.createdAt).toLocaleDateString() : 'Date inconnue'}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    message.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    message.status === "lu" ? "bg-green-100 text-green-800" :
-                                    "bg-gray-100 text-gray-800"
-                                  }`}>
-                                    {message.status ? capitalizeFirstLetter(message.status) : 'Inconnu'}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                    </Tabs>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
               
+              {/* Détails du message */}
               <div className="md:col-span-2">
                 <Card className="h-full">
                   <CardHeader>
                     <CardTitle>Détails du message</CardTitle>
                     <CardDescription>
                       {activeContactMessage ? 
-                        `Message de ${activeContactMessage.name || 'Sans nom'}` : 
+                        `Message de ${activeContactMessage.name}` : 
                         'Sélectionnez un message pour voir les détails'}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {!activeContactMessage ? (
                       <div className="text-center py-12 text-gray-500">
-                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                        <Mail className="h-12 w-12 mx-auto mb-4 opacity-30" />
                         <p>Veuillez sélectionner un message dans la liste</p>
                       </div>
                     ) : (
                       <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-1">Informations du message</h3>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Informations expéditeur</h3>
                             <div className="bg-gray-50 p-4 rounded-md">
-                              <p>
-                                <span className="font-medium">Nom du client :</span> {activeContactMessage.name || 'Non spécifié'}
-                              </p>
-                              <p>
-                                <span className="font-medium">Sujet :</span> {activeContactMessage.subject || 'Non spécifié'}
-                              </p>
-                              <p>
-                                <span className="font-medium">Date :</span> {activeContactMessage.createdAt ? new Date(activeContactMessage.createdAt).toLocaleDateString() : 'Date inconnue'}
-                              </p>
-                              <p>
-                                <span className="font-medium">Statut :</span> {activeContactMessage.status ? capitalizeFirstLetter(activeContactMessage.status) : 'Inconnu'}
-                              </p>
+                              <p><strong>Nom:</strong> {activeContactMessage.name}</p>
+                              <p><strong>Email:</strong> {activeContactMessage.email}</p>
+                              {activeContactMessage.phone && <p><strong>Téléphone:</strong> {activeContactMessage.phone}</p>}
+                              <p><strong>Date du message:</strong> {new Date(activeContactMessage.createdAt).toLocaleDateString()}</p>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="reviews">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-1">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Avis clients</CardTitle>
-                    <CardDescription>
-                      Tous les avis clients
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <Tabs defaultValue="all" className="px-6">
-                      <TabsList className="mb-4 w-full">
-                        <TabsTrigger value="all" className="flex-1">Tous</TabsTrigger>
-                        <TabsTrigger value="published" className="flex-1">Publiés</TabsTrigger>
-                        <TabsTrigger value="unpublished" className="flex-1">Non publiés</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="all" className="max-h-[70vh] overflow-y-auto">
-                        {reviews.length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucun avis pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {reviews.map((review) => (
-                              <div 
-                                key={review.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeReview?.id === review.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewReview(review)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{review.fullName || 'Sans nom'}</h4>
-                                    <p className="text-sm text-gray-500">{review.destination || 'Destination non spécifiée'}</p>
-                                  </div>
-                                  <Badge variant={review.published ? 'outline' : 'default'} className="ml-2">
-                                    {review.published ? 'Publié' : 'Non publié'}
-                                  </Badge>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date inconnue'}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    review.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    review.status === "traité" ? "bg-green-100 text-green-800" :
-                                    review.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
-                                    "bg-gray-100 text-gray-800"
-                                  }`}>
-                                    {review.status ? capitalizeFirstLetter(review.status) : 'Inconnu'}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                      
-                      <TabsContent value="published" className="max-h-[70vh] overflow-y-auto">
-                        {reviews.filter(r => r.published).length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucun avis publié pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {reviews.filter(r => r.published).map((review) => (
-                              <div 
-                                key={review.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeReview?.id === review.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewReview(review)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{review.fullName || 'Sans nom'}</h4>
-                                    <p className="text-sm text-gray-500">{review.destination || 'Destination non spécifiée'}</p>
-                                  </div>
-                                  <Badge variant={review.published ? 'outline' : 'default'} className="ml-2">
-                                    {review.published ? 'Publié' : 'Non publié'}
-                                  </Badge>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date inconnue'}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    review.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    review.status === "traité" ? "bg-green-100 text-green-800" :
-                                    review.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
-                                    "bg-gray-100 text-gray-800"
-                                  }`}>
-                                    {review.status ? capitalizeFirstLetter(review.status) : 'Inconnu'}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                      
-                      <TabsContent value="unpublished" className="max-h-[70vh] overflow-y-auto">
-                        {reviews.filter(r => !r.published).length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucun avis non publié pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {reviews.filter(r => !r.published).map((review) => (
-                              <div 
-                                key={review.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeReview?.id === review.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewReview(review)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{review.fullName || 'Sans nom'}</h4>
-                                    <p className="text-sm text-gray-500">{review.destination || 'Destination non spécifiée'}</p>
-                                  </div>
-                                  <Badge variant={review.published ? 'outline' : 'default'} className="ml-2">
-                                    {review.published ? 'Publié' : 'Non publié'}
-                                  </Badge>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Date inconnue'}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    review.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    review.status === "traité" ? "bg-green-100 text-green-800" :
-                                    review.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
-                                    "bg-gray-100 text-gray-800"
-                                  }`}>
-                                    {review.status ? capitalizeFirstLetter(review.status) : 'Inconnu'}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                    </Tabs>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <div className="md:col-span-2">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Détails de l'avis</CardTitle>
-                    <CardDescription>
-                      {activeReview ? 
-                        `Avis de ${activeReview.fullName || 'Sans nom'}` : 
-                        'Sélectionnez un avis pour voir les détails'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {!activeReview ? (
-                      <div className="text-center py-12 text-gray-500">
-                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                        <p>Veuillez sélectionner un avis dans la liste</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          
                           <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-1">Informations de l'avis</h3>
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">Détails du message</h3>
                             <div className="bg-gray-50 p-4 rounded-md">
-                              <p>
-                                <span className="font-medium">Nom du client :</span> {activeReview.fullName || 'Non spécifié'}
-                              </p>
-                              <p>
-                                <span className="font-medium">Destination :</span> {activeReview.destination || 'Non spécifiée'}
-                              </p>
-                              <p>
-                                <span className="font-medium">Date :</span> {activeReview.createdAt ? new Date(activeReview.createdAt).toLocaleDateString() : 'Date inconnue'}
-                              </p>
-                              <p>
-                                <span className="font-medium">Statut :</span> {activeReview.status ? capitalizeFirstLetter(activeReview.status) : 'Inconnu'}
-                              </p>
-                              <p>
-                                <span className="font-medium">Note :</span> {activeReview.rating || 'Non notée'}
-                              </p>
-                              <p>
-                                <span className="font-medium">Commentaire :</span> {activeReview.comment || 'Aucun commentaire'}
-                              </p>
+                              <p><strong>Objet:</strong> {activeContactMessage.subject || 'Sans objet'}</p>
+                              <p className="mt-2"><strong>Message:</strong></p>
+                              <p className="mt-1">{activeContactMessage.message}</p>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="site-content">
-            <div className="grid grid-cols-1 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Gestion du contenu du site</CardTitle>
-                  <CardDescription>
-                    Modifier le contenu des pages du site
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4 flex flex-col space-y-2 md:space-y-0 md:flex-row md:space-x-2 md:items-center">
-                    <Input 
-                      placeholder="Rechercher un contenu..." 
-                      className="flex-1" 
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <Select 
-                      value={activeContentTab} 
-                      onValueChange={(value) => setActiveContentTab(value)}
-                    >
-                      <SelectTrigger className="w-full md:w-[200px]">
-                        <SelectValue placeholder="Toutes les pages" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Toutes les pages</SelectItem>
-                        <SelectItem value="Global">Global</SelectItem>
-                        <SelectItem value="Accueil">Accueil</SelectItem>
-                        <SelectItem value="Services">Services</SelectItem>
-                        <SelectItem value="Galerie">Galerie</SelectItem>
-                        <SelectItem value="FAQ">FAQ</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {filteredContent.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500">
-                      <Layout className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                      <p>Aucun contenu ne correspond à votre recherche</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                      {filteredContent.map((item) => (
-                        <div key={item.id} className="border rounded-md p-4 flex flex-col h-full relative group">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h3 className="font-medium">{item.title || 'Sans titre'}</h3>
-                              <p className="text-xs text-gray-500">
-                                {item.page || 'Page non spécifiée'} {item.type === 'logo' ? '- Logo' : 
-                                 item.type === 'text' ? '- Texte' : 
-                                 item.type === 'image' ? '- Image' : 
-                                 item.type === 'gallery' ? '- Galerie' : 
-                                 item.type === 'service' ? '- Service' : 
-                                 item.type === 'faq' ? '- FAQ' : ''}
-                              </p>
-                            </div>
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleEditContent(item)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Pencil className="h-4 w-4" />
-                                <span className="sr-only">Modifier</span>
+                        
+                        {activeContactMessage.response ? (
+                          <div>
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-500 mb-1">Votre réponse</h3>
+                              <Button variant="outline" size="sm" onClick={handleContactPDFDownload}>
+                                <Download className="h-4 w-4 mr-2" />
+                                Télécharger PDF
                               </Button>
                             </div>
+                            <div className="bg-nasser-primary/5 border border-nasser-primary/20 p-4 rounded-md">
+                              <p className="whitespace-pre-line">{activeContactMessage.response}</p>
+                              <p className="text-xs text-gray-500 mt-2">
+                                Envoyée le {new Date(activeContactMessage.responseDate).toLocaleDateString()} à {new Date(activeContactMessage.responseDate).toLocaleTimeString()}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex-1 text-sm">
-                            {item.type === 'text' || item.type === 'service' || item.type === 'faq' ? (
-                              <p className="line-clamp-3 text-gray-600">{item.content || 'Contenu vide'}</p>
-                            ) : (item.type === 'logo' || item.type === 'image' || item.type === 'gallery') ? (
-                              <div className="flex justify-center items-center bg-gray-100 rounded-md h-24 overflow-hidden">
-                                <img 
-                                  src={item.content} 
-                                  alt={item.title || 'Image'} 
-                                  className="max-h-full max-w-full object-contain"
-                                />
-                              </div>
-                            ) : (
-                              <p className="line-clamp-3 text-gray-600">{item.content || 'Contenu vide'}</p>
-                            )}
-                          </div>
-                          <div className="mt-3 flex justify-end">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => handleEditContent(item)}
-                            >
-                              <Pencil className="h-4 w-4 mr-2" />
-                              Modifier
+                        ) : (
+                          <div className="flex justify-end space-x-2">
+                            <Button variant="outline" onClick={handleCloseContactDetails}>
+                              Fermer
+                            </Button>
+                            <Button onClick={handleOpenContactResponseDialog}>
+                              <Send className="h-4 w-4 mr-2" />
+                              Répondre
                             </Button>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
+          </TabsContent>
+
+          {/* Avis - Mise à jour complète avec fonctionnalités opérationnelles */}
+          <TabsContent value="reviews">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Avis clients</CardTitle>
+                  <CardDescription>
+                    Gérez les avis clients laissés sur le site
+                  </CardDescription>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {reviews.filter(r => r.published).length} avis publiés / {reviews.length} total
+                </p>
+              </CardHeader>
+              <CardContent>
+                {reviews.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p>Aucun avis client pour le moment</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Nom</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Note</TableHead>
+                        <TableHead>Message</TableHead>
+                        <TableHead>Statut</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reviews.map((review) => (
+                        <TableRow key={review.id}>
+                          <TableCell>{review.id}</TableCell>
+                          <TableCell>{review.name}</TableCell>
+                          <TableCell>{review.email}</TableCell>
+                          <TableCell>
+                            <div className="flex">{renderStars(review.rating)}</div>
+                          </TableCell>
+                          <TableCell className="max-w-[200px] truncate">{review.message}</TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              review.published ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                            }`}>
+                              {review.published ? "Publié" : "Non publié"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="space-x-2">
+                            <button 
+                              className="text-sm text-blue-600 hover:underline"
+                              onClick={() => handleViewReview(review)}
+                            >
+                              Voir
+                            </button>
+                            <button 
+                              className="text-sm text-green-600 hover:underline ml-2"
+                              onClick={() => handlePublishReview(review.id, !review.published)}
+                            >
+                              {review.published ? "Masquer" : "Publier"}
+                            </button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Contenu - Mise à jour avec fonctionnalités complètes */}
+          <TabsContent value="content">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Gestion du contenu</CardTitle>
+                  <CardDescription>
+                    Modifiez le contenu des pages du site
+                  </CardDescription>
+                </div>
+                <Button onClick={handleAddContent}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {contentItems.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p>Aucun contenu pour le moment</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Titre</TableHead>
+                        <TableHead>Page</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Catégorie</TableHead>
+                        <TableHead>Contenu</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {contentItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>{item.id}</TableCell>
+                          <TableCell>{item.title}</TableCell>
+                          <TableCell>{item.page}</TableCell>
+                          <TableCell>{item.type || 'text'}</TableCell>
+                          <TableCell>{item.category || 'general'}</TableCell>
+                          <TableCell className="max-w-[300px] truncate">{item.content}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => handleEditContent(item)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => handleConfirmDeleteContent(item.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Statistiques */}
+          <TabsContent value="stats">
+            <Card>
+              <CardHeader>
+                <CardTitle>Statistiques du site</CardTitle>
+                <CardDescription>
+                  Performances et analytiques
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-lg">Visites</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 p-4">
+                      <p className="text-3xl font-bold">{stats.visits}</p>
+                      <p className="text-sm text-gray-500">{stats.growth}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-lg">Pages vues</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 p-4">
+                      <p className="text-3xl font-bold">{stats.pageViews}</p>
+                      <p className="text-sm text-gray-500">Page la plus visitée: {stats.topPage}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-lg">Réservations</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 p-4">
+                      <p className="text-3xl font-bold">{stats.bookings}</p>
+                      <p className="text-sm text-gray-500">Taux de conversion: {stats.conversionRate}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
-
+      
+      {/* Dialogue de réponse */}
+      <Dialog open={responseDialogOpen} onOpenChange={setResponseDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Répondre à la demande</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea 
+              value={responseText} 
+              onChange={(e) => setResponseText(e.target.value)} 
+              className="min-h-[300px] font-mono text-sm"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResponseDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendResponse}>
+              <Send className="h-4 w-4 mr-2" />
+              Envoyer la réponse
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialogue de réponse au message de contact */}
+      <Dialog open={contactResponseDialogOpen} onOpenChange={setContactResponseDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Répondre au message</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea 
+              value={contactResponseText} 
+              onChange={(e) => setContactResponseText(e.target.value)} 
+              className="min-h-[300px] font-mono text-sm"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setContactResponseDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendContactResponse}>
+              <Send className="h-4 w-4 mr-2" />
+              Envoyer la réponse
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialogue d'aperçu PDF */}
+      <Dialog open={pdfPreviewOpen} onOpenChange={setPdfPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Aperçu du PDF</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div ref={pdfTemplateRef} id="pdfTemplate" className="border p-8 rounded-md bg-white">
+              <ResponsePDFTemplate request={activeRequest} response={activeRequest?.response || ''} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPdfPreviewOpen(false)}>
+              Fermer
+            </Button>
+            <Button onClick={handleDownloadPDF}>
+              <Download className="h-4 w-4 mr-2" />
+              Télécharger
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialogue de détail d'avis */}
+      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Détail de l'avis</DialogTitle>
+          </DialogHeader>
+          {activeReview && (
+            <div className="py-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-lg">{activeReview.name}</h3>
+                  <p className="text-gray-500">{activeReview.email}</p>
+                </div>
+                <Badge variant={activeReview.published ? "default" : "outline"}>
+                  {activeReview.published ? "Publié" : "Non publié"}
+                </Badge>
+              </div>
+              
+              <div>
+                <div className="flex mb-2">
+                  {renderStars(activeReview.rating)}
+                  <span className="ml-2 text-sm text-gray-500">{activeReview.rating}/5</span>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <p className="italic">"{activeReview.message}"</p>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setReviewDialogOpen(false)}>
+                  Fermer
+                </Button>
+                <Button 
+                  variant={activeReview.published ? "destructive" : "default"}
+                  onClick={() => handlePublishReview(activeReview.id, !activeReview.published)}
+                >
+                  {activeReview.published ? "Masquer l'avis" : "Publier l'avis"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Formulaire d'ajout/édition de contenu */}
       <ContentForm 
         isOpen={contentDialogOpen}
         onClose={() => setContentDialogOpen(false)}
         onSave={handleSaveContent}
         contentItem={activeContentItem}
       />
+      
+      {/* Dialogue de confirmation de suppression */}
+      <AlertDialog open={deleteContentDialogOpen} onOpenChange={setDeleteContentDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce contenu ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteContent} className="bg-red-600 hover:bg-red-700">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 };
