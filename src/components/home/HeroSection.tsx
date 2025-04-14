@@ -2,14 +2,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { useContent } from '../../hooks/useContent';
 
 const HeroSection = () => {
+  const { getContentByTitle } = useContent('Accueil', 'hero');
+  
+  // Récupération du contenu depuis ContentService
+  const title = getContentByTitle('Titre de la page d\'accueil', 'Bienvenue chez NASSER TRAVEL HORIZON');
+  const subtitle = getContentByTitle('Sous-titre de la page d\'accueil', 'Votre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.');
+  const backgroundImage = getContentByTitle('Image de fond accueil', '/lovable-uploads/0acf3f82-7efa-40da-8002-87c0518ed21e.png');
+
   return (
     <section className="relative h-[90vh] md:h-[80vh] flex items-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
         style={{ 
-          backgroundImage: 'url("/lovable-uploads/0acf3f82-7efa-40da-8002-87c0518ed21e.png")',
+          backgroundImage: `url("${backgroundImage}")`,
           backgroundPosition: 'center 30%'
         }}>
         {/* Overlay */}
@@ -19,10 +27,10 @@ const HeroSection = () => {
       <div className="container-custom relative z-10 text-white">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 animate-fade-in">
-            Bienvenue chez NASSER TRAVEL HORIZON
+            {title}
           </h1>
           <p className="text-xl md:text-2xl mb-8 opacity-90">
-            Votre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.
+            {subtitle}
           </p>
           <div className="flex flex-wrap gap-4">
             <Link to="/reserver" className="btn-primary flex items-center">
