@@ -171,7 +171,7 @@ class ContentService {
     };
     
     const updatedContent = [...content, newContentItem];
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedContent));
+    this.saveContent(updatedContent);
     return newContentItem;
   }
   
@@ -187,7 +187,7 @@ class ContentService {
       item.id === id ? { ...item, ...contentItem } : item
     );
     
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedContent));
+    this.saveContent(updatedContent);
     return updatedContent;
   }
   
@@ -200,8 +200,22 @@ class ContentService {
     const content = this.getContent();
     const updatedContent = content.filter(item => item.id !== id);
     
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedContent));
+    this.saveContent(updatedContent);
     return updatedContent;
+  }
+
+  /**
+   * Sauvegarde le contenu et déclenche un événement de stockage
+   * @param content - Contenu à sauvegarder
+   */
+  private static saveContent(content: any[]): void {
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(content));
+    
+    // Déclenche un événement storage pour informer les autres onglets/composants
+    // qu'une modification a été effectuée
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('storage'));
+    }
   }
 
   /**
@@ -225,6 +239,30 @@ class ContentService {
   static getEditableContentByPage(page: string): ContentItem[] {
     const content = this.getEditableContent();
     return content.filter(item => item.page === page || item.page === 'Global');
+  }
+
+  /**
+   * Récupère le contenu spécifique par page, type et catégorie
+   * @param page - Nom de la page
+   * @param type - Type de contenu
+   * @param category - Catégorie
+   * @returns Premier élément correspondant ou null
+   */
+  static getContentByPageTypeCategory(page: string, type: string, category: string): ContentItem | null {
+    const allContent = this.getContent();
+    // D'abord rechercher le contenu spécifique à la page
+    let content = allContent.find(item => 
+      item.page === page && item.type === type && item.category === category
+    );
+    
+    // Si aucun contenu spécifique n'est trouvé, chercher dans le contenu global
+    if (!content) {
+      content = allContent.find(item => 
+        item.page === 'Global' && item.type === type && item.category === category
+      );
+    }
+    
+    return content || null;
   }
 }
 

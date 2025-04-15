@@ -1,11 +1,33 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
+import ContentService from '../services/ContentService';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('/lovable-uploads/d19dbcf9-1907-4336-85b4-f60eec78f9b3.png');
+
+  useEffect(() => {
+    // Load logo content
+    const loadLogo = () => {
+      const logoContent = ContentService.getContentByPageTypeCategory('Global', 'logo', 'header');
+      if (logoContent && logoContent.content) {
+        setLogoUrl(logoContent.content);
+      }
+    };
+
+    // Initialize content
+    loadLogo();
+
+    // Listen for storage changes (content updates)
+    window.addEventListener('storage', loadLogo);
+    
+    return () => {
+      window.removeEventListener('storage', loadLogo);
+    };
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -22,7 +44,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img 
-              src="/lovable-uploads/d19dbcf9-1907-4336-85b4-f60eec78f9b3.png" 
+              src={logoUrl} 
               alt="NASSER TRAVEL HORIZON" 
               className="h-14 md:h-16"
             />

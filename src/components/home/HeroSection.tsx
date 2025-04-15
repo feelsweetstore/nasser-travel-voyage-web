@@ -1,15 +1,53 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import ContentService, { ContentItem } from '../../services/ContentService';
 
 const HeroSection = () => {
+  const [backgroundImage, setBackgroundImage] = useState('/lovable-uploads/0acf3f82-7efa-40da-8002-87c0518ed21e.png');
+  const [title, setTitle] = useState('Bienvenue chez NASSER TRAVEL HORIZON');
+  const [subtitle, setSubtitle] = useState('Votre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.');
+
+  useEffect(() => {
+    // Load content on mount and when storage events occur
+    const loadContent = () => {
+      // Get background
+      const bgContent = ContentService.getContentByPageTypeCategory('Accueil', 'background', 'hero');
+      if (bgContent && bgContent.content) {
+        setBackgroundImage(bgContent.content);
+      }
+
+      // Get title
+      const titleContent = ContentService.getContentByPageTypeCategory('Accueil', 'text', 'hero');
+      if (titleContent && titleContent.content) {
+        setTitle(titleContent.content);
+      }
+
+      // Get subtitle
+      const subtitleContent = ContentService.getContentByPageTypeCategory('Accueil', 'text', 'hero');
+      if (subtitleContent && subtitleContent.title === "Sous-titre de la page d'accueil") {
+        setSubtitle(subtitleContent.content);
+      }
+    };
+
+    // Initialize content
+    loadContent();
+
+    // Listen for storage changes (content updates)
+    window.addEventListener('storage', loadContent);
+    
+    return () => {
+      window.removeEventListener('storage', loadContent);
+    };
+  }, []);
+
   return (
     <section className="relative h-[90vh] md:h-[80vh] flex items-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
         style={{ 
-          backgroundImage: 'url("/lovable-uploads/0acf3f82-7efa-40da-8002-87c0518ed21e.png")',
+          backgroundImage: `url("${backgroundImage}")`,
           backgroundPosition: 'center 30%'
         }}>
         {/* Overlay */}
@@ -19,10 +57,10 @@ const HeroSection = () => {
       <div className="container-custom relative z-10 text-white">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 animate-fade-in">
-            Bienvenue chez NASSER TRAVEL HORIZON
+            {title}
           </h1>
           <p className="text-xl md:text-2xl mb-8 opacity-90">
-            Votre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.
+            {subtitle}
           </p>
           <div className="flex flex-wrap gap-4">
             <Link to="/reserver" className="btn-primary flex items-center">
