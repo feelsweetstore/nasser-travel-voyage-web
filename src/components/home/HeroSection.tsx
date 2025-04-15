@@ -1,46 +1,16 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import ContentService, { ContentItem } from '../../services/ContentService';
+import { useContent } from '../../hooks/useContent';
 
 const HeroSection = () => {
-  const [backgroundImage, setBackgroundImage] = useState('/lovable-uploads/0acf3f82-7efa-40da-8002-87c0518ed21e.png');
-  const [title, setTitle] = useState('Bienvenue chez NASSER TRAVEL HORIZON');
-  const [subtitle, setSubtitle] = useState('Votre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.');
-
-  useEffect(() => {
-    // Load content on mount and when storage events occur
-    const loadContent = () => {
-      // Get background
-      const bgContent = ContentService.getContentByPageTypeCategory('Accueil', 'background', 'hero');
-      if (bgContent && bgContent.content) {
-        setBackgroundImage(bgContent.content);
-      }
-
-      // Get title
-      const titleContent = ContentService.getContentByPageTypeCategory('Accueil', 'text', 'hero');
-      if (titleContent && titleContent.content) {
-        setTitle(titleContent.content);
-      }
-
-      // Get subtitle
-      const subtitleContent = ContentService.getContentByPageTypeCategory('Accueil', 'text', 'hero');
-      if (subtitleContent && subtitleContent.title === "Sous-titre de la page d'accueil") {
-        setSubtitle(subtitleContent.content);
-      }
-    };
-
-    // Initialize content
-    loadContent();
-
-    // Listen for storage changes (content updates)
-    window.addEventListener('storage', loadContent);
-    
-    return () => {
-      window.removeEventListener('storage', loadContent);
-    };
-  }, []);
+  const { getContentByTitle } = useContent('Accueil', 'hero');
+  
+  // Récupération du contenu depuis ContentService
+  const title = getContentByTitle('Titre de la page d\'accueil', 'Bienvenue chez NASSER TRAVEL HORIZON');
+  const subtitle = getContentByTitle('Sous-titre de la page d\'accueil', 'Votre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.');
+  const backgroundImage = getContentByTitle('Image de fond accueil', '/lovable-uploads/0acf3f82-7efa-40da-8002-87c0518ed21e.png');
 
   return (
     <section className="relative h-[90vh] md:h-[80vh] flex items-center overflow-hidden">
