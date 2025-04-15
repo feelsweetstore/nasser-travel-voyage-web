@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,8 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import PDFService from '../services/PDFService';
 import ResponsePDFTemplate from '../components/pdf/ResponsePDFTemplate';
 import ReviewService from '../services/ReviewService';
-import ContentService from '../services/ContentService';
-import ContentForm from '../components/admin/ContentForm';
+import ContentService, { ContentItem } from '../services/ContentService';
+import ContentTable from '../components/admin/ContentTable';
 import ContactService from '../services/ContactService';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
@@ -38,11 +37,7 @@ const AdminDashboard = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   
   // État pour la gestion du contenu
-  const [contentItems, setContentItems] = useState<any[]>([]);
-  const [contentDialogOpen, setContentDialogOpen] = useState(false);
-  const [activeContentItem, setActiveContentItem] = useState<any>(null);
-  const [deleteContentDialogOpen, setDeleteContentDialogOpen] = useState(false);
-  const [contentToDelete, setContentToDelete] = useState<number | null>(null);
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
 
   // État pour la gestion des messages de contact
   const [contactMessages, setContactMessages] = useState<any[]>([]);
@@ -198,17 +193,7 @@ const AdminDashboard = () => {
   };
   
   // Fonctions de gestion du contenu
-  const handleAddContent = () => {
-    setActiveContentItem(null);
-    setContentDialogOpen(true);
-  };
-  
-  const handleEditContent = (contentItem: any) => {
-    setActiveContentItem(contentItem);
-    setContentDialogOpen(true);
-  };
-  
-  const handleSaveContent = (contentItem: any) => {
+  const handleSaveContent = (contentItem: ContentItem) => {
     try {
       let updatedContent;
       
@@ -240,16 +225,9 @@ const AdminDashboard = () => {
     }
   };
   
-  const handleConfirmDeleteContent = (id: number) => {
-    setContentToDelete(id);
-    setDeleteContentDialogOpen(true);
-  };
-  
-  const handleDeleteContent = () => {
-    if (!contentToDelete) return;
-    
+  const handleDeleteContent = (id: number) => {
     try {
-      const updatedContent = ContentService.deleteContent(contentToDelete);
+      const updatedContent = ContentService.deleteContent(id);
       setContentItems(updatedContent);
       
       toast({
@@ -263,9 +241,6 @@ const AdminDashboard = () => {
         description: "Une erreur est survenue lors de la suppression du contenu.",
         variant: "destructive",
       });
-    } finally {
-      setDeleteContentDialogOpen(false);
-      setContentToDelete(null);
     }
   };
 
@@ -1150,73 +1125,21 @@ L'équipe NASSER TRAVEL HORIZON
             </Card>
           </TabsContent>
           
-          {/* Contenu - Mise à jour avec fonctionnalités complètes */}
+          {/* Contenu - Remplacé par ContentTable */}
           <TabsContent value="content">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Gestion du contenu</CardTitle>
-                  <CardDescription>
-                    Modifiez le contenu des pages du site
-                  </CardDescription>
-                </div>
-                <Button onClick={handleAddContent}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ajouter
-                </Button>
+              <CardHeader>
+                <CardTitle>Gestion du contenu</CardTitle>
+                <CardDescription>
+                  Modifiez le contenu des pages du site (Accueil, À propos, Galerie, FAQ, Pied de page)
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                {contentItems.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                    <p>Aucun contenu pour le moment</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Titre</TableHead>
-                        <TableHead>Page</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Catégorie</TableHead>
-                        <TableHead>Contenu</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {contentItems.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>{item.id}</TableCell>
-                          <TableCell>{item.title}</TableCell>
-                          <TableCell>{item.page}</TableCell>
-                          <TableCell>{item.type || 'text'}</TableCell>
-                          <TableCell>{item.category || 'general'}</TableCell>
-                          <TableCell className="max-w-[300px] truncate">{item.content}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleEditContent(item)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleConfirmDeleteContent(item.id)}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <Trash className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+                <ContentTable 
+                  contentItems={contentItems} 
+                  onSave={handleSaveContent} 
+                  onDelete={handleDeleteContent} 
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -1382,32 +1305,6 @@ L'équipe NASSER TRAVEL HORIZON
           )}
         </DialogContent>
       </Dialog>
-      
-      {/* Formulaire d'ajout/édition de contenu */}
-      <ContentForm 
-        isOpen={contentDialogOpen}
-        onClose={() => setContentDialogOpen(false)}
-        onSave={handleSaveContent}
-        contentItem={activeContentItem}
-      />
-      
-      {/* Dialogue de confirmation de suppression */}
-      <AlertDialog open={deleteContentDialogOpen} onOpenChange={setDeleteContentDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce contenu ? Cette action est irréversible.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteContent} className="bg-red-600 hover:bg-red-700">
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </main>
   );
 };
