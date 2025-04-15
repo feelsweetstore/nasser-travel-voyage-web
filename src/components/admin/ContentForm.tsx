@@ -1,14 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { ContentItem } from '../../services/ContentService';
-import { ImageUpload } from './ImageUpload';
-import { TimeSelector } from './TimeSelector';
+import { ContentTypeSelector } from './ContentTypeSelector';
+import { ContentCategorySelector } from './ContentCategorySelector';
+import { ContentInput } from './ContentInput';
 
 interface ContentFormProps {
   isOpen: boolean;
@@ -69,152 +70,6 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
     onClose();
   };
 
-  const renderContentInput = () => {
-    if (type === 'image' || type === 'logo' || type === 'background') {
-      return (
-        <div className="grid gap-2">
-          <Label htmlFor="content">Image</Label>
-          <ImageUpload
-            currentImage={content}
-            onImageSelected={(url) => setContent(url)}
-          />
-        </div>
-      );
-    }
-
-    if (type === 'hours') {
-      return (
-        <div className="grid gap-2">
-          <Label htmlFor="content">Heures d'ouverture</Label>
-          <TimeSelector
-            value={content}
-            onChange={setContent}
-          />
-        </div>
-      );
-    }
-
-    return (
-      <div className="grid gap-2">
-        <Label htmlFor="content">Contenu</Label>
-        <Textarea
-          id="content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder={
-            type === 'text' ? "Contenu à afficher" : 
-            type === 'quote' ? "Citation à afficher" :
-            type === 'contact' ? "Adresse, téléphone, email, etc." :
-            type === 'legal' ? "Texte des mentions légales" :
-            type === 'terms' ? "Texte des conditions générales de vente" :
-            type === 'privacy' ? "Texte de la politique de confidentialité" :
-            type === 'faq-question' ? "Question: Comment réserver?" :
-            type === 'faq-answer' ? "Réponse: Vous pouvez..." :
-            "Contenu"
-          }
-          rows={8}
-        />
-      </div>
-    );
-  };
-
-  const getTypeOptions = () => {
-    const baseTypes = [
-      { value: "text", label: "Texte" },
-      { value: "image", label: "Image (URL)" },
-    ];
-
-    switch (page) {
-      case 'Accueil':
-        return [
-          ...baseTypes,
-          { value: "logo", label: "Logo (URL)" },
-          { value: "background", label: "Image de fond (URL)" },
-        ];
-      case 'À propos':
-        return [
-          ...baseTypes,
-          { value: "quote", label: "Citation" },
-        ];
-      case 'FAQ':
-        return [
-          ...baseTypes,
-          { value: "faq-question", label: "Question FAQ" },
-          { value: "faq-answer", label: "Réponse FAQ" },
-        ];
-      case 'Global':
-        return [
-          ...baseTypes,
-          { value: "logo", label: "Logo (URL)" },
-          { value: "hours", label: "Heures d'ouverture" },
-          { value: "contact", label: "Coordonnées" },
-        ];
-      case 'Mentions légales':
-        return [
-          ...baseTypes,
-          { value: "legal", label: "Mentions légales" },
-        ];
-      case 'Politique de confidentialité':
-        return [
-          ...baseTypes,
-          { value: "privacy", label: "Politique de confidentialité" },
-        ];
-      case 'CGV':
-        return [
-          ...baseTypes,
-          { value: "terms", label: "CGV" },
-        ];
-      default:
-        return baseTypes;
-    }
-  };
-
-  const getCategoryOptions = () => {
-    const baseCategories = [
-      { value: "general", label: "Général" },
-      { value: "header", label: "En-tête" },
-    ];
-
-    switch (page) {
-      case 'Accueil':
-        return [
-          ...baseCategories,
-          { value: "hero", label: "Section Hero" },
-          { value: "services", label: "Services" },
-        ];
-      case 'À propos':
-        return [
-          ...baseCategories,
-          { value: "history", label: "Notre Histoire" },
-          { value: "team", label: "Notre Équipe" },
-          { value: "founder", label: "Fondateur" },
-          { value: "values", label: "Nos Valeurs" },
-          { value: "trust", label: "Pourquoi nous faire confiance" },
-        ];
-      case 'Galerie':
-        return [
-          ...baseCategories,
-          { value: "gallery", label: "Galerie d'images" },
-        ];
-      case 'FAQ':
-        return [
-          ...baseCategories,
-          { value: "general", label: "Questions générales" },
-          { value: "payment", label: "Paiement" },
-          { value: "cancellation", label: "Annulations" },
-          { value: "services", label: "Services additionnels" },
-        ];
-      case 'Global':
-        return [
-          ...baseCategories,
-          { value: "footer", label: "Pied de page" },
-          { value: "legal", label: "Mentions légales" },
-        ];
-      default:
-        return baseCategories;
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[550px]">
@@ -252,36 +107,24 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
               </Select>
             </div>
             
-            <div className="grid gap-2">
-              <Label htmlFor="type">Type de contenu</Label>
-              <Select value={type} onValueChange={setType}>
-                <SelectTrigger id="type">
-                  <SelectValue placeholder="Type de contenu" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getTypeOptions().map(option => (
-                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <ContentTypeSelector 
+              page={page}
+              type={type}
+              onTypeChange={setType}
+            />
           </div>
           
-          <div className="grid gap-2">
-            <Label htmlFor="category">Catégorie</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="category">
-                <SelectValue placeholder="Catégorie" />
-              </SelectTrigger>
-              <SelectContent>
-                {getCategoryOptions().map(option => (
-                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <ContentCategorySelector
+            page={page}
+            category={category}
+            onCategoryChange={setCategory}
+          />
           
-          {renderContentInput()}
+          <ContentInput
+            type={type}
+            content={content}
+            onContentChange={setContent}
+          />
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Annuler</Button>
@@ -293,3 +136,4 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
 };
 
 export default ContentForm;
+
