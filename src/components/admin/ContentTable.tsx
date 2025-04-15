@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Pencil, Trash, Search } from 'lucide-react';
 import { ContentItem } from '../../services/ContentService';
@@ -88,7 +89,6 @@ const ContentTable: React.FC<ContentTableProps> = ({ contentItems, onSave, onDel
           <TabsList className="w-full">
             <TabsTrigger value="all" className="flex-grow">Tout</TabsTrigger>
             <TabsTrigger value="Accueil" className="flex-grow">Accueil</TabsTrigger>
-            <TabsTrigger value="Services" className="flex-grow">Services</TabsTrigger>
             <TabsTrigger value="À propos" className="flex-grow">À propos</TabsTrigger>
             <TabsTrigger value="Galerie" className="flex-grow">Galerie</TabsTrigger>
             <TabsTrigger value="FAQ" className="flex-grow">FAQ</TabsTrigger>
