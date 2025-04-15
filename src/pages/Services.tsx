@@ -2,17 +2,8 @@
 import React from 'react';
 import { Plane, FileText, Award, Headphones, CreditCard, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useContent } from '../hooks/useContent';
 
 const Services = () => {
-  const { getContentByTitle } = useContent('Services');
-  
-  // Récupération des titres et sous-titres
-  const pageTitle = getContentByTitle('Titre Services', 'Nos Services');
-  const pageSubtitle = getContentByTitle('Sous-titre Services', 'Des solutions complètes pour tous vos besoins de voyage, du billet d\'avion à l\'assistance sur place');
-  const ctaTitle = getContentByTitle('Titre CTA Services', 'Prêt à planifier votre prochain voyage ?');
-  const ctaSubtitle = getContentByTitle('Sous-titre CTA Services', 'Contactez-nous dès aujourd\'hui et laissez notre équipe d\'experts s\'occuper de tous les détails de votre voyage.');
-
   const services = [
     {
       icon: <Plane className="h-12 w-12 text-nasser-primary" />,
@@ -88,10 +79,10 @@ const Services = () => {
         {/* Header Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-heading font-bold mb-6">
-            {pageTitle}
+            Nos Services
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {pageSubtitle}
+            Des solutions complètes pour tous vos besoins de voyage, du billet d'avion à l'assistance sur place
           </p>
         </div>
 
@@ -123,9 +114,9 @@ const Services = () => {
         {/* CTA Section */}
         <div className="bg-gradient-to-r from-nasser-primary to-blue-600 rounded-2xl shadow-xl p-8 md:p-12">
           <div className="text-center text-white">
-            <h2 className="text-3xl font-heading font-bold mb-6">{ctaTitle}</h2>
+            <h2 className="text-3xl font-heading font-bold mb-6">Prêt à planifier votre prochain voyage ?</h2>
             <p className="text-xl mb-8 max-w-3xl mx-auto">
-              {ctaSubtitle}
+              Contactez-nous dès aujourd'hui et laissez notre équipe d'experts s'occuper de tous les détails de votre voyage.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link 
