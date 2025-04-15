@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 import { ContentItem } from '../../services/ContentService';
+import { ImageUpload } from './ImageUpload';
+import { TimeSelector } from './TimeSelector';
 
 interface ContentFormProps {
   isOpen: boolean;
@@ -32,9 +34,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
       setType(contentItem.type || 'text');
       setCategory(contentItem.category || 'general');
     } else {
-      // Réinitialiser le formulaire pour un nouvel élément
       setTitle('');
-      // Si une page courante est définie, l'utiliser comme valeur par défaut
       setPage(currentPage || 'Accueil');
       setContent('');
       setType('text');
@@ -43,7 +43,14 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
   }, [contentItem, isOpen, currentPage]);
 
   const handleSave = () => {
-    if (!title.trim() || !content.trim()) return;
+    if (!title.trim() || !content.trim()) {
+      toast({
+        title: "Erreur de validation",
+        description: "Veuillez remplir tous les champs requis.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     const newContentItem = {
       ...(contentItem || { id: 0 }),
@@ -55,17 +62,68 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
     };
 
     onSave(newContentItem as ContentItem);
+    toast({
+      title: "Contenu enregistré",
+      description: "Les modifications ont été appliquées avec succès."
+    });
     onClose();
   };
 
-  // Configuration des options de type de contenu en fonction de la page actuelle
+  const renderContentInput = () => {
+    if (type === 'image' || type === 'logo' || type === 'background') {
+      return (
+        <div className="grid gap-2">
+          <Label htmlFor="content">Image</Label>
+          <ImageUpload
+            currentImage={content}
+            onImageSelected={(url) => setContent(url)}
+          />
+        </div>
+      );
+    }
+
+    if (type === 'hours') {
+      return (
+        <div className="grid gap-2">
+          <Label htmlFor="content">Heures d'ouverture</Label>
+          <TimeSelector
+            value={content}
+            onChange={setContent}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid gap-2">
+        <Label htmlFor="content">Contenu</Label>
+        <Textarea
+          id="content"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder={
+            type === 'text' ? "Contenu à afficher" : 
+            type === 'quote' ? "Citation à afficher" :
+            type === 'contact' ? "Adresse, téléphone, email, etc." :
+            type === 'legal' ? "Texte des mentions légales" :
+            type === 'terms' ? "Texte des conditions générales de vente" :
+            type === 'privacy' ? "Texte de la politique de confidentialité" :
+            type === 'faq-question' ? "Question: Comment réserver?" :
+            type === 'faq-answer' ? "Réponse: Vous pouvez..." :
+            "Contenu"
+          }
+          rows={8}
+        />
+      </div>
+    );
+  };
+
   const getTypeOptions = () => {
     const baseTypes = [
       { value: "text", label: "Texte" },
       { value: "image", label: "Image (URL)" },
     ];
 
-    // Ajout des types spécifiques en fonction de la page
     switch (page) {
       case 'Accueil':
         return [
@@ -111,14 +169,12 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
     }
   };
 
-  // Configuration des options de catégorie en fonction de la page actuelle
   const getCategoryOptions = () => {
     const baseCategories = [
       { value: "general", label: "Général" },
       { value: "header", label: "En-tête" },
     ];
 
-    // Ajout des catégories spécifiques en fonction de la page
     switch (page) {
       case 'Accueil':
         return [
@@ -225,41 +281,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
             </Select>
           </div>
           
-          <div className="grid gap-2">
-            <Label htmlFor="content">Contenu</Label>
-            {type === 'text' || type === 'quote' || type === 'hours' || type === 'contact' || type === 'legal' || type === 'terms' || type === 'privacy' || type === 'faq-question' || type === 'faq-answer' ? (
-              <Textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={
-                  type === 'text' ? "Contenu à afficher" : 
-                  type === 'quote' ? "Citation à afficher" :
-                  type === 'hours' ? "Lundi: 08:00-18:00\nMardi: 08:00-18:00\n..." : 
-                  type === 'contact' ? "Adresse, téléphone, email, etc." :
-                  type === 'legal' ? "Texte des mentions légales" :
-                  type === 'terms' ? "Texte des conditions générales de vente" :
-                  type === 'privacy' ? "Texte de la politique de confidentialité" :
-                  type === 'faq-question' ? "Question: Comment réserver?" :
-                  type === 'faq-answer' ? "Réponse: Vous pouvez..." :
-                  "Contenu"
-                }
-                rows={8}
-              />
-            ) : (
-              <Input
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={
-                  type === 'image' ? "URL de l'image" : 
-                  type === 'logo' ? "URL du logo" :
-                  type === 'background' ? "URL de l'image de fond" :
-                  "Contenu"
-                }
-              />
-            )}
-          </div>
+          {renderContentInput()}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Annuler</Button>
