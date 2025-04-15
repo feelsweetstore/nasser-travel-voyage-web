@@ -73,11 +73,6 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
           { value: "logo", label: "Logo (URL)" },
           { value: "background", label: "Image de fond (URL)" },
         ];
-      case 'Services':
-        return [
-          ...baseTypes,
-          { value: "service", label: "Service" },
-        ];
       case 'À propos':
         return [
           ...baseTypes,
@@ -130,12 +125,6 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
           ...baseCategories,
           { value: "hero", label: "Section Hero" },
           { value: "services", label: "Services" },
-        ];
-      case 'Services':
-        return [
-          ...baseCategories,
-          { value: "services", label: "Services" },
-          { value: "cta", label: "Appel à l'action" },
         ];
       case 'À propos':
         return [
@@ -196,7 +185,6 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Accueil">Accueil</SelectItem>
-                  <SelectItem value="Services">Services</SelectItem>
                   <SelectItem value="À propos">À propos</SelectItem>
                   <SelectItem value="Galerie">Galerie</SelectItem>
                   <SelectItem value="FAQ">FAQ</SelectItem>
