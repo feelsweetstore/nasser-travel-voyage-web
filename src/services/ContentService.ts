@@ -99,18 +99,20 @@ class ContentService {
   }
   
   /**
-   * Récupère le contenu modifiable de l'interface
-   * @returns Liste filtrée des éléments modifiables
+   * Ajoute un nouvel élément de contenu
+   * @param contentItem - Élément à ajouter
+   * @returns L'élément ajouté avec un ID
    */
-  static getEditableContent(): ContentItem[] {
+  static addContent(contentItem: Omit<ContentItem, 'id'>): ContentItem {
     const content = this.getContent();
-    // Filtrer pour ne montrer que le logo, et les contenus des pages spécifiques
-    return content.filter(item => 
-      // Logo dans l'en-tête
-      (item.type === 'logo' && item.category === 'header') ||
-      // Contenu des pages spécifiques
-      ['Accueil', 'Services', 'Galerie', 'FAQ'].includes(item.page)
-    );
+    const newContentItem = {
+      ...contentItem,
+      id: content.length ? Math.max(...content.map(c => c.id)) + 1 : 1
+    };
+    
+    const updatedContent = [...content, newContentItem];
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedContent));
+    return newContentItem;
   }
   
   /**
@@ -127,30 +129,6 @@ class ContentService {
     
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedContent));
     return updatedContent;
-  }
-  
-  /**
-   * Ajoute un nouvel élément de contenu
-   * @param contentItem - Nouvel élément à ajouter
-   * @returns Nouvel élément avec ID généré
-   */
-  static addContent(contentItem: Omit<ContentItem, 'id'>): ContentItem {
-    const content = this.getContent();
-    
-    // Générer un nouvel ID
-    const newId = content.length > 0 
-      ? Math.max(...content.map(item => item.id)) + 1 
-      : 1;
-    
-    const newItem: ContentItem = {
-      ...contentItem,
-      id: newId
-    };
-    
-    content.push(newItem);
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(content));
-    
-    return newItem;
   }
   
   /**
