@@ -1,4 +1,3 @@
-
 /**
  * Service de gestion du contenu du site
  */
@@ -53,7 +52,6 @@ class ContentService {
    */
   static getContentByPage(page: string): any[] {
     const content = this.getContent();
-    // Récupère le contenu spécifique à la page ainsi que le contenu global
     return content.filter(item => item.page === page || item.page === 'Global');
   }
   
@@ -102,6 +100,12 @@ class ContentService {
     
     const updatedContent = [...content, newContentItem];
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedContent));
+    
+    // Dispatch event to notify content change
+    window.dispatchEvent(new CustomEvent('contentUpdated', {
+      detail: { type: 'add', content: newContentItem }
+    }));
+    
     return newContentItem;
   }
   
@@ -118,6 +122,12 @@ class ContentService {
     );
     
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedContent));
+    
+    // Dispatch event to notify content change
+    window.dispatchEvent(new CustomEvent('contentUpdated', {
+      detail: { type: 'update', content: contentItem, id }
+    }));
+    
     return updatedContent;
   }
   
@@ -131,6 +141,12 @@ class ContentService {
     const updatedContent = content.filter(item => item.id !== id);
     
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedContent));
+    
+    // Dispatch event to notify content change
+    window.dispatchEvent(new CustomEvent('contentUpdated', {
+      detail: { type: 'delete', id }
+    }));
+    
     return updatedContent;
   }
 }

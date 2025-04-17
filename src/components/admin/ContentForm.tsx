@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ImageUpload from './ImageUpload';
+import TimeSelector from './TimeSelector';
 
 interface ContentFormProps {
   isOpen: boolean;
@@ -30,7 +31,6 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
       setType(contentItem.type || 'text');
       setCategory(contentItem.category || 'general');
     } else {
-      // Réinitialiser le formulaire pour un nouvel élément
       setTitle('');
       setPage('Accueil');
       setContent('');
@@ -53,6 +53,69 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
 
     onSave(newContentItem);
     onClose();
+  };
+
+  const handleTimeChange = (day: string, time: string) => {
+    const hours = content.split('\n');
+    const dayIndex = hours.findIndex(h => h.startsWith(day));
+    
+    if (dayIndex !== -1) {
+      hours[dayIndex] = `${day}: ${time}`;
+      setContent(hours.join('\n'));
+    }
+  };
+
+  const getTimeForDay = (day: string): string => {
+    if (!content) return '08:00-18:00';
+    const hours = content.split('\n');
+    const dayLine = hours.find(h => h.startsWith(day));
+    if (!dayLine) return '08:00-18:00';
+    const time = dayLine.split(': ')[1];
+    return time || '08:00-18:00';
+  };
+
+  const renderContentInput = () => {
+    if (type === 'image' || type === 'logo' || type === 'background') {
+      return (
+        <ImageUpload
+          value={content}
+          onChange={setContent}
+        />
+      );
+    }
+
+    if (type === 'hours') {
+      return (
+        <div className="space-y-4">
+          {['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'].map((day) => (
+            <TimeSelector
+              key={day}
+              day={day}
+              value={getTimeForDay(day)}
+              onChange={(time) => handleTimeChange(day, time)}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <Textarea
+        id="content"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        placeholder={
+          type === 'text' ? "Contenu à afficher" : 
+          type === 'contact' ? "Adresse, téléphone, email, etc." :
+          type === 'legal' ? "Texte des mentions légales" :
+          type === 'terms' ? "Texte des conditions générales de vente" :
+          type === 'privacy' ? "Texte de la politique de confidentialité" :
+          type === 'faq' ? "Question: Comment réserver?\nRéponse: Vous pouvez..." :
+          "Contenu"
+        }
+        rows={8}
+      />
+    );
   };
 
   return (
@@ -140,38 +203,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
           
           <div className="grid gap-2">
             <Label htmlFor="content">Contenu</Label>
-            {type === 'text' || type === 'hours' || type === 'contact' || type === 'legal' || type === 'terms' || type === 'privacy' || type === 'faq' ? (
-              <Textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={
-                  type === 'text' ? "Contenu à afficher" : 
-                  type === 'hours' ? "Lundi: 08:00-18:00\nMardi: 08:00-18:00\n..." : 
-                  type === 'contact' ? "Adresse, téléphone, email, etc." :
-                  type === 'legal' ? "Texte des mentions légales" :
-                  type === 'terms' ? "Texte des conditions générales de vente" :
-                  type === 'privacy' ? "Texte de la politique de confidentialité" :
-                  type === 'faq' ? "Question: Comment réserver?\nRéponse: Vous pouvez..." :
-                  "Contenu"
-                }
-                rows={8}
-              />
-            ) : (
-              <Input
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={
-                  type === 'link' ? "URL du lien" : 
-                  type === 'image' ? "URL de l'image" : 
-                  type === 'logo' ? "URL du logo" :
-                  type === 'background' ? "URL de l'image de fond" :
-                  type === 'service' ? "Nom du service" :
-                  "Contenu"
-                }
-              />
-            )}
+            {renderContentInput()}
           </div>
         </div>
         <DialogFooter>
