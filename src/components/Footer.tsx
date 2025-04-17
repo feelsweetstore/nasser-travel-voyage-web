@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Mail, Phone, Settings } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Mail, Phone, Settings, Clock } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -83,7 +82,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/confidentialite" className="text-gray-300 hover:text-nasser-secondary transition-colors">
+                <Link to="/politique-confidentialite" className="text-gray-300 hover:text-nasser-secondary transition-colors">
                   Politique de confidentialité
                 </Link>
               </li>
@@ -124,22 +123,22 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Copyright */}
+        {/* Copyright and Admin Link */}
         <div className="border-t border-gray-700 mt-10 pt-6">
           <p className="text-center text-gray-400">
             &copy; {new Date().getFullYear()} NASSER TRAVEL HORIZON. Tous droits réservés.
           </p>
         </div>
+
+        {/* Admin access icon - discreet in the bottom right */}
+        <Link 
+          to="/admin" 
+          className="absolute bottom-2 right-2 text-gray-700 hover:text-gray-500 transition-colors"
+          aria-label="Admin Dashboard"
+        >
+          <Settings size={18} />
+        </Link>
       </div>
-      
-      {/* Admin access icon - discreet in the bottom right */}
-      <Link 
-        to="/admin" 
-        className="absolute bottom-2 right-2 text-gray-700 hover:text-gray-500 transition-colors"
-        aria-label="Admin Dashboard"
-      >
-        <Settings size={18} />
-      </Link>
     </footer>
   );
 };
