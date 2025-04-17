@@ -3,23 +3,18 @@ import React from 'react';
 import ContentService from '../services/ContentService';
 
 const LegalNotice = () => {
-  const content = ContentService.getContentByType('legal');
-  const legalContent = content.find(item => item.category === 'legal');
+  const legalContent = ContentService.getContentByTypeAndCategory('legal', 'legal')[0]?.content || '';
 
   return (
-    <main className="bg-nasser-light py-16">
+    <main className="bg-white py-16">
       <div className="container-custom">
-        <h1 className="text-4xl font-heading font-bold mb-8 text-center">
-          Mentions Légales
-        </h1>
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <div className="prose max-w-none">
-            {legalContent ? (
-              <div dangerouslySetInnerHTML={{ __html: legalContent.content }} />
-            ) : (
-              <p>Contenu en cours de chargement...</p>
-            )}
-          </div>
+        <h1 className="text-4xl font-heading font-bold mb-8 text-center">Mentions légales</h1>
+        <div className="prose max-w-none">
+          {legalContent.split('\n').map((paragraph, index) => (
+            <p key={index} className="mb-4 text-gray-600 leading-relaxed">
+              {paragraph}
+            </p>
+          ))}
         </div>
       </div>
     </main>

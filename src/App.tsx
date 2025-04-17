@@ -22,7 +22,7 @@ import OnlineReservationService from "./services/OnlineReservationService";
 import ClientAreaService from "./services/ClientAreaService";
 import LegalNotice from "./pages/LegalNotice";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Terms from "./pages/Terms";
+import TermsOfService from "./pages/TermsOfService";
 import OpeningHours from "./pages/OpeningHours";
 
 const queryClient = new QueryClient();
@@ -95,9 +95,9 @@ const App = () => {
               <Route path="/espace-client" element={<ClientArea />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/mentions-legales" element={<LegalNotice />} />
-              <Route path="/politique-confidentialite" element={<PrivacyPolicy />} />
-              <Route path="/cgv" element={<Terms />} />
-              <Route path="/heures-ouverture" element={<OpeningHours />} />
+              <Route path="/confidentialite" element={<PrivacyPolicy />} />
+              <Route path="/cgv" element={<TermsOfService />} />
+              <Route path="/horaires" element={<OpeningHours />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />

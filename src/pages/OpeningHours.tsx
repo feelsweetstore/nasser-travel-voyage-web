@@ -4,32 +4,28 @@ import ContentService from '../services/ContentService';
 import { Clock } from 'lucide-react';
 
 const OpeningHours = () => {
-  const content = ContentService.getContentByType('hours');
-  const hoursContent = content.find(item => item.category === 'footer');
-
-  const renderHours = (hours: string) => {
-    return hours.split('\n').map((line, index) => (
-      <div key={index} className="flex items-center space-x-2 py-2">
-        <Clock className="h-5 w-5 text-nasser-primary" />
-        <span>{line}</span>
-      </div>
-    ));
-  };
+  const hoursContent = ContentService.getContentByTypeAndCategory('hours', 'footer')[0]?.content || '';
+  const hours = hoursContent.split('\n');
 
   return (
-    <main className="bg-nasser-light py-16">
+    <main className="bg-white py-16">
       <div className="container-custom">
-        <h1 className="text-4xl font-heading font-bold mb-8 text-center">
-          Heures d'Ouverture
-        </h1>
-        <div className="bg-white rounded-lg shadow-md p-8 max-w-2xl mx-auto">
-          {hoursContent ? (
-            <div className="space-y-2">
-              {renderHours(hoursContent.content)}
-            </div>
-          ) : (
-            <p>Horaires en cours de chargement...</p>
-          )}
+        <h1 className="text-4xl font-heading font-bold mb-8 text-center">Heures d'ouverture</h1>
+        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-8">
+          <div className="flex items-center justify-center mb-6">
+            <Clock className="w-12 h-12 text-nasser-primary" />
+          </div>
+          <div className="space-y-4">
+            {hours.map((day, index) => {
+              const [dayName, time] = day.split(': ');
+              return (
+                <div key={index} className="flex justify-between items-center border-b border-gray-100 pb-2">
+                  <span className="font-medium text-gray-700">{dayName}</span>
+                  <span className="text-gray-600">{time}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </main>
