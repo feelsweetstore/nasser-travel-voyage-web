@@ -1,9 +1,12 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Mail, Phone, Settings } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Mail, Phone, Settings, Clock } from 'lucide-react';
+import { Separator } from './ui/separator';
+import ContentService from '@/services/ContentService';
 
 const Footer = () => {
+  const hoursContent = ContentService.getContentByType('hours')[0]?.content || '';
+
   return (
     <footer className="bg-nasser-dark text-white pt-12 pb-6 relative">
       <div className="container-custom">
@@ -120,6 +123,20 @@ const Footer = () => {
                 </svg>
                 WhatsApp
               </a>
+            </div>
+            <Separator className="my-4" />
+            <div className="pt-2">
+              <Link to="/heures-ouverture" className="text-gray-300 hover:text-nasser-secondary">
+                <div className="flex items-start">
+                  <Clock size={18} className="mr-2 text-nasser-secondary flex-shrink-0 mt-1" />
+                  <div>
+                    <h4 className="font-medium mb-2">Heures d'ouverture</h4>
+                    <pre className="text-sm whitespace-pre-line">
+                      {hoursContent.split('\n').slice(0, 3).join('\n')}...
+                    </pre>
+                  </div>
+                </div>
+              </Link>
             </div>
           </div>
         </div>

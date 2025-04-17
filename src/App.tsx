@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,10 +20,13 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import OnlineReservationService from "./services/OnlineReservationService";
 import ClientAreaService from "./services/ClientAreaService";
+import LegalNotice from "./pages/LegalNotice";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
+import OpeningHours from "./pages/OpeningHours";
 
 const queryClient = new QueryClient();
 
-// Create app context for global state
 export const AppContext = createContext<{
   onlineReservationEnabled: boolean;
   clientAreaEnabled: boolean;
@@ -44,15 +46,12 @@ const App = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        // Load online reservation status
         const reservationStatus = await OnlineReservationService.getStatus();
         setOnlineReservationEnabled(reservationStatus);
         
-        // Load client area status
         const clientAreaStatus = localStorage.getItem('clientAreaEnabled') === 'true';
         setClientAreaEnabled(clientAreaStatus);
         
-        // Load testimonials status
         const testimonialsStatus = localStorage.getItem('testimonialsEnabled') !== 'false';
         setTestimonialsEnabled(testimonialsStatus);
       } catch (error) {
@@ -91,6 +90,10 @@ const App = () => {
               <Route path="/faq" element={<FAQ />} />
               <Route path="/espace-client" element={<ClientArea />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/mentions-legales" element={<LegalNotice />} />
+              <Route path="/confidentialite" element={<PrivacyPolicy />} />
+              <Route path="/cgv" element={<Terms />} />
+              <Route path="/heures-ouverture" element={<OpeningHours />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />
