@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import ContactService from '../services/ContactService';
@@ -14,10 +14,50 @@ const Assistance = () => {
     subject: '',
     message: ''
   });
+  
+  // État pour stocker les coordonnées
+  const [contactInfo, setContactInfo] = useState({
+    phone: '+235 66 38 69 37',
+    email: 'contact@nassertravelhorizon.com',
+    address: 'Avenue Charles de Gaulle, N\'Djamena, Tchad'
+  });
 
-  // Récupérer les données de contact depuis ContentService
-  const contactContent = ContentService.getContentByType('contact')[0]?.content || '';
-  const contactLines = contactContent.split('\n');
+  // Fonction pour extraire et formater les coordonnées
+  const parseContactInfo = () => {
+    const contactContent = ContentService.getContentByType('contact')[0]?.content || '';
+    const contactLines = contactContent.split('\n');
+    
+    const phoneLine = contactLines.find(line => line.startsWith('Téléphone:'))?.replace('Téléphone:', '').trim() || '';
+    const phone = phoneLine.split(',')[0]?.trim() || '+235 66 38 69 37';
+    
+    const emailLine = contactLines.find(line => line.startsWith('Email:'))?.replace('Email:', '').trim() || '';
+    const email = emailLine.split(',')[0]?.trim() || 'contact@nassertravelhorizon.com';
+    
+    const addressLine = contactLines.find(line => line.startsWith('Adresse:'))?.replace('Adresse:', '').trim() 
+      || 'Avenue Charles de Gaulle, N\'Djamena, Tchad';
+    
+    setContactInfo({
+      phone,
+      email, 
+      address: addressLine
+    });
+  };
+
+  // Charger les coordonnées au chargement de la page
+  useEffect(() => {
+    parseContactInfo();
+    
+    // Écouter les événements de mise à jour du contenu
+    const handleContentUpdate = () => {
+      parseContactInfo();
+    };
+    
+    window.addEventListener('contentUpdated', handleContentUpdate);
+    
+    return () => {
+      window.removeEventListener('contentUpdated', handleContentUpdate);
+    };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -85,7 +125,7 @@ const Assistance = () => {
             </div>
             <h3 className="text-xl font-bold mb-2">Téléphone</h3>
             <p className="text-gray-600 mb-4">Du lundi au vendredi : 8h-18h</p>
-            <a href="tel:+23566386937" className="text-nasser-primary font-medium hover:underline">+235 66 38 69 37</a>
+            <a href={`tel:${contactInfo.phone.replace(/\s/g, '')}`} className="text-nasser-primary font-medium hover:underline">{contactInfo.phone}</a>
           </div>
           
           <div className="bg-gray-50 p-8 rounded-lg text-center">
@@ -94,7 +134,7 @@ const Assistance = () => {
             </div>
             <h3 className="text-xl font-bold mb-2">Email</h3>
             <p className="text-gray-600 mb-4">Réponse sous 24-48h</p>
-            <a href="mailto:contact@nassertravelhorizon.com" className="text-nasser-primary font-medium hover:underline">contact@nassertravelhorizon.com</a>
+            <a href={`mailto:${contactInfo.email}`} className="text-nasser-primary font-medium hover:underline">{contactInfo.email}</a>
           </div>
           
           <div className="bg-gray-50 p-8 rounded-lg text-center">
@@ -103,7 +143,7 @@ const Assistance = () => {
             </div>
             <h3 className="text-xl font-bold mb-2">Adresse</h3>
             <p className="text-gray-600 mb-4">Bureaux ouverts de 8h à 17h</p>
-            <address className="not-italic text-nasser-primary font-medium">Avenue Charles de Gaulle, N'Djamena, Tchad</address>
+            <address className="not-italic text-nasser-primary font-medium">{contactInfo.address}</address>
           </div>
         </div>
 
@@ -117,15 +157,15 @@ const Assistance = () => {
               <div className="space-y-6">
                 <div className="flex items-center">
                   <Phone className="mr-3 h-5 w-5" />
-                  <span>+235 66 38 69 37</span>
+                  <span>{contactInfo.phone}</span>
                 </div>
                 <div className="flex items-center">
                   <Mail className="mr-3 h-5 w-5" />
-                  <span>contact@nassertravelhorizon.com</span>
+                  <span>{contactInfo.email}</span>
                 </div>
                 <div className="flex items-center">
                   <MapPin className="mr-3 h-5 w-5" />
-                  <span>Avenue Charles de Gaulle, N'Djamena, Tchad</span>
+                  <span>{contactInfo.address}</span>
                 </div>
               </div>
             </div>

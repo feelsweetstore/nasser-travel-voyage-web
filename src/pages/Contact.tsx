@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -39,26 +39,74 @@ const Contact = () => {
       message: "",
     },
   });
+  
+  // Utiliser useState pour gérer les coordonnées
+  const [contactInfo, setContactInfo] = useState({
+    address: {
+      line1: 'Avenue Charles de Gaulle',
+      line2: 'N\'Djamena, Tchad'
+    },
+    phones: ['+235 66 00 00 00', '+235 99 00 00 00'],
+    emails: ['contact@nassertravel.com', 'info@nassertravel.com'],
+    hours: {
+      weekdays: '8h - 18h',
+      saturday: '9h - 15h',
+      sunday: 'Fermé'
+    }
+  });
 
-  // Récupérer les données de contact depuis ContentService
-  const contactContent = ContentService.getContentByType('contact')[0]?.content || '';
-  const contactLines = contactContent.split('\n');
-  
-  // Adresse par défaut si non définie dans les paramètres
-  const addressLine1 = contactLines.find(line => line.startsWith('Adresse:'))?.replace('Adresse:', '').trim() || 'Avenue Charles de Gaulle';
-  const addressLine2 = 'N\'Djamena, Tchad';
-  
-  // Numéros de téléphone
-  const phoneLine = contactLines.find(line => line.startsWith('Téléphone:'))?.replace('Téléphone:', '').trim() || '+235 66 38 69 37';
-  const phones = phoneLine.split(',').map(phone => phone.trim());
-  const phone1 = phones[0] || '+235 66 00 00 00';
-  const phone2 = phones[1] || '+235 99 00 00 00';
-  
-  // Emails
-  const emailLine = contactLines.find(line => line.startsWith('Email:'))?.replace('Email:', '').trim() || 'contact@nassertravel.com';
-  const emails = emailLine.split(',').map(email => email.trim());
-  const email1 = emails[0] || 'contact@nassertravel.com';
-  const email2 = emails[1] || 'info@nassertravel.com';
+  // Fonction pour extraire et formater les coordonnées
+  const parseContactInfo = () => {
+    const contactContent = ContentService.getContentByType('contact')[0]?.content || '';
+    const contactLines = contactContent.split('\n');
+    
+    // Adresse
+    const addressLine = contactLines.find(line => line.startsWith('Adresse:'))?.replace('Adresse:', '').trim() || '';
+    const addressParts = addressLine.split(',').map(part => part.trim());
+    
+    // Téléphones
+    const phoneLine = contactLines.find(line => line.startsWith('Téléphone:'))?.replace('Téléphone:', '').trim() || '';
+    const phones = phoneLine.split(',').map(phone => phone.trim());
+    
+    // Emails
+    const emailLine = contactLines.find(line => line.startsWith('Email:'))?.replace('Email:', '').trim() || '';
+    const emails = emailLine.split(',').map(email => email.trim());
+    
+    // Heures (à partir du contenu de type 'hours')
+    const hoursContent = ContentService.getContentByType('hours')[0]?.content || '';
+    const hoursLines = hoursContent.split('\n');
+    
+    // Mise à jour de l'état
+    setContactInfo({
+      address: {
+        line1: addressParts[0] || 'Avenue Charles de Gaulle',
+        line2: addressParts.slice(1).join(', ') || 'N\'Djamena, Tchad'
+      },
+      phones: phones.length ? phones : ['+235 66 00 00 00', '+235 99 00 00 00'],
+      emails: emails.length ? emails : ['contact@nassertravel.com', 'info@nassertravel.com'],
+      hours: {
+        weekdays: 'Lundi - Vendredi: 8h - 18h',
+        saturday: 'Samedi: 9h - 15h',
+        sunday: 'Dimanche: Fermé'
+      }
+    });
+  };
+
+  // Charger les coordonnées au chargement de la page
+  useEffect(() => {
+    parseContactInfo();
+    
+    // Écouter les événements de mise à jour du contenu
+    const handleContentUpdate = () => {
+      parseContactInfo();
+    };
+    
+    window.addEventListener('contentUpdated', handleContentUpdate);
+    
+    return () => {
+      window.removeEventListener('contentUpdated', handleContentUpdate);
+    };
+  }, []);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     // Enregistrer le message dans ContactService
@@ -106,8 +154,8 @@ const Contact = () => {
                   </div>
                   <div className="ml-4">
                     <h3 className="font-medium text-gray-900">Adresse</h3>
-                    <p className="text-gray-600 mt-1">{addressLine1}</p>
-                    <p className="text-gray-600">{addressLine2}</p>
+                    <p className="text-gray-600 mt-1">{contactInfo.address.line1}</p>
+                    <p className="text-gray-600">{contactInfo.address.line2}</p>
                   </div>
                 </div>
                 
@@ -117,12 +165,11 @@ const Contact = () => {
                   </div>
                   <div className="ml-4">
                     <h3 className="font-medium text-gray-900">Téléphone</h3>
-                    <p className="text-gray-600 mt-1">
-                      <a href={`tel:${phone1.replace(/\s/g, '')}`} className="hover:text-nasser-primary">{phone1}</a>
-                    </p>
-                    <p className="text-gray-600">
-                      <a href={`tel:${phone2.replace(/\s/g, '')}`} className="hover:text-nasser-primary">{phone2}</a>
-                    </p>
+                    {contactInfo.phones.map((phone, index) => (
+                      <p className="text-gray-600 mt-1" key={index}>
+                        <a href={`tel:${phone.replace(/\s/g, '')}`} className="hover:text-nasser-primary">{phone}</a>
+                      </p>
+                    ))}
                   </div>
                 </div>
                 
@@ -132,12 +179,11 @@ const Contact = () => {
                   </div>
                   <div className="ml-4">
                     <h3 className="font-medium text-gray-900">Email</h3>
-                    <p className="text-gray-600 mt-1">
-                      <a href={`mailto:${email1}`} className="hover:text-nasser-primary">{email1}</a>
-                    </p>
-                    <p className="text-gray-600">
-                      <a href={`mailto:${email2}`} className="hover:text-nasser-primary">{email2}</a>
-                    </p>
+                    {contactInfo.emails.map((email, index) => (
+                      <p className="text-gray-600 mt-1" key={index}>
+                        <a href={`mailto:${email}`} className="hover:text-nasser-primary">{email}</a>
+                      </p>
+                    ))}
                   </div>
                 </div>
                 
@@ -147,9 +193,9 @@ const Contact = () => {
                   </div>
                   <div className="ml-4">
                     <h3 className="font-medium text-gray-900">Heures d'ouverture</h3>
-                    <p className="text-gray-600 mt-1">Lundi - Vendredi: 8h - 18h</p>
-                    <p className="text-gray-600">Samedi: 9h - 15h</p>
-                    <p className="text-gray-600">Dimanche: Fermé</p>
+                    <p className="text-gray-600 mt-1">{contactInfo.hours.weekdays}</p>
+                    <p className="text-gray-600">{contactInfo.hours.saturday}</p>
+                    <p className="text-gray-600">{contactInfo.hours.sunday}</p>
                   </div>
                 </div>
               </div>
@@ -182,7 +228,7 @@ const Contact = () => {
                     <Twitter className="h-5 w-5" />
                   </a>
                   <a 
-                    href={`https://wa.me/${phone1.replace(/[^0-9]/g, '')}`}
+                    href={`https://wa.me/${contactInfo.phones[0]?.replace(/[^0-9]/g, '')}`}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="bg-green-600 text-white p-3 rounded-full hover:bg-green-700 transition-colors"
