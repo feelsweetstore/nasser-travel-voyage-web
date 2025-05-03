@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Twitter, Send } from 'lucide-react';
+import ContentService from '@/services/ContentService';
+import ContactService from '@/services/ContactService';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Le nom est requis" }),
@@ -38,13 +40,44 @@ const Contact = () => {
     },
   });
 
+  // Récupérer les données de contact depuis ContentService
+  const contactContent = ContentService.getContentByType('contact')[0]?.content || '';
+  const contactLines = contactContent.split('\n');
+  
+  // Adresse par défaut si non définie dans les paramètres
+  const addressLine1 = contactLines.find(line => line.startsWith('Adresse:'))?.replace('Adresse:', '').trim() || 'Avenue Charles de Gaulle';
+  const addressLine2 = 'N\'Djamena, Tchad';
+  
+  // Numéros de téléphone
+  const phoneLine = contactLines.find(line => line.startsWith('Téléphone:'))?.replace('Téléphone:', '').trim() || '+235 66 38 69 37';
+  const phones = phoneLine.split(',').map(phone => phone.trim());
+  const phone1 = phones[0] || '+235 66 00 00 00';
+  const phone2 = phones[1] || '+235 99 00 00 00';
+  
+  // Emails
+  const emailLine = contactLines.find(line => line.startsWith('Email:'))?.replace('Email:', '').trim() || 'contact@nassertravel.com';
+  const emails = emailLine.split(',').map(email => email.trim());
+  const email1 = emails[0] || 'contact@nassertravel.com';
+  const email2 = emails[1] || 'info@nassertravel.com';
+
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-    toast({
-      title: "Message envoyé",
-      description: "Nous avons bien reçu votre message et vous répondrons dans les plus brefs délais.",
-    });
-    form.reset();
+    // Enregistrer le message dans ContactService
+    try {
+      ContactService.addMessage(values);
+      
+      toast({
+        title: "Message envoyé",
+        description: "Nous avons bien reçu votre message et vous répondrons dans les plus brefs délais.",
+      });
+      form.reset();
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du message:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du message.",
+        variant: "destructive",
+      });
+    }
   };
   
   return (
@@ -73,8 +106,8 @@ const Contact = () => {
                   </div>
                   <div className="ml-4">
                     <h3 className="font-medium text-gray-900">Adresse</h3>
-                    <p className="text-gray-600 mt-1">Avenue Charles de Gaulle</p>
-                    <p className="text-gray-600">N'Djamena, Tchad</p>
+                    <p className="text-gray-600 mt-1">{addressLine1}</p>
+                    <p className="text-gray-600">{addressLine2}</p>
                   </div>
                 </div>
                 
@@ -85,10 +118,10 @@ const Contact = () => {
                   <div className="ml-4">
                     <h3 className="font-medium text-gray-900">Téléphone</h3>
                     <p className="text-gray-600 mt-1">
-                      <a href="tel:+23566000000" className="hover:text-nasser-primary">+235 66 00 00 00</a>
+                      <a href={`tel:${phone1.replace(/\s/g, '')}`} className="hover:text-nasser-primary">{phone1}</a>
                     </p>
                     <p className="text-gray-600">
-                      <a href="tel:+23599000000" className="hover:text-nasser-primary">+235 99 00 00 00</a>
+                      <a href={`tel:${phone2.replace(/\s/g, '')}`} className="hover:text-nasser-primary">{phone2}</a>
                     </p>
                   </div>
                 </div>
@@ -100,10 +133,10 @@ const Contact = () => {
                   <div className="ml-4">
                     <h3 className="font-medium text-gray-900">Email</h3>
                     <p className="text-gray-600 mt-1">
-                      <a href="mailto:contact@nassertravel.com" className="hover:text-nasser-primary">contact@nassertravel.com</a>
+                      <a href={`mailto:${email1}`} className="hover:text-nasser-primary">{email1}</a>
                     </p>
                     <p className="text-gray-600">
-                      <a href="mailto:info@nassertravel.com" className="hover:text-nasser-primary">info@nassertravel.com</a>
+                      <a href={`mailto:${email2}`} className="hover:text-nasser-primary">{email2}</a>
                     </p>
                   </div>
                 </div>
@@ -149,7 +182,7 @@ const Contact = () => {
                     <Twitter className="h-5 w-5" />
                   </a>
                   <a 
-                    href="https://wa.me/23566000000" 
+                    href={`https://wa.me/${phone1.replace(/[^0-9]/g, '')}`}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="bg-green-600 text-white p-3 rounded-full hover:bg-green-700 transition-colors"

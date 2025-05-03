@@ -100,8 +100,8 @@ export default {
 				'fade-in': 'fade-in 0.5s ease-out'
 			},
 			fontFamily: {
-				sans: ['Inter', 'sans-serif'],
-				heading: ['Poppins', 'sans-serif'],
+				sans: ['Arial', 'sans-serif'],
+				heading: ['Arial', 'sans-serif'],
 			}
 		}
 	},

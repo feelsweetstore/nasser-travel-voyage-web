@@ -13,7 +13,7 @@ const LegalNotice = () => {
         </h1>
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-8">
           <div className="prose prose-lg max-w-none">
-            <pre className="whitespace-pre-line text-gray-700">
+            <pre className="whitespace-pre-line text-gray-700 font-sans">
               {legalContent}
             </pre>
           </div>

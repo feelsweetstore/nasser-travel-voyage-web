@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import ContactService from '../services/ContactService';
+import ContentService from '@/services/ContentService';
 
 const Assistance = () => {
   const { toast } = useToast();
@@ -13,6 +14,10 @@ const Assistance = () => {
     subject: '',
     message: ''
   });
+
+  // Récupérer les données de contact depuis ContentService
+  const contactContent = ContentService.getContentByType('contact')[0]?.content || '';
+  const contactLines = contactContent.split('\n');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
