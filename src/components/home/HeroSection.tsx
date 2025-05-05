@@ -1,9 +1,41 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import ContentService from '../../services/ContentService';
 
 const HeroSection = () => {
+  const [heroContent, setHeroContent] = useState({ 
+    title: 'Bienvenue chez NASSER TRAVEL HORIZON',
+    subtitle: 'Votre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.'
+  });
+  
+  // Fonction pour mettre à jour le contenu
+  const updateHeroContent = () => {
+    console.info('Updating hero content');
+    const content = ContentService.getHeroContent();
+    setHeroContent(content);
+  };
+  
+  // Au montage du composant
+  useEffect(() => {
+    // Initialiser avec le contenu actuel
+    updateHeroContent();
+    
+    // Écouter les changements de contenu
+    const handleContentUpdated = () => {
+      console.info('ContentUpdated event received in HeroSection');
+      updateHeroContent();
+    };
+    
+    window.addEventListener('contentUpdated', handleContentUpdated);
+    
+    // Nettoyage
+    return () => {
+      window.removeEventListener('contentUpdated', handleContentUpdated);
+    };
+  }, []);
+  
   return (
     <section className="relative h-[90vh] md:h-[80vh] flex items-center overflow-hidden">
       {/* Background Image */}
@@ -19,10 +51,10 @@ const HeroSection = () => {
       <div className="container-custom relative z-10 text-white">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 animate-fade-in">
-            Bienvenue chez NASSER TRAVEL HORIZON
+            {heroContent.title}
           </h1>
           <p className="text-xl md:text-2xl mb-8 opacity-90">
-            Votre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.
+            {heroContent.subtitle}
           </p>
           <div className="flex flex-wrap gap-4">
             <Link to="/reserver" className="btn-primary flex items-center">
