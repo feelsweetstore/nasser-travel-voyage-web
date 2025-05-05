@@ -23,42 +23,13 @@ class ContentService {
         { id: 11, title: "CGV", page: "CGV", content: "Les présentes conditions générales de vente régissent les relations contractuelles entre la société NASSER TRAVEL HORIZON et ses clients, dans le cadre de son activité d'agence de voyage.", type: "terms", category: "legal" },
       ];
       
-      // Vérifier si des données existent déjà - si oui, ne pas écraser mais migrer
-      const existingContent = localStorage.getItem(this.STORAGE_KEY);
-      if (existingContent) {
-        const parsedContent = JSON.parse(existingContent);
-        // Chercher s'il existe déjà un texte d'accueil
-        const heroContent = parsedContent.find(item => item.category === 'hero');
-        
-        if (heroContent) {
-          // Si oui, séparer en titre et sous-titre
-          const titleItem = defaultContent.find(item => item.category === 'hero_title');
-          const subtitleItem = defaultContent.find(item => item.category === 'hero_subtitle');
-          
-          // Ajouter ces éléments à l'existant sans écraser
-          const maxId = Math.max(...parsedContent.map(item => item.id)) + 1;
-          
-          if (titleItem && !parsedContent.find(item => item.category === 'hero_title')) {
-            parsedContent.push({
-              ...titleItem,
-              id: maxId
-            });
-          }
-          
-          if (subtitleItem && !parsedContent.find(item => item.category === 'hero_subtitle')) {
-            parsedContent.push({
-              ...subtitleItem,
-              id: maxId + 1
-            });
-          }
-          
-          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(parsedContent));
-          return;
-        }
-      }
-      
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(defaultContent));
     }
+    
+    // Dispatch initial content loaded event
+    window.dispatchEvent(new CustomEvent('contentUpdated', {
+      detail: { type: 'initialize' }
+    }));
   }
   
   /**
@@ -66,9 +37,8 @@ class ContentService {
    * @returns Liste des éléments de contenu
    */
   static getContent(): any[] {
-    this.initialize();
     const storedContent = localStorage.getItem(this.STORAGE_KEY);
-    return JSON.parse(storedContent || '[]');
+    return storedContent ? JSON.parse(storedContent) : [];
   }
   
   /**
@@ -157,6 +127,7 @@ class ContentService {
       detail: { type: 'add', content: newContentItem }
     }));
     
+    console.log('Content added, dispatched contentUpdated event');
     return newContentItem;
   }
   
@@ -179,6 +150,7 @@ class ContentService {
       detail: { type: 'update', content: contentItem, id }
     }));
     
+    console.log(`Content updated (ID: ${id}), dispatched contentUpdated event`);
     return updatedContent;
   }
   
@@ -198,6 +170,7 @@ class ContentService {
       detail: { type: 'delete', id }
     }));
     
+    console.log(`Content deleted (ID: ${id}), dispatched contentUpdated event`);
     return updatedContent;
   }
   

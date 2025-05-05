@@ -16,6 +16,7 @@ const HeroSection = () => {
     
     // Écouter les mises à jour du contenu
     const handleContentUpdate = () => {
+      console.log('ContentUpdated event received in HeroSection');
       updateHeroContent();
     };
     
@@ -27,7 +28,9 @@ const HeroSection = () => {
   }, []);
   
   const updateHeroContent = () => {
+    console.log('Updating hero content');
     const content = ContentService.getHeroContent();
+    console.log('Retrieved hero content:', content);
     setHeroContent(content);
   };
 
