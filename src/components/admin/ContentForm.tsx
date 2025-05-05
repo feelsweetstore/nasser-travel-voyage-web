@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -52,7 +51,6 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
       category
     };
 
-    console.log('Saving content item:', newContentItem);
     onSave(newContentItem);
     onClose();
   };
@@ -98,22 +96,6 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
             />
           ))}
         </div>
-      );
-    }
-
-    // Special case for hero content
-    if (category === 'hero_title' || category === 'hero_subtitle') {
-      return (
-        <Textarea
-          id="content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder={
-            category === 'hero_title' ? "Titre principal de la page d'accueil" : 
-            "Sous-titre de la page d'accueil"
-          }
-          rows={3}
-        />
       );
     }
 
@@ -210,8 +192,6 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
                 <SelectItem value="header">En-tête</SelectItem>
                 <SelectItem value="footer">Pied de page</SelectItem>
                 <SelectItem value="hero">Section Hero</SelectItem>
-                <SelectItem value="hero_title">Titre Hero</SelectItem>
-                <SelectItem value="hero_subtitle">Sous-titre Hero</SelectItem>
                 <SelectItem value="services">Services</SelectItem>
                 <SelectItem value="about">À propos</SelectItem>
                 <SelectItem value="contact">Contact</SelectItem>

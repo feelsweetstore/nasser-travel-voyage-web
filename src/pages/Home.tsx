@@ -10,13 +10,6 @@ const Home = () => {
   useEffect(() => {
     // S'assurer que le contenu est initialisé
     ContentService.initialize();
-    
-    // Pour déboguer
-    console.log('Home component mounted, content initialized');
-    
-    // Afficher le contenu actuel dans la console pour le débogage
-    const heroContent = ContentService.getHeroContent();
-    console.log('Current hero content:', heroContent);
   }, []);
 
   return (
