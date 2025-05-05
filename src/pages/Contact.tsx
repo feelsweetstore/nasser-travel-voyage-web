@@ -49,14 +49,15 @@ const Contact = () => {
     phones: ['+235 66 00 00 00', '+235 99 00 00 00'],
     emails: ['contact@nassertravel.com', 'info@nassertravel.com'],
     hours: {
-      weekdays: '8h - 18h',
-      saturday: '9h - 15h',
-      sunday: 'Fermé'
+      weekdays: 'Lundi - Vendredi: 8h - 18h',
+      saturday: 'Samedi: 9h - 15h',
+      sunday: 'Dimanche: Fermé'
     }
   });
 
   // Fonction pour extraire et formater les coordonnées
   const parseContactInfo = () => {
+    // Récupérer les coordonnées
     const contactContent = ContentService.getContentByType('contact')[0]?.content || '';
     const contactLines = contactContent.split('\n');
     
@@ -72,11 +73,10 @@ const Contact = () => {
     const emailLine = contactLines.find(line => line.startsWith('Email:'))?.replace('Email:', '').trim() || '';
     const emails = emailLine.split(',').map(email => email.trim());
     
-    // Heures (à partir du contenu de type 'hours')
-    const hoursContent = ContentService.getContentByType('hours')[0]?.content || '';
-    const hoursLines = hoursContent.split('\n');
+    // Heures d'ouverture
+    const formattedHours = ContentService.getFormattedOpeningHours();
     
-    // Mise à jour de l'état
+    // Mise à jour de l'état avec toutes les informations récupérées
     setContactInfo({
       address: {
         line1: addressParts[0] || 'Avenue Charles de Gaulle',
@@ -84,11 +84,7 @@ const Contact = () => {
       },
       phones: phones.length ? phones : ['+235 66 00 00 00', '+235 99 00 00 00'],
       emails: emails.length ? emails : ['contact@nassertravel.com', 'info@nassertravel.com'],
-      hours: {
-        weekdays: 'Lundi - Vendredi: 8h - 18h',
-        saturday: 'Samedi: 9h - 15h',
-        sunday: 'Dimanche: Fermé'
-      }
+      hours: formattedHours
     });
   };
 
@@ -129,7 +125,7 @@ const Contact = () => {
   };
   
   return (
-    <main className="bg-nasser-light py-16">
+    <main className="bg-nasser-light py-16 font-[Arial]">
       <div className="container-custom">
         {/* Header Section */}
         <div className="text-center mb-16">

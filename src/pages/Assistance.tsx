@@ -19,11 +19,17 @@ const Assistance = () => {
   const [contactInfo, setContactInfo] = useState({
     phone: '+235 66 38 69 37',
     email: 'contact@nassertravelhorizon.com',
-    address: 'Avenue Charles de Gaulle, N\'Djamena, Tchad'
+    address: 'Avenue Charles de Gaulle, N\'Djamena, Tchad',
+    hours: {
+      weekdays: 'Lundi - Vendredi: 8h - 18h',
+      saturday: 'Samedi: 9h - 15h',
+      sunday: 'Dimanche: Fermé'
+    }
   });
 
   // Fonction pour extraire et formater les coordonnées
   const parseContactInfo = () => {
+    // Récupérer les informations de contact
     const contactContent = ContentService.getContentByType('contact')[0]?.content || '';
     const contactLines = contactContent.split('\n');
     
@@ -36,10 +42,14 @@ const Assistance = () => {
     const addressLine = contactLines.find(line => line.startsWith('Adresse:'))?.replace('Adresse:', '').trim() 
       || 'Avenue Charles de Gaulle, N\'Djamena, Tchad';
     
+    // Récupérer les heures d'ouverture
+    const formattedHours = ContentService.getFormattedOpeningHours();
+    
     setContactInfo({
       phone,
       email, 
-      address: addressLine
+      address: addressLine,
+      hours: formattedHours
     });
   };
 
@@ -109,7 +119,7 @@ const Assistance = () => {
   };
 
   return (
-    <main className="bg-white py-16">
+    <main className="bg-white py-16 font-[Arial]">
       <div className="container-custom">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4">Besoin d'aide ?</h1>
@@ -124,7 +134,7 @@ const Assistance = () => {
               <Phone className="text-nasser-primary h-7 w-7" />
             </div>
             <h3 className="text-xl font-bold mb-2">Téléphone</h3>
-            <p className="text-gray-600 mb-4">Du lundi au vendredi : 8h-18h</p>
+            <p className="text-gray-600 mb-4">{contactInfo.hours.weekdays}</p>
             <a href={`tel:${contactInfo.phone.replace(/\s/g, '')}`} className="text-nasser-primary font-medium hover:underline">{contactInfo.phone}</a>
           </div>
           
@@ -142,7 +152,7 @@ const Assistance = () => {
               <MapPin className="text-nasser-primary h-7 w-7" />
             </div>
             <h3 className="text-xl font-bold mb-2">Adresse</h3>
-            <p className="text-gray-600 mb-4">Bureaux ouverts de 8h à 17h</p>
+            <p className="text-gray-600 mb-4">{contactInfo.hours.weekdays}</p>
             <address className="not-italic text-nasser-primary font-medium">{contactInfo.address}</address>
           </div>
         </div>

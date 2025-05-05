@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Mail, Phone, Settings, Clock } from 'lucide-react';
@@ -5,10 +6,32 @@ import { Separator } from './ui/separator';
 import ContentService from '@/services/ContentService';
 
 const Footer = () => {
-  const hoursContent = ContentService.getContentByType('hours')[0]?.content || '';
+  const [hoursContent, setHoursContent] = React.useState('');
+  
+  React.useEffect(() => {
+    // Récupération initiale
+    updateHoursContent();
+    
+    // Écouter les événements de mise à jour du contenu
+    const handleContentUpdate = () => {
+      updateHoursContent();
+    };
+    
+    window.addEventListener('contentUpdated', handleContentUpdate);
+    
+    return () => {
+      window.removeEventListener('contentUpdated', handleContentUpdate);
+    };
+  }, []);
+  
+  // Fonction pour mettre à jour les heures d'ouverture
+  const updateHoursContent = () => {
+    const content = ContentService.getContentByType('hours')[0]?.content || '';
+    setHoursContent(content);
+  };
 
   return (
-    <footer className="bg-nasser-dark text-white pt-12 pb-6 relative">
+    <footer className="bg-nasser-dark text-white pt-12 pb-6 relative font-[Arial]">
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About Section */}
