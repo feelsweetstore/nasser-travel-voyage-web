@@ -5,14 +5,16 @@ import { ArrowRight } from 'lucide-react';
 import ContentService from '../../services/ContentService';
 
 const HeroSection = () => {
-  const [mainText, setMainText] = useState('');
+  const [heroContent, setHeroContent] = useState({ 
+    title: 'Bienvenue chez NASSER TRAVEL HORIZON',
+    subtitle: 'Votre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.'
+  });
   
   // Fonction pour mettre à jour le contenu
   const updateHeroContent = () => {
     console.info('Updating hero content');
-    // Récupérer le texte d'accueil au lieu du titre et sous-titre
-    const heroTextContent = ContentService.getContentByTypeAndCategory('text', 'hero')[0]?.content || '';
-    setMainText(heroTextContent);
+    const content = ContentService.getHeroContent();
+    setHeroContent(content);
   };
   
   // Au montage du composant
@@ -48,10 +50,12 @@ const HeroSection = () => {
 
       <div className="container-custom relative z-10 text-white">
         <div className="max-w-3xl">
-          <div className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 animate-fade-in">
-            {mainText}
-          </div>
-          
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 animate-fade-in">
+            {heroContent.title}
+          </h1>
+          <p className="text-xl md:text-2xl mb-8 opacity-90">
+            {heroContent.subtitle}
+          </p>
           <div className="flex flex-wrap gap-4">
             <Link to="/reserver" className="btn-primary flex items-center">
               Réserver maintenant <ArrowRight className="ml-2 h-5 w-5" />
