@@ -13,8 +13,8 @@ const Home = () => {
     console.info('Home component mounted, content initialized');
     
     // Log du contenu actuel pour le débogage
-    const heroContent = ContentService.getHeroContent();
-    console.info('Current hero content:', heroContent);
+    const heroTextContent = ContentService.getContentByTypeAndCategory('text', 'hero')[0];
+    console.info('Current hero text content:', heroTextContent);
   }, []);
 
   return (

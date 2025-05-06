@@ -11,8 +11,8 @@ class ContentService {
   static initialize(): void {
     if (!localStorage.getItem(this.STORAGE_KEY)) {
       const defaultContent = [
-        { id: 1, title: "Titre d'accueil", page: "Accueil", content: "Bienvenue chez NASSER TRAVEL HORIZON", type: "hero_title", category: "hero" },
-        { id: 2, title: "Sous-titre d'accueil", page: "Accueil", content: "Votre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.", type: "hero_subtitle", category: "hero" },
+        // Remplacer le hero_title et hero_subtitle par un texte de type "text" pour la catégorie "hero"
+        { id: 1, title: "Texte d'accueil", page: "Accueil", content: "Bienvenue chez NASSER TRAVEL HORIZON\n\nVotre partenaire de confiance pour tous vos voyages au départ du Tchad et partout dans le monde.", type: "text", category: "hero" },
         { id: 3, title: "À propos", page: "À propos", content: "NASSER TRAVEL HORIZON est une agence de voyage basée à N'Djamena, Tchad. Nous proposons des services de réservation de billets d'avion, d'hôtels et d'organisation de voyages sur mesure depuis plus de 5 ans.", type: "text", category: "about" },
         { id: 4, title: "Services", page: "Services", content: "Nous offrons une gamme complète de services pour répondre à tous vos besoins de voyage : réservation de billets, organisation de séjours, assistance visa, transferts aéroport et bien plus encore.", type: "text", category: "services" },
         { id: 5, title: "Logo principal", page: "Global", content: "/placeholder.svg", type: "logo", category: "header" },
