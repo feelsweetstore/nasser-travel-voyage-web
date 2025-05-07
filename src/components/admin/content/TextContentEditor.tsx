@@ -33,11 +33,13 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [previewContent, setPreviewContent] = useState(content);
+  const [isEmpty, setIsEmpty] = useState(!content);
   
   useEffect(() => {
     if (editorRef.current) {
       editorRef.current.innerHTML = content;
       setPreviewContent(content);
+      setIsEmpty(!content);
     }
   }, [content]);
 
@@ -68,6 +70,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
     if (editorRef.current) {
       const updatedContent = editorRef.current.innerHTML;
       setPreviewContent(updatedContent);
+      setIsEmpty(editorRef.current.innerText.trim() === '');
       onContentChange(updatedContent);
     }
   };
@@ -183,16 +186,31 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
         </Button>
       </div>
       
-      {/* Éditeur de contenu */}
+      {/* Éditeur de contenu with placeholder handled via CSS */}
       <div 
         ref={editorRef}
-        className="min-h-[200px] border border-gray-300 p-3 rounded-b-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        className={`min-h-[200px] border border-gray-300 p-3 rounded-b-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${isEmpty ? 'editor-empty' : ''}`}
         contentEditable={true}
         onInput={handleContentChange}
         onBlur={handleContentChange}
-        placeholder={getPlaceholder()}
+        onFocus={() => {
+          if (isEmpty && editorRef.current) {
+            editorRef.current.innerHTML = '';
+          }
+        }}
+        data-placeholder={getPlaceholder()}
         style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
       />
+      
+      {/* CSS for the placeholder */}
+      <style jsx>{`
+        .editor-empty:before {
+          content: attr(data-placeholder);
+          color: #6b7280;
+          pointer-events: none;
+          position: absolute;
+        }
+      `}</style>
       
       {/* Aperçu en direct */}
       <div className="mt-6">
