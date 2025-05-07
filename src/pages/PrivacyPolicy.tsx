@@ -1,45 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import ContentService from '@/services/ContentService';
 
-interface TextStyle {
-  fontFamily?: string;
-  fontSize?: string;
-  fontWeight?: string;
-  fontStyle?: string;
-  textDecoration?: string;
-  textAlign?: string;
-}
-
 const PrivacyPolicy = () => {
-  const [content, setContent] = useState('');
-  const [textStyle, setTextStyle] = useState<TextStyle>({
-    fontFamily: 'Arial',
-    fontSize: '16px',
-    fontWeight: 'normal',
-    fontStyle: 'normal',
-    textDecoration: 'none',
-    textAlign: 'left'
-  });
-  
-  useEffect(() => {
-    // Mettre à jour le contenu au chargement
-    updateContent();
-    
-    // Écouter les changements de contenu
-    const handleContentUpdated = () => updateContent();
-    window.addEventListener('contentUpdated', handleContentUpdated);
-    
-    // Nettoyage
-    return () => window.removeEventListener('contentUpdated', handleContentUpdated);
-  }, []);
-  
-  const updateContent = () => {
-    const privacyContent = ContentService.getContentByType('privacy')[0]?.content || '';
-    const { text, style } = ContentService.extractTextAndStyle(privacyContent);
-    setContent(text);
-    setTextStyle(style);
-  };
+  const privacyContent = ContentService.getContentByType('privacy')[0]?.content || '';
 
   return (
     <main className="bg-nasser-light py-16">
@@ -49,18 +13,8 @@ const PrivacyPolicy = () => {
         </h1>
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-8">
           <div className="prose prose-lg max-w-none">
-            <pre 
-              className="whitespace-pre-line text-gray-700 font-sans"
-              style={{
-                fontFamily: textStyle.fontFamily,
-                fontSize: textStyle.fontSize,
-                fontWeight: textStyle.fontWeight,
-                fontStyle: textStyle.fontStyle,
-                textDecoration: textStyle.textDecoration,
-                textAlign: textStyle.textAlign as any
-              }}
-            >
-              {content}
+            <pre className="whitespace-pre-line text-gray-700 font-sans">
+              {privacyContent}
             </pre>
           </div>
         </div>

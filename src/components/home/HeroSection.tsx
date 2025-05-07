@@ -6,25 +6,13 @@ import ContentService from '../../services/ContentService';
 
 const HeroSection = () => {
   const [mainText, setMainText] = useState('');
-  const [textStyle, setTextStyle] = useState({
-    fontFamily: 'Arial',
-    fontSize: '16px',
-    fontWeight: 'normal',
-    fontStyle: 'normal',
-    textDecoration: 'none',
-    textAlign: 'left'
-  });
   
   // Fonction pour mettre à jour le contenu
   const updateHeroContent = () => {
     console.info('Updating hero content');
-    // Récupérer le texte d'accueil
+    // Récupérer le texte d'accueil au lieu du titre et sous-titre
     const heroTextContent = ContentService.getContentByTypeAndCategory('text', 'hero')[0]?.content || '';
-    
-    // Extraire le texte et le style
-    const { text, style } = ContentService.extractTextAndStyle(heroTextContent);
-    setMainText(text);
-    setTextStyle(style);
+    setMainText(heroTextContent);
   };
   
   // Au montage du composant
@@ -60,20 +48,9 @@ const HeroSection = () => {
 
       <div className="container-custom relative z-10 text-white">
         <div className="max-w-3xl">
-          <pre 
-            className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 animate-fade-in whitespace-pre-wrap"
-            style={{
-              fontFamily: textStyle.fontFamily,
-              fontSize: textStyle.fontSize,
-              fontWeight: textStyle.fontWeight,
-              fontStyle: textStyle.fontStyle,
-              textDecoration: textStyle.textDecoration,
-              textAlign: textStyle.textAlign as any,
-              color: 'white' // S'assurer que le texte est toujours visible sur le fond
-            }}
-          >
+          <div className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 animate-fade-in">
             {mainText}
-          </pre>
+          </div>
           
           <div className="flex flex-wrap gap-4">
             <Link to="/reserver" className="btn-primary flex items-center">
