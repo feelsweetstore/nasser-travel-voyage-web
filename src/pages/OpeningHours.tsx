@@ -34,9 +34,11 @@ const OpeningHours = () => {
           Heures d'ouverture
         </h1>
         <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-8">
-          <pre className="whitespace-pre-line text-lg text-gray-700">
-            {hoursContent}
-          </pre>
+          <div 
+            className="prose prose-lg max-w-none" 
+            dangerouslySetInnerHTML={{ __html: hoursContent }}
+            style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
+          />
         </div>
       </div>
     </main>

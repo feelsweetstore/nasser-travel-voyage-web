@@ -48,9 +48,11 @@ const HeroSection = () => {
 
       <div className="container-custom relative z-10 text-white">
         <div className="max-w-3xl">
-          <div className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 animate-fade-in">
-            {mainText}
-          </div>
+          <div 
+            className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 animate-fade-in"
+            dangerouslySetInnerHTML={{ __html: mainText }}
+            style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
+          />
           
           <div className="flex flex-wrap gap-4">
             <Link to="/reserver" className="btn-primary flex items-center">

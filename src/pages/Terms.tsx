@@ -13,9 +13,10 @@ const Terms = () => {
         </h1>
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-8">
           <div className="prose prose-lg max-w-none">
-            <pre className="whitespace-pre-line text-gray-700 font-sans">
-              {termsContent}
-            </pre>
+            <div 
+              dangerouslySetInnerHTML={{ __html: termsContent }} 
+              style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }} 
+            />
           </div>
         </div>
       </div>
