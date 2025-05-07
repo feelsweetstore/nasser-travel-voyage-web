@@ -23,7 +23,11 @@ const HeroSection = () => {
     
     // Extraire le texte et le style
     const { text, style } = ContentService.extractTextAndStyle(heroTextContent);
-    setMainText(text);
+    
+    // Process any inline styling tags
+    const processedText = ContentService.processInlineStyles(text);
+    
+    setMainText(processedText);
     setTextStyle(style);
   };
   
@@ -60,8 +64,8 @@ const HeroSection = () => {
 
       <div className="container-custom relative z-10 text-white">
         <div className="max-w-3xl">
-          <pre 
-            className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 animate-fade-in whitespace-pre-wrap"
+          <div 
+            className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 animate-fade-in whitespace-pre-line"
             style={{
               fontFamily: textStyle.fontFamily,
               fontSize: textStyle.fontSize,
@@ -71,9 +75,8 @@ const HeroSection = () => {
               textAlign: textStyle.textAlign as any,
               color: 'white' // S'assurer que le texte est toujours visible sur le fond
             }}
-          >
-            {mainText}
-          </pre>
+            dangerouslySetInnerHTML={{ __html: mainText }}
+          />
           
           <div className="flex flex-wrap gap-4">
             <Link to="/reserver" className="btn-primary flex items-center">

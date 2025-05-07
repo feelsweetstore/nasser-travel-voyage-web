@@ -37,7 +37,11 @@ const Terms = () => {
   const updateContent = () => {
     const termsContent = ContentService.getContentByType('terms')[0]?.content || '';
     const { text, style } = ContentService.extractTextAndStyle(termsContent);
-    setContent(text);
+    
+    // Process any inline styling tags
+    const processedText = ContentService.processInlineStyles(text);
+    
+    setContent(processedText);
     setTextStyle(style);
   };
 
@@ -49,8 +53,8 @@ const Terms = () => {
         </h1>
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-8">
           <div className="prose prose-lg max-w-none">
-            <pre 
-              className="whitespace-pre-line text-gray-700 font-sans"
+            <div 
+              className="text-gray-700 font-sans whitespace-pre-line"
               style={{
                 fontFamily: textStyle.fontFamily,
                 fontSize: textStyle.fontSize,
@@ -59,9 +63,8 @@ const Terms = () => {
                 textDecoration: textStyle.textDecoration,
                 textAlign: textStyle.textAlign as any
               }}
-            >
-              {content}
-            </pre>
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
           </div>
         </div>
       </div>

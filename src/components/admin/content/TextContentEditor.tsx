@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
@@ -19,6 +18,11 @@ interface TextStyle {
   fontStyle: string;
   textDecoration: string;
   textAlign: string;
+}
+
+interface TextRange {
+  start: number;
+  end: number;
 }
 
 const parseStyleString = (content: string): { text: string, style: TextStyle } => {
@@ -59,14 +63,14 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
   const { text, style } = parseStyleString(content);
   const [textContent, setTextContent] = useState(text);
   const [textStyle, setTextStyle] = useState<TextStyle>(style);
+  const [selection, setSelection] = useState<TextRange>({ start: 0, end: 0 });
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   
-  const updateContent = (newText: string, newStyle?: TextStyle) => {
+  const updateContent = (newText: string | null = null) => {
     const updatedText = newText ?? textContent;
-    const updatedStyle = newStyle ?? textStyle;
-    const formattedContent = generateStyleString(updatedText, updatedStyle);
+    const formattedContent = generateStyleString(updatedText, textStyle);
     onContentChange(formattedContent);
     setTextContent(updatedText);
-    if (newStyle) setTextStyle(newStyle);
   };
   
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -74,10 +78,42 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
     updateContent(e.target.value);
   };
   
-  const updateStyle = (property: keyof TextStyle, value: string) => {
-    const newStyle = { ...textStyle, [property]: value };
-    setTextStyle(newStyle);
-    updateContent(null, newStyle);
+  const handleSelectionChange = () => {
+    if (textareaRef.current) {
+      const { selectionStart, selectionEnd } = textareaRef.current;
+      setSelection({ start: selectionStart, end: selectionEnd });
+    }
+  };
+  
+  const applyStyleToSelection = (property: keyof TextStyle, value: string) => {
+    if (selection.start === selection.end) {
+      return; // No selection, do nothing
+    }
+    
+    const before = textContent.substring(0, selection.start);
+    const selected = textContent.substring(selection.start, selection.end);
+    const after = textContent.substring(selection.end);
+    
+    // Create a style tag for the selected text
+    const styledText = `<${property}=${value}>${selected}</${property}>`;
+    const newText = before + styledText + after;
+    
+    setTextContent(newText);
+    updateContent(newText);
+  };
+  
+  const updateGlobalStyle = (property: keyof TextStyle, value: string) => {
+    if (selection.start !== selection.end) {
+      // If text is selected, apply style to selection
+      applyStyleToSelection(property, value);
+    } else {
+      // Otherwise update global style
+      const newStyle = { ...textStyle, [property]: value };
+      setTextStyle(newStyle);
+      
+      const formattedContent = generateStyleString(textContent, newStyle);
+      onContentChange(formattedContent);
+    }
   };
   
   const getPlaceholder = () => {
@@ -109,7 +145,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
         <div className="flex flex-wrap gap-2 mb-2">
           <Select 
             value={textStyle.fontFamily} 
-            onValueChange={(value) => updateStyle('fontFamily', value)}
+            onValueChange={(value) => updateGlobalStyle('fontFamily', value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Police" />
@@ -126,7 +162,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
           
           <Select 
             value={textStyle.fontSize} 
-            onValueChange={(value) => updateStyle('fontSize', value)}
+            onValueChange={(value) => updateGlobalStyle('fontSize', value)}
           >
             <SelectTrigger className="w-[100px]">
               <SelectValue placeholder="Taille" />
@@ -145,7 +181,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
           
           <Toggle 
             pressed={textStyle.fontWeight === 'bold'} 
-            onPressedChange={(pressed) => updateStyle('fontWeight', pressed ? 'bold' : 'normal')}
+            onPressedChange={(pressed) => updateGlobalStyle('fontWeight', pressed ? 'bold' : 'normal')}
             aria-label="Gras"
           >
             <Bold className="h-4 w-4" />
@@ -153,7 +189,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
           
           <Toggle 
             pressed={textStyle.fontStyle === 'italic'} 
-            onPressedChange={(pressed) => updateStyle('fontStyle', pressed ? 'italic' : 'normal')}
+            onPressedChange={(pressed) => updateGlobalStyle('fontStyle', pressed ? 'italic' : 'normal')}
             aria-label="Italique"
           >
             <Italic className="h-4 w-4" />
@@ -161,7 +197,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
           
           <Toggle 
             pressed={textStyle.textDecoration === 'underline'} 
-            onPressedChange={(pressed) => updateStyle('textDecoration', pressed ? 'underline' : 'none')}
+            onPressedChange={(pressed) => updateGlobalStyle('textDecoration', pressed ? 'underline' : 'none')}
             aria-label="Souligné"
           >
             <Underline className="h-4 w-4" />
@@ -170,7 +206,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
           <div className="flex border rounded-md overflow-hidden">
             <Toggle 
               pressed={textStyle.textAlign === 'left'} 
-              onPressedChange={() => updateStyle('textAlign', 'left')}
+              onPressedChange={() => updateGlobalStyle('textAlign', 'left')}
               aria-label="Aligné à gauche"
               className="rounded-none border-r"
             >
@@ -179,7 +215,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
             
             <Toggle 
               pressed={textStyle.textAlign === 'center'} 
-              onPressedChange={() => updateStyle('textAlign', 'center')}
+              onPressedChange={() => updateGlobalStyle('textAlign', 'center')}
               aria-label="Centré"
               className="rounded-none border-r"
             >
@@ -188,7 +224,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
             
             <Toggle 
               pressed={textStyle.textAlign === 'right'} 
-              onPressedChange={() => updateStyle('textAlign', 'right')}
+              onPressedChange={() => updateGlobalStyle('textAlign', 'right')}
               aria-label="Aligné à droite"
               className="rounded-none"
             >
@@ -202,8 +238,12 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
         <Label htmlFor="content">Contenu</Label>
         <Textarea
           id="content"
+          ref={textareaRef}
           value={textContent}
           onChange={handleTextChange}
+          onSelect={handleSelectionChange}
+          onMouseUp={handleSelectionChange}
+          onKeyUp={handleSelectionChange}
           placeholder={getPlaceholder()}
           rows={8}
           className="whitespace-pre-wrap"
