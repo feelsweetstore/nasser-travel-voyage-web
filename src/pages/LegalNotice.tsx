@@ -2,9 +2,25 @@
 import React, { useState, useEffect } from 'react';
 import ContentService from '@/services/ContentService';
 
+interface TextStyle {
+  fontFamily?: string;
+  fontSize?: string;
+  fontWeight?: string;
+  fontStyle?: string;
+  textDecoration?: string;
+  textAlign?: string;
+}
+
 const LegalNotice = () => {
   const [content, setContent] = useState('');
-  const [textStyle, setTextStyle] = useState({});
+  const [textStyle, setTextStyle] = useState<TextStyle>({
+    fontFamily: 'Arial',
+    fontSize: '16px',
+    fontWeight: 'normal',
+    fontStyle: 'normal',
+    textDecoration: 'none',
+    textAlign: 'left'
+  });
   
   useEffect(() => {
     // Mettre à jour le contenu au chargement
