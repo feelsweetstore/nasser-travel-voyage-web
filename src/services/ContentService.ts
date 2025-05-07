@@ -134,33 +134,6 @@ class ContentService {
   }
   
   /**
-   * Traite les balises de style intégrées dans le texte
-   * @param text - Texte avec balises de style
-   * @returns Texte formaté en HTML
-   */
-  static processInlineStyles(text: string): string {
-    // Process basic style tags
-    let processedText = text;
-    
-    // Process fontWeight (bold) tags
-    processedText = processedText.replace(/<fontWeight=bold>(.*?)<\/fontWeight>/g, '<strong>$1</strong>');
-    
-    // Process fontStyle (italic) tags
-    processedText = processedText.replace(/<fontStyle=italic>(.*?)<\/fontStyle>/g, '<em>$1</em>');
-    
-    // Process textDecoration (underline) tags
-    processedText = processedText.replace(/<textDecoration=underline>(.*?)<\/textDecoration>/g, '<u>$1</u>');
-    
-    // Process fontSize tags
-    processedText = processedText.replace(/<fontSize=(\d+px)>(.*?)<\/fontSize>/g, '<span style="font-size:$1">$2</span>');
-    
-    // Process fontFamily tags
-    processedText = processedText.replace(/<fontFamily=([^>]+)>(.*?)<\/fontFamily>/g, '<span style="font-family:$1">$2</span>');
-    
-    return processedText;
-  }
-  
-  /**
    * Ajoute un nouvel élément de contenu
    * @param contentItem - Élément à ajouter
    * @returns L'élément ajouté avec un ID
