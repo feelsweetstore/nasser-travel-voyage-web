@@ -9,7 +9,8 @@ import {
   AlignLeft, 
   AlignCenter, 
   AlignRight,
-  Text
+  Text,
+  Palette
 } from "lucide-react";
 import { 
   Select,
@@ -19,6 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface TextContentEditorProps {
   content: string;
@@ -85,6 +91,12 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
       execFormatCommand(formatType, value);
     }
   };
+  
+  const applyTextColor = (color: string) => {
+    if (window.getSelection()?.toString()) {
+      execFormatCommand('foreColor', color);
+    }
+  };
 
   // CSS for the editor placeholder
   const placeholderStyle = `
@@ -95,6 +107,21 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
       position: absolute;
     }
   `;
+  
+  // Predefined colors for the color picker
+  const colorOptions = [
+    { color: "#000000", label: "Noir" },
+    { color: "#333333", label: "Gris foncé" },
+    { color: "#8E9196", label: "Gris neutre" },
+    { color: "#FFFFFF", label: "Blanc" },
+    { color: "#8B5CF6", label: "Violet vif" },
+    { color: "#9b87f5", label: "Violet primaire" },
+    { color: "#D946EF", label: "Rose magenta" },
+    { color: "#F97316", label: "Orange vif" },
+    { color: "#0EA5E9", label: "Bleu océan" },
+    { color: "#10B981", label: "Vert" },
+    { color: "#EF4444", label: "Rouge" },
+  ];
 
   return (
     <div className="grid gap-4">
@@ -121,15 +148,43 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
             <SelectValue placeholder="Taille" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Très petit</SelectItem>
-            <SelectItem value="2">Petit</SelectItem>
-            <SelectItem value="3">Normal</SelectItem>
-            <SelectItem value="4">Moyen</SelectItem>
-            <SelectItem value="5">Grand</SelectItem>
-            <SelectItem value="6">Très grand</SelectItem>
-            <SelectItem value="7">Énorme</SelectItem>
+            <SelectItem value="1">8px</SelectItem>
+            <SelectItem value="2">10px</SelectItem>
+            <SelectItem value="3">12px</SelectItem>
+            <SelectItem value="4">14px</SelectItem>
+            <SelectItem value="5">18px</SelectItem>
+            <SelectItem value="6">24px</SelectItem>
+            <SelectItem value="7">36px</SelectItem>
           </SelectContent>
         </Select>
+        
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Palette className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3">
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">Couleur du texte</h4>
+              <div className="grid grid-cols-5 gap-2">
+                {colorOptions.map((option) => (
+                  <div 
+                    key={option.color}
+                    className="w-8 h-8 rounded-full cursor-pointer border border-gray-200 flex items-center justify-center"
+                    style={{ backgroundColor: option.color }}
+                    onClick={() => applyTextColor(option.color)}
+                    title={option.label}
+                  >
+                    {option.color === "#FFFFFF" && (
+                      <div className="w-7 h-7 rounded-full border border-gray-300"></div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
         
         <Separator orientation="vertical" className="h-8" />
         
