@@ -86,6 +86,16 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
     }
   };
 
+  // CSS for the editor placeholder
+  const placeholderStyle = `
+    .editor-empty:before {
+      content: attr(data-placeholder);
+      color: #6b7280;
+      pointer-events: none;
+      position: absolute;
+    }
+  `;
+
   return (
     <div className="grid gap-4">
       <Label htmlFor="content">Contenu</Label>
@@ -202,15 +212,8 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
         style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
       />
       
-      {/* CSS for the placeholder */}
-      <style jsx>{`
-        .editor-empty:before {
-          content: attr(data-placeholder);
-          color: #6b7280;
-          pointer-events: none;
-          position: absolute;
-        }
-      `}</style>
+      {/* CSS for the placeholder using standard style element */}
+      <style dangerouslySetInnerHTML={{ __html: placeholderStyle }} />
       
       {/* Aperçu en direct */}
       <div className="mt-6">
