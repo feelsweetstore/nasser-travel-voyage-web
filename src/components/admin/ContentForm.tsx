@@ -25,12 +25,14 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
   // Reset form when dialog opens/closes or contentItem changes
   useEffect(() => {
     if (isOpen && contentItem) {
-      // Ensure we're setting the state only when the dialog is open and we have content
-      setTitle(contentItem.title || '');
-      setPage(contentItem.page || 'Accueil');
-      setContent(contentItem.content || '');
-      setType(contentItem.type || 'text');
-      setCategory(contentItem.category || 'general');
+      // Small timeout to ensure the dialog is fully open before populating fields
+      setTimeout(() => {
+        setTitle(contentItem.title || '');
+        setPage(contentItem.page || 'Accueil');
+        setContent(contentItem.content || '');
+        setType(contentItem.type || 'text');
+        setCategory(contentItem.category || 'general');
+      }, 50);
     } else if (!isOpen) {
       // Only reset the form when closing
       setTitle('');
@@ -59,9 +61,9 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] w-full max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] w-full max-h-[85vh] overflow-hidden">
         <ContentFormHeader isEditing={isEditing} />
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-4 py-3 overflow-y-auto max-h-[calc(85vh-130px)] pr-2">
           <ContentFormInputs
             title={title}
             page={page}
@@ -74,6 +76,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
           />
           
           <ContentEditorSelector 
+            key={isOpen ? "open" : "closed"}
             type={type}
             content={content}
             onContentChange={setContent}
