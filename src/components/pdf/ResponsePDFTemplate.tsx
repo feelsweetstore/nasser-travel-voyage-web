@@ -7,6 +7,28 @@ interface ResponsePDFProps {
 }
 
 const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ request, response }, ref) => {
+  // Formater la date pour un affichage plus concis
+  const formatDate = (dateString: string | undefined): string => {
+    if (!dateString) return 'Non spécifiée';
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch (e) {
+      return 'Date invalide';
+    }
+  };
+
+  // Obtenir la classe de voyage en français
+  const getTravelClass = (travelClass: string | undefined): string => {
+    if (!travelClass) return 'Non spécifiée';
+    switch (travelClass) {
+      case 'economy': return 'Économique';
+      case 'premium': return 'Premium Economy';
+      case 'business': return 'Business';
+      case 'first': return 'Première classe';
+      default: return travelClass;
+    }
+  };
+
   return (
     <div 
       ref={ref} 
@@ -15,10 +37,10 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
       style={{ fontFamily: 'Arial, sans-serif' }}
     >
       {/* First page - Request Details */}
-      <div className="page page-1 p-8 max-w-3xl mx-auto my-8">
-        <div className="text-center mb-8">
+      <div className="page page-1 p-8 max-w-3xl mx-auto">
+        <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-[#00B0EA]">NASSER TRAVEL HORIZON</h1>
-          <p className="text-lg font-medium mt-2">
+          <p className="text-lg font-medium mt-1">
             {request?.type === 'quote' ? 'Devis Personnalisé' : 'Confirmation de Réservation'}
           </p>
           <p className="text-sm text-gray-500 mt-1">
@@ -26,102 +48,92 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
           </p>
         </div>
         
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-3 text-[#00B0EA] border-b pb-2">Informations client</h2>
-          <div className="grid grid-cols-2 gap-4">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold mb-2 text-[#00B0EA] border-b pb-1">Informations client</h2>
+          <div className="grid grid-cols-2 gap-2">
             <div>
               <p><strong>Nom:</strong> {request?.fullName}</p>
               <p><strong>Email:</strong> {request?.email}</p>
               <p><strong>Téléphone:</strong> {request?.whatsapp || request?.phone || 'Non spécifié'}</p>
             </div>
             <div>
-              <p><strong>Demande créée le:</strong> {request?.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'N/A'}</p>
+              <p><strong>Demande créée le:</strong> {formatDate(request?.createdAt)}</p>
               <p><strong>Référence:</strong> {request?.id}</p>
               <p><strong>Type:</strong> {request?.type === 'quote' ? 'Devis' : 'Réservation'}</p>
             </div>
           </div>
         </div>
         
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-3 text-[#00B0EA] border-b pb-2">Détails du voyage</h2>
-          <div className="grid grid-cols-2 gap-4">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold mb-2 text-[#00B0EA] border-b pb-1">Détails du voyage</h2>
+          <div className="grid grid-cols-2 gap-2">
             <div>
               <p><strong>Destination:</strong> {request?.destination}</p>
-              <p>
-                <strong>Date de départ:</strong> {request?.departureDate ? new Date(request.departureDate).toLocaleDateString() : 'Non spécifiée'}
-              </p>
-              <p>
-                <strong>Date de retour:</strong> {request?.returnDate ? new Date(request.returnDate).toLocaleDateString() : 'Non spécifiée'}
-              </p>
+              <p><strong>Date de départ:</strong> {formatDate(request?.departureDate)}</p>
+              <p><strong>Date de retour:</strong> {formatDate(request?.returnDate)}</p>
             </div>
             <div>
-              <p><strong>Nombre de passagers:</strong> {request?.passengers}</p>
-              <p><strong>Classe:</strong> {
-                request?.travelClass === 'economy' ? 'Économique' :
-                request?.travelClass === 'premium' ? 'Premium Economy' :
-                request?.travelClass === 'business' ? 'Business' :
-                request?.travelClass === 'first' ? 'Première classe' :
-                request?.travelClass
-              }</p>
-              {request?.budget && <p><strong>Budget estimé:</strong> {request.budget} FCFA</p>}
+              <p><strong>Passagers:</strong> {request?.passengers || '1'}</p>
+              <p><strong>Classe:</strong> {getTravelClass(request?.travelClass)}</p>
+              {request?.budget && <p><strong>Budget:</strong> {request.budget} FCFA</p>}
             </div>
           </div>
+        </div>
+        
+        {request?.message && (
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold mb-2 text-[#00B0EA] border-b pb-1">Message du client</h2>
+            <p className="text-sm">{request.message}</p>
+          </div>
+        )}
+        
+        <div className="text-center text-sm text-gray-500 mt-8 pt-2 border-t">
+          <p>NASSER TRAVEL HORIZON</p>
+          <p>Tél: +235 66 38 69 37 | Email: contact@nassertravelhorizon.com</p>
+          <p>N'Djamena, Tchad</p>
         </div>
       </div>
       
       {/* Second page - Response */}
-      <div className="page page-2 p-8 max-w-3xl mx-auto my-8">
-        <div className="text-center mb-8">
+      <div className="page page-2 p-8 max-w-3xl mx-auto">
+        <div className="text-center mb-4">
           <h1 className="text-2xl font-bold text-[#00B0EA]">NASSER TRAVEL HORIZON</h1>
-          <p className="text-lg font-medium mt-2">Notre réponse</p>
+          <p className="text-lg font-medium mt-1">Notre réponse</p>
         </div>
         
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-3 text-[#00B0EA] border-b pb-2">
-            Objet: Votre devis pour un voyage vers {request?.destination} - NASSER TRAVEL HORIZON
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold mb-2 text-[#00B0EA] border-b pb-1">
+            Objet: {request?.type === 'quote' ? 'Devis pour' : 'Réservation pour'} {request?.destination} - NASSER TRAVEL HORIZON
           </h2>
-          <div className="bg-gray-50 p-4 rounded whitespace-pre-line">
-            <p className="mb-4"><strong>Cher(e) {request?.fullName},</strong></p>
+          <div className="bg-gray-50 p-3 rounded text-sm">
+            <p className="mb-3"><strong>Cher(e) {request?.fullName},</strong></p>
             
-            <p className="mb-4">
-              Nous vous remercions pour votre demande de devis concernant votre voyage vers {request?.destination}, 
-              du {request?.departureDate ? new Date(request.departureDate).toLocaleDateString() : 'N/A'} 
-              au {request?.returnDate ? new Date(request.returnDate).toLocaleDateString() : 'N/A'}, 
-              en classe {request?.travelClass === 'economy' ? 'Économique' : 
-                      request?.travelClass === 'premium' ? 'Premium Economy' : 
-                      request?.travelClass === 'business' ? 'Business' : 
-                      request?.travelClass === 'first' ? 'Première classe' : 
-                      request?.travelClass} pour {request?.passengers} passager(s).
+            <p className="mb-3">
+              Nous vous remercions pour votre demande concernant votre voyage vers {request?.destination}, 
+              du {formatDate(request?.departureDate)} 
+              au {formatDate(request?.returnDate)}, 
+              en classe {getTravelClass(request?.travelClass)} pour {request?.passengers || '1'} passager(s).
             </p>
             
-            <p className="mb-4"><strong>Voici notre proposition personnalisée :</strong></p>
-            
-            <div className="whitespace-pre-line">
+            <div className="whitespace-pre-line text-sm mb-3">
               {response}
             </div>
             
-            <p className="mt-4">
-              Veuillez noter que les tarifs de vols sont flexibles et peuvent changer à tout moment. 
-              Cependant, merci de bien vouloir nous confirmer votre accord afin de finaliser la réservation et 
-              garantir la disponibilité au tarif indiqué.
+            <p className="text-sm mb-3">
+              Les tarifs de vols sont flexibles et peuvent changer. Merci de bien vouloir nous confirmer 
+              votre accord rapidement pour garantir la disponibilité au tarif indiqué.
             </p>
             
-            <p className="mt-4">
-              Si vous souhaitez modifier certaines informations (dates, classe, destination, etc.), n'hésitez 
-              pas à nous le faire savoir.
-            </p>
-            
-            <p className="mt-4">
+            <p className="text-sm">
               Cordialement,<br />
               L'équipe NASSER TRAVEL HORIZON<br />
-              📞 Tél: +235 66 38 69 37<br />
-              📧 Email: contact@nassertravelhorizon.com<br />
-              📍 N'Djamena, Tchad
+              📞 +235 66 38 69 37<br />
+              📧 contact@nassertravelhorizon.com
             </p>
           </div>
         </div>
         
-        <div className="text-center text-sm text-gray-500 mt-12 pt-6 border-t">
+        <div className="text-center text-sm text-gray-500 mt-4 pt-2 border-t">
           <p>NASSER TRAVEL HORIZON</p>
           <p>Tél: +235 66 38 69 37 | Email: contact@nassertravelhorizon.com</p>
           <p>NDjamena, Tchad</p>
