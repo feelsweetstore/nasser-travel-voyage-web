@@ -22,6 +22,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
   const [category, setCategory] = useState('general');
   const isEditing = Boolean(contentItem);
 
+  // Reset form when dialog opens/closes or contentItem changes
   useEffect(() => {
     if (contentItem) {
       setTitle(contentItem.title || '');

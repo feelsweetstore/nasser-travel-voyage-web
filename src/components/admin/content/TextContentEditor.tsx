@@ -40,14 +40,17 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
   const editorRef = useRef<HTMLDivElement>(null);
   const [previewContent, setPreviewContent] = useState(content);
   const [isEmpty, setIsEmpty] = useState(!content);
+  const [initialLoad, setInitialLoad] = useState(true);
   
+  // Initial content setup
   useEffect(() => {
-    if (editorRef.current) {
+    if (editorRef.current && initialLoad) {
       editorRef.current.innerHTML = content;
       setPreviewContent(content);
       setIsEmpty(!content);
+      setInitialLoad(false);
     }
-  }, [content]);
+  }, [content, initialLoad]);
 
   const getPlaceholder = () => {
     switch(type) {
@@ -81,9 +84,36 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
     }
   };
 
+  const saveSelection = () => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      return selection.getRangeAt(0).cloneRange();
+    }
+    return null;
+  };
+
+  const restoreSelection = (range: Range | null) => {
+    if (range) {
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+  };
+
   const execFormatCommand = (command: string, value?: string) => {
+    const savedSelection = saveSelection();
     document.execCommand(command, false, value || '');
     handleContentChange();
+    
+    // Restore cursor position after a tiny delay to ensure DOM updates
+    setTimeout(() => {
+      if (editorRef.current) {
+        editorRef.current.focus();
+        restoreSelection(savedSelection);
+      }
+    }, 10);
   };
 
   const formatSelection = (formatType: string, value?: string) => {
@@ -93,8 +123,20 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
   };
   
   const applyTextColor = (color: string) => {
+    // Save the current selection before applying format
+    const savedSelection = saveSelection();
+    
     if (window.getSelection()?.toString()) {
-      execFormatCommand('foreColor', color);
+      document.execCommand('foreColor', false, color);
+      handleContentChange();
+      
+      // Restore cursor position after applying color
+      setTimeout(() => {
+        if (editorRef.current) {
+          editorRef.current.focus();
+          restoreSelection(savedSelection);
+        }
+      }, 10);
     }
   };
 
@@ -150,13 +192,13 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
               <SelectValue placeholder="Taille" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1">8px</SelectItem>
-              <SelectItem value="2">10px</SelectItem>
-              <SelectItem value="3">12px</SelectItem>
-              <SelectItem value="4">14px</SelectItem>
-              <SelectItem value="5">18px</SelectItem>
-              <SelectItem value="6">24px</SelectItem>
-              <SelectItem value="7">36px</SelectItem>
+              <SelectItem value="1">8pt</SelectItem>
+              <SelectItem value="2">10pt</SelectItem>
+              <SelectItem value="3">12pt</SelectItem>
+              <SelectItem value="4">14pt</SelectItem>
+              <SelectItem value="5">18pt</SelectItem>
+              <SelectItem value="6">24pt</SelectItem>
+              <SelectItem value="7">36pt</SelectItem>
             </SelectContent>
           </Select>
           
@@ -194,7 +236,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
             type="button" 
             variant="ghost" 
             size="icon" 
-            onClick={() => formatSelection('bold')}
+            onClick={() => execFormatCommand('bold')}
             className="h-8 w-8"
           >
             <Bold className="h-4 w-4" />
@@ -204,7 +246,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
             type="button" 
             variant="ghost" 
             size="icon" 
-            onClick={() => formatSelection('italic')}
+            onClick={() => execFormatCommand('italic')}
             className="h-8 w-8"
           >
             <Italic className="h-4 w-4" />
@@ -214,7 +256,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
             type="button" 
             variant="ghost" 
             size="icon" 
-            onClick={() => formatSelection('underline')}
+            onClick={() => execFormatCommand('underline')}
             className="h-8 w-8"
           >
             <Underline className="h-4 w-4" />
@@ -226,7 +268,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
             type="button" 
             variant="ghost" 
             size="icon" 
-            onClick={() => formatSelection('justifyLeft')}
+            onClick={() => execFormatCommand('justifyLeft')}
             className="h-8 w-8"
           >
             <AlignLeft className="h-4 w-4" />
@@ -236,7 +278,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
             type="button" 
             variant="ghost" 
             size="icon" 
-            onClick={() => formatSelection('justifyCenter')}
+            onClick={() => execFormatCommand('justifyCenter')}
             className="h-8 w-8"
           >
             <AlignCenter className="h-4 w-4" />
@@ -246,7 +288,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
             type="button" 
             variant="ghost" 
             size="icon" 
-            onClick={() => formatSelection('justifyRight')}
+            onClick={() => execFormatCommand('justifyRight')}
             className="h-8 w-8"
           >
             <AlignRight className="h-4 w-4" />
@@ -267,6 +309,7 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
           }}
           data-placeholder={getPlaceholder()}
           style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
+          suppressContentEditableWarning={true}
         />
         
         {/* CSS for the placeholder using standard style element */}
