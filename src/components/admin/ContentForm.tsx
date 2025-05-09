@@ -5,9 +5,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import ContentFormHeader from './content/ContentFormHeader';
 import ContentFormInputs from './content/ContentFormInputs';
 import ContentFormActions from './content/ContentFormActions';
-import TextContentEditor from './content/TextContentEditor';
-import ImageContentEditor from './content/ImageContentEditor';
-import HoursContentEditor from './content/HoursContentEditor';
+import ContentEditorSelector from './content/ContentEditorSelector';
 
 interface ContentFormProps {
   isOpen: boolean;
@@ -56,38 +54,9 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
     onClose();
   };
 
-  const renderContentEditor = () => {
-    if (type === 'image' || type === 'logo' || type === 'background') {
-      return (
-        <ImageContentEditor
-          content={content}
-          onContentChange={setContent}
-          type={type as 'image' | 'logo' | 'background'}
-        />
-      );
-    }
-
-    if (type === 'hours') {
-      return (
-        <HoursContentEditor
-          content={content}
-          onContentChange={setContent}
-        />
-      );
-    }
-
-    return (
-      <TextContentEditor
-        content={content}
-        onContentChange={setContent}
-        type={type}
-      />
-    );
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[800px] w-full max-h-[90vh] overflow-y-auto">
         <ContentFormHeader isEditing={isEditing} />
         <div className="grid gap-4 py-4">
           <ContentFormInputs
@@ -101,7 +70,11 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
             onCategoryChange={setCategory}
           />
           
-          {renderContentEditor()}
+          <ContentEditorSelector 
+            type={type}
+            content={content}
+            onContentChange={setContent}
+          />
         </div>
         <ContentFormActions onClose={onClose} onSave={handleSave} />
       </DialogContent>
