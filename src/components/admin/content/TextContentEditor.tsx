@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,6 @@ import {
   AlignLeft, 
   AlignCenter, 
   AlignRight,
-  Text,
   Palette
 } from "lucide-react";
 import { 
@@ -40,17 +38,16 @@ const TextContentEditor: React.FC<TextContentEditorProps> = ({
   const editorRef = useRef<HTMLDivElement>(null);
   const [previewContent, setPreviewContent] = useState(content);
   const [isEmpty, setIsEmpty] = useState(!content);
-  const [initialLoad, setInitialLoad] = useState(true);
   
-  // Initial content setup
+  // Improved content setup with better detection of content changes
   useEffect(() => {
-    if (editorRef.current && initialLoad) {
+    if (editorRef.current) {
+      // Force editor content update when content prop changes
       editorRef.current.innerHTML = content;
       setPreviewContent(content);
       setIsEmpty(!content);
-      setInitialLoad(false);
     }
-  }, [content, initialLoad]);
+  }, [content]);
 
   const getPlaceholder = () => {
     switch(type) {

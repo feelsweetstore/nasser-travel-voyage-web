@@ -24,13 +24,15 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
 
   // Reset form when dialog opens/closes or contentItem changes
   useEffect(() => {
-    if (contentItem) {
+    if (isOpen && contentItem) {
+      // Ensure we're setting the state only when the dialog is open and we have content
       setTitle(contentItem.title || '');
       setPage(contentItem.page || 'Accueil');
       setContent(contentItem.content || '');
       setType(contentItem.type || 'text');
       setCategory(contentItem.category || 'general');
-    } else {
+    } else if (!isOpen) {
+      // Only reset the form when closing
       setTitle('');
       setPage('Accueil');
       setContent('');
