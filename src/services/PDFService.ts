@@ -37,36 +37,11 @@ class PDFService {
     for (let i = 0; i < pages.length; i++) {
       const page = pages[i] as HTMLElement;
       
-      // Clone the page to manipulate it without affecting the DOM
-      const pageClone = page.cloneNode(true) as HTMLElement;
-      const tempContainer = document.createElement('div');
-      tempContainer.appendChild(pageClone);
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.left = '-9999px';
-      tempContainer.style.top = '-9999px';
-      document.body.appendChild(tempContainer);
-      
-      // Apply specific styles to ensure content fits properly
-      pageClone.style.width = '210mm';
-      pageClone.style.height = 'auto';
-      pageClone.style.padding = '10mm';
-      pageClone.style.boxSizing = 'border-box';
-      
       // Create a canvas for the current page
-      const canvas = await html2canvas(pageClone, {
+      const canvas = await html2canvas(page, {
         scale: 2, // Better quality
         useCORS: true,
-        logging: false,
-        windowWidth: 1000, // Fixed width for consistency
-        allowTaint: true,
-        onclone: (clonedDoc) => {
-          // Additional styling can be applied to the cloned document if needed
-          const clonedElement = clonedDoc.querySelector(`#${pageClone.id}`) as HTMLElement;
-          if (clonedElement) {
-            clonedElement.style.height = 'auto';
-            clonedElement.style.overflow = 'visible';
-          }
-        }
+        logging: false
       });
       
       // Add a new page for all pages after the first one
@@ -77,15 +52,9 @@ class PDFService {
       // Convert and add the page to the PDF
       const imgData = canvas.toDataURL('image/png');
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = Math.min(
-        (canvas.height * pdfWidth) / canvas.width,
-        pdf.internal.pageSize.getHeight() - 10 // Ensure it fits on page with margin
-      );
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      
-      // Clean up
-      document.body.removeChild(tempContainer);
     }
     
     pdf.save(`${filename}.pdf`);
@@ -98,8 +67,7 @@ class PDFService {
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
-      logging: false,
-      allowTaint: true
+      logging: false
     });
     
     const imgData = canvas.toDataURL('image/png');
