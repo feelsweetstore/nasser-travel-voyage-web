@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -595,7 +596,7 @@ L'équipe NASSER TRAVEL HORIZON
     
     try {
       // Générer le PDF pour le message de contact
-      const filename = `contact-${activeContactMessage.id}`;
+      const filename = `Contact-${activeContactMessage.name.replace(/\s+/g, '_')}`;
       
       PDFService.generateResponsePDF({
         ...activeContactMessage,
@@ -851,4 +852,281 @@ L'équipe NASSER TRAVEL HORIZON
                     <div className="text-center text-gray-500">
                       <Users className="h-16 w-16 mx-auto mb-4 opacity-20" />
                       <h3 className="text-lg font-medium mb-1">Aucune demande sélectionnée</h3>
-                      <p>Clique
+                      <p>Cliquez sur une demande pour afficher ses détails</p>
+                    </div>
+                  </div>
+                ) : (
+                  <Card>
+                    <CardHeader className="flex flex-row items-start justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          {activeRequest.fullName}
+                          <Badge variant={activeRequest.type === 'quote' ? 'outline' : 'default'}>
+                            {activeRequest.type === 'quote' ? 'Devis' : 'Réservation'}
+                          </Badge>
+                        </CardTitle>
+                        <CardDescription>
+                          Créé le {formatDate(activeRequest.createdAt)} · {activeRequest.email}
+                        </CardDescription>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={handleCloseDetails}>
+                        ×
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Informations du voyage */}
+                      <div className="bg-gray-50 p-4 rounded-md">
+                        <h3 className="font-medium mb-2">Détails du voyage</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <p><span className="font-medium">Destination:</span> {activeRequest.destination}</p>
+                            <p><span className="font-medium">Date de départ:</span> {formatDate(activeRequest.departureDate)}</p>
+                            <p><span className="font-medium">Date de retour:</span> {formatDate(activeRequest.returnDate)}</p>
+                          </div>
+                          <div>
+                            <p><span className="font-medium">Passagers:</span> {activeRequest.passengers || '1'}</p>
+                            <p><span className="font-medium">Classe:</span> {getTravelClassInFrench(activeRequest.travelClass)}</p>
+                            {activeRequest.budget && (
+                              <p><span className="font-medium">Budget:</span> {activeRequest.budget} FCFA</p>
+                            )}
+                          </div>
+                        </div>
+                        {activeRequest.message && (
+                          <div className="mt-3">
+                            <h4 className="font-medium mb-1">Message:</h4>
+                            <p className="text-sm">{activeRequest.message}</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Coordonnées */}
+                      <div className="bg-gray-50 p-4 rounded-md">
+                        <h3 className="font-medium mb-2">Coordonnées</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <p><span className="font-medium">Nom:</span> {activeRequest.fullName}</p>
+                            <p><span className="font-medium">Email:</span> {activeRequest.email}</p>
+                          </div>
+                          <div>
+                            <p><span className="font-medium">Téléphone:</span> {activeRequest.phone || 'Non spécifié'}</p>
+                            <p><span className="font-medium">WhatsApp:</span> {activeRequest.whatsapp || 'Non spécifié'}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Actions */}
+                      <div className="flex flex-wrap gap-2 justify-between">
+                        <div className="space-x-2">
+                          <Button 
+                            onClick={handleOpenResponseDialog} 
+                            className="flex items-center gap-2"
+                            disabled={isLoading}
+                          >
+                            <Send className="h-4 w-4" />
+                            {activeRequest.response ? 'Modifier la réponse' : 'Répondre'}
+                          </Button>
+                          {activeRequest.response && (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                onClick={generatePDF}
+                                className="flex items-center gap-2"
+                              >
+                                <Eye className="h-4 w-4" />
+                                Aperçu PDF
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                onClick={handleDirectPDFDownload}
+                                className="flex items-center gap-2"
+                              >
+                                <Download className="h-4 w-4" />
+                                Télécharger PDF
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                        <div>
+                          <select
+                            className="border rounded p-2 text-sm"
+                            value={activeRequest.status}
+                            onChange={(e) => handleStatusChange(activeRequest.id, e.target.value)}
+                          >
+                            <option value="nouveau">Nouveau</option>
+                            <option value="en attente">En attente</option>
+                            <option value="traité">Traité</option>
+                            <option value="annulé">Annulé</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      {/* Réponse (si existe) */}
+                      {activeRequest.response && (
+                        <div className="bg-gray-50 p-4 rounded-md">
+                          <div className="flex justify-between items-center mb-2">
+                            <h3 className="font-medium">Réponse</h3>
+                            <span className="text-xs text-gray-500">
+                              {activeRequest.responseDate ? formatDate(activeRequest.responseDate) : ''}
+                            </span>
+                          </div>
+                          <div className="whitespace-pre-line text-sm">
+                            {activeRequest.response}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Contacts */}
+          <TabsContent value="contacts">
+            {/* Contenu de l'onglet Contacts */}
+          </TabsContent>
+
+          {/* Avis */}
+          <TabsContent value="reviews">
+            {/* Contenu de l'onglet Avis */}
+          </TabsContent>
+
+          {/* Contenu */}
+          <TabsContent value="content">
+            {/* Contenu de l'onglet Contenu */}
+          </TabsContent>
+
+          {/* Statistiques */}
+          <TabsContent value="stats">
+            {/* Contenu de l'onglet Statistiques */}
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Dialog pour la réponse */}
+      <Dialog open={responseDialogOpen} onOpenChange={setResponseDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {activeRequest?.type === 'quote' ? 'Répondre à la demande de devis' : 'Répondre à la demande de réservation'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4">
+            <Textarea 
+              value={responseText} 
+              onChange={(e) => setResponseText(e.target.value)}
+              rows={15}
+              className="w-full mb-4"
+              placeholder="Votre réponse..."
+            />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResponseDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendResponse}>
+              Envoyer la réponse
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog pour l'aperçu PDF */}
+      <Dialog open={pdfPreviewOpen} onOpenChange={setPdfPreviewOpen} modal>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Aperçu du document</DialogTitle>
+          </DialogHeader>
+          
+          <div className="h-[70vh] overflow-y-auto border rounded-lg">
+            {activeRequest && (
+              <ResponsePDFTemplate 
+                ref={pdfTemplateRef} 
+                request={activeRequest}
+                response={activeRequest.response || ''}
+              />
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPdfPreviewOpen(false)}>
+              Fermer
+            </Button>
+            <Button onClick={handleDownloadPDF}>
+              Télécharger PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog pour la confirmation de suppression de contenu */}
+      <AlertDialog open={deleteContentDialogOpen} onOpenChange={setDeleteContentDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action ne peut pas être annulée. Le contenu sera définitivement supprimé.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteContent} className="bg-red-600 hover:bg-red-700">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Dialog pour la réponse au message de contact */}
+      <Dialog open={contactResponseDialogOpen} onOpenChange={setContactResponseDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Répondre au message de contact
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4">
+            <Textarea 
+              value={contactResponseText} 
+              onChange={(e) => setContactResponseText(e.target.value)}
+              rows={15}
+              className="w-full mb-4"
+              placeholder="Votre réponse..."
+            />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setContactResponseDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendContactResponse}>
+              Envoyer la réponse
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog pour l'édition de contenu */}
+      <Dialog open={contentDialogOpen} onOpenChange={setContentDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {activeContentItem ? 'Modifier le contenu' : 'Ajouter du contenu'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <ContentForm 
+            contentItem={activeContentItem}
+            onSave={handleSaveContent}
+            onCancel={() => setContentDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </main>
+  );
+};
+
+export default AdminDashboard;
