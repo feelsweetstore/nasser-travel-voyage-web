@@ -502,33 +502,6 @@ L'équipe NASSER TRAVEL HORIZON
     }
   };
 
-  const handleContactPDFDownload = () => {
-    if (!activeContactMessage) return;
-    
-    try {
-      // Générer le PDF pour le message de contact avec un nom personnalisé
-      const filename = `Contact-${activeContactMessage.name.replace(/\s+/g, '_')}`;
-      
-      PDFService.generateResponsePDF({
-        ...activeContactMessage,
-        response: activeContactMessage.response
-      }, 'Réponse à votre message', filename);
-      
-      toast({
-        title: "PDF téléchargé",
-        description: "Le document a été téléchargé avec succès.",
-      });
-    } catch (error) {
-      console.error('Error downloading contact PDF:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors du téléchargement du PDF.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Fonction qui génère un rang d'étoiles pour l'affichage des avis
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }).map((_, index) => (
       <span key={index} className={index < rating ? "text-yellow-500" : "text-gray-300"}>★</span>
@@ -856,3 +829,26 @@ L'équipe NASSER TRAVEL HORIZON
                                     request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
                                     request.status === "traité" ? "bg-green-100 text-green-800" :
                                     request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                    "bg-gray-100 text-gray-800"
+                                  }`}>
+                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Détails de la demande sélectionnée (ou message vide si aucune demande sélectionnée) */}
+              <div className="md:col-span-2">
+                {!activeRequest ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center text-gray-500">
+                      <Users className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                      <h3 className="text-lg font-medium mb-1">Aucune demande sélectionnée</h3>
+                      <p>Clique

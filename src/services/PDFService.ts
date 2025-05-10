@@ -62,7 +62,7 @@ class PDFService {
     try {
       // Créer un canvas avec une meilleure qualité
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 2, // Higher scale for better quality
         useCORS: true,
         logging: false,
         allowTaint: true,
@@ -73,14 +73,16 @@ class PDFService {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
+      // Add the image to the PDF, fitting to page width
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, Math.min(pdfHeight, pdf.internal.pageSize.getHeight()));
       
-      // Si le contenu est plus grand que la page, ajouter des pages supplémentaires
+      // Check if the content exceeds page height and handle overflow
       if (pdfHeight > pdf.internal.pageSize.getHeight()) {
         const pageHeight = pdf.internal.pageSize.getHeight();
         let heightLeft = pdfHeight - pageHeight;
         let position = -pageHeight;
         
+        // Add additional pages for overflow content
         while (heightLeft > 0) {
           pdf.addPage();
           pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
