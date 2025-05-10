@@ -12,10 +12,10 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
       ref={ref} 
       id="pdfTemplate" 
       className="bg-white print:shadow-none"
-      style={{ fontFamily: 'Arial, sans-serif' }}
+      style={{ fontFamily: 'Arial, sans-serif', width: '100%', maxWidth: '800px' }}
     >
       {/* First page - Request Details */}
-      <div className="page page-1 p-8 max-w-3xl mx-auto my-8">
+      <div className="page page-1 p-8 max-w-3xl mx-auto my-8" style={{ pageBreakAfter: 'always', backgroundColor: 'white' }}>
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-[#00B0EA]">NASSER TRAVEL HORIZON</h1>
           <p className="text-lg font-medium mt-2">
@@ -70,7 +70,7 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
       </div>
       
       {/* Second page - Response */}
-      <div className="page page-2 p-8 max-w-3xl mx-auto my-8">
+      <div className="page page-2 p-8 max-w-3xl mx-auto my-8" style={{ backgroundColor: 'white' }}>
         <div className="text-center mb-5">
           <h1 className="text-2xl font-bold text-[#00B0EA]">NASSER TRAVEL HORIZON</h1>
           <p className="text-lg font-medium mt-1">Notre réponse</p>

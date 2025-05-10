@@ -12,6 +12,8 @@ class PDFService {
    * @param filename - Nom du fichier PDF
    */
   static async generatePDF(elementId: string, filename: string): Promise<void> {
+    console.log(`Début de la génération du PDF pour l'élément #${elementId} avec le nom ${filename}`);
+    
     const element = document.getElementById(elementId);
     if (!element) {
       console.error(`Element with ID ${elementId} not found`);
@@ -36,9 +38,12 @@ class PDFService {
         return;
       }
       
+      console.log(`Nombre de pages trouvées: ${pages.length}`);
+      
       // Convert each page separately for better control
       for (let i = 0; i < pages.length; i++) {
         const page = pages[i] as HTMLElement;
+        console.log(`Traitement de la page ${i + 1}`);
         
         // Clone the page to manipulate it without affecting the DOM
         const pageClone = page.cloneNode(true) as HTMLElement;
@@ -55,23 +60,26 @@ class PDFService {
           pageClone.style.height = 'auto';
           pageClone.style.padding = '10mm';
           pageClone.style.boxSizing = 'border-box';
+          pageClone.style.backgroundColor = 'white';
           
           // Créer un canvas pour la page courante avec une meilleure résolution
+          console.log(`Création du canvas pour la page ${i + 1}`);
           const canvas = await html2canvas(pageClone, {
             scale: 2, // Meilleure qualité
             useCORS: true,
             logging: false,
             windowWidth: 1100, // Largeur fixe pour la cohérence
             allowTaint: true,
+            backgroundColor: '#ffffff',
             onclone: (clonedDoc) => {
               // Style supplémentaire pour s'assurer que tout le contenu est rendu
-              const clonedElement = clonedDoc.querySelector(`#${pageClone.id}`) as HTMLElement;
+              const clonedElement = clonedDoc.querySelector(`#${pageClone.id}`) as HTMLElement || pageClone;
               if (clonedElement) {
                 clonedElement.style.height = 'auto';
                 clonedElement.style.overflow = 'visible';
                 
                 // Améliorer l'affichage du texte
-                const textElements = clonedElement.querySelectorAll('p, span');
+                const textElements = clonedElement.querySelectorAll('p, span, div');
                 textElements.forEach((el: HTMLElement) => {
                   el.style.wordBreak = 'break-word';
                   el.style.lineHeight = '1.4';
@@ -93,6 +101,8 @@ class PDFService {
             pdf.internal.pageSize.getHeight() - 5 // Ensure it fits on page with small margin
           );
           
+          console.log(`Ajout de l'image au PDF pour la page ${i + 1}, hauteur: ${canvas.height}, ratio: ${pdfHeight}`);
+          
           // Add the page image to the PDF
           pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
           
@@ -101,15 +111,19 @@ class PDFService {
             const contentRatio = canvas.height / canvas.width;
             const totalPages = Math.ceil(contentRatio * 1.2); // Estimation du nombre de pages
             
+            console.log(`Contenu long détecté pour la page ${i + 1}, ratio: ${contentRatio}, pages estimées: ${totalPages}`);
+            
             if (totalPages > 1) {
               // Créer des pages supplémentaires au besoin
               const pageHeight = pdf.internal.pageSize.getHeight();
               let remainingHeight = (canvas.height * pdfWidth) / canvas.width - pageHeight;
               let offsetY = pageHeight;
               
+              console.log(`Ajout de pages supplémentaires, hauteur restante: ${remainingHeight}`);
+              
               while (remainingHeight > 0) {
                 pdf.addPage();
-                const currentPageHeight = Math.min(pageHeight, remainingHeight);
+                console.log(`Ajout d'une page supplémentaire, offset: ${offsetY}`);
                 pdf.addImage(
                   imgData, 
                   'PNG', 
@@ -124,6 +138,8 @@ class PDFService {
               }
             }
           }
+        } catch (error) {
+          console.error(`Erreur lors du traitement de la page ${i + 1}:`, error);
         } finally {
           // Clean up - remove temporary elements
           if (document.body.contains(tempContainer)) {
@@ -132,14 +148,14 @@ class PDFService {
         }
       }
       
-      // Force le téléchargement du PDF au lieu de l'ouvrir dans un nouvel onglet
+      console.log(`PDF généré avec succès. Lancement du téléchargement: ${filename}.pdf`);
+      // Force le téléchargement du PDF
       pdf.save(`${filename}.pdf`);
       
-      console.log("PDF generated and download triggered:", `${filename}.pdf`);
       return Promise.resolve();
       
     } catch (error) {
-      console.error("Error in generatePDF:", error);
+      console.error("Erreur critique dans generatePDF:", error);
       throw error;
     }
   }
@@ -149,11 +165,13 @@ class PDFService {
    */
   private static async convertSingleElementToPDF(element: HTMLElement, pdf: jsPDF, filename: string): Promise<void> {
     try {
+      console.log("Utilisation de la méthode de conversion d'élément unique");
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         logging: false,
-        allowTaint: true
+        allowTaint: true,
+        backgroundColor: '#ffffff'
       });
       
       const imgData = canvas.toDataURL('image/png');
@@ -187,24 +205,24 @@ class PDFService {
         }
       }
       
+      console.log(`PDF d'élément unique généré. Lancement du téléchargement: ${filename}.pdf`);
       // Force le téléchargement du PDF avec un nom spécifique
       pdf.save(`${filename}.pdf`);
-      console.log("PDF generated (single element) and download triggered:", `${filename}.pdf`);
       
     } catch (error) {
-      console.error("Error generating PDF (single element):", error);
+      console.error("Erreur dans convertSingleElementToPDF:", error);
       throw error;
     }
   }
 
   /**
    * Génère un PDF à partir d'un contenu texte avec demande sur page 1 et réponse sur page 2
-   * @param content - Contenu à inclure dans le PDF
+   * @param request - Données de la demande
    * @param title - Titre du document
    * @param filename - Nom du fichier PDF
    */
-  static generateResponsePDF(content: any, title: string, filename: string): void {
-    console.log("Generating response PDF with template:", content, title, filename);
+  static generateResponsePDF(request: any, title: string, filename: string): void {
+    console.log("Génération du PDF de réponse:", title, filename);
     
     // Vérifie que l'élément existe avant de lancer la génération
     if (!document.getElementById('pdfTemplate')) {
@@ -214,10 +232,11 @@ class PDFService {
     
     // Nous utilisons un timeout pour s'assurer que le DOM est bien mis à jour
     setTimeout(() => {
+      console.log("Lancement de la génération après timeout");
       this.generatePDF('pdfTemplate', filename)
-        .then(() => console.log("PDF generation completed successfully"))
-        .catch(error => console.error("Error in PDF generation:", error));
-    }, 100);
+        .then(() => console.log("Génération PDF terminée avec succès"))
+        .catch(error => console.error("Erreur lors de la génération du PDF:", error));
+    }, 300);
   }
 }
 

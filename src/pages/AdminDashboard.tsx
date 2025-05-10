@@ -431,11 +431,9 @@ L'équipe NASSER TRAVEL HORIZON
     if (!activeRequest) return;
     
     try {
-      // Générer le PDF avec les données
+      console.log("Ouverture de l'aperçu PDF pour:", activeRequest.fullName);
+      // Ouvrir la fenêtre d'aperçu
       setPdfPreviewOpen(true);
-      
-      // Le PDF sera généré quand l'utilisateur cliquera sur télécharger
-      // dans la fenêtre d'aperçu
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({
@@ -450,23 +448,29 @@ L'équipe NASSER TRAVEL HORIZON
     if (!activeRequest) return;
     
     try {
+      console.log("Téléchargement direct du PDF pour:", activeRequest.fullName);
       // Générer directement le PDF avec un nom incluant celui du client
       const filename = `${activeRequest.type === 'quote' ? 'Devis' : 'Reservation'}-${activeRequest.fullName.replace(/\s+/g, '_')}`;
       
+      // Notification du début du téléchargement
+      toast({
+        title: "Préparation du PDF",
+        description: "Le téléchargement va commencer dans un instant...",
+      });
+      
+      // Générer et télécharger le PDF
       PDFService.generateResponsePDF({
         ...activeRequest,
         response: activeRequest.response
       }, activeRequest.type === 'quote' ? 'Devis Personnalisé' : 'Confirmation de Réservation', filename);
       
-      toast({
-        title: "PDF téléchargé",
-        description: "Le document a été téléchargé avec succès.",
-      });
-      
-      // Fermer automatiquement la fenêtre d'aperçu après téléchargement
+      // Notification de succès (après un court délai)
       setTimeout(() => {
-        setPdfPreviewOpen(false);
-      }, 500);
+        toast({
+          title: "PDF téléchargé",
+          description: "Le document a été téléchargé avec succès.",
+        });
+      }, 1000);
     } catch (error) {
       console.error('Error downloading PDF:', error);
       toast({
@@ -481,15 +485,29 @@ L'équipe NASSER TRAVEL HORIZON
     if (!activeRequest || !pdfTemplateRef.current) return;
     
     try {
+      console.log("Téléchargement du PDF depuis l'aperçu pour:", activeRequest.fullName);
       // Utiliser html2canvas et jsPDF pour générer le PDF avec un nom personnalisé
       const filename = `${activeRequest.type === 'quote' ? 'Devis' : 'Reservation'}-${activeRequest.fullName.replace(/\s+/g, '_')}`;
       
+      // Notification du début du téléchargement
+      toast({
+        title: "Préparation du PDF",
+        description: "Le téléchargement va commencer dans un instant...",
+      });
+      
+      // Générer et télécharger le PDF
       PDFService.generatePDF('pdfTemplate', filename);
       
-      toast({
-        title: "PDF téléchargé",
-        description: "Le document a été téléchargé avec succès.",
-      });
+      // Notification de succès (après un court délai)
+      setTimeout(() => {
+        toast({
+          title: "PDF téléchargé",
+          description: "Le document a été téléchargé avec succès.",
+        });
+        
+        // Fermer automatiquement la fenêtre d'aperçu après téléchargement
+        setPdfPreviewOpen(false);
+      }, 1500);
     } catch (error) {
       console.error('Error downloading PDF:', error);
       toast({
@@ -592,18 +610,28 @@ L'équipe NASSER TRAVEL HORIZON
     if (!activeContactMessage) return;
     
     try {
+      console.log("Téléchargement du PDF de contact pour:", activeContactMessage.name);
       // Générer le PDF pour le message de contact
-      const filename = `contact-${activeContactMessage.id}`;
+      const filename = `Contact-${activeContactMessage.name.replace(/\s+/g, '_')}`;
+      
+      // Notification du début du téléchargement
+      toast({
+        title: "Préparation du PDF",
+        description: "Le téléchargement va commencer dans un instant...",
+      });
       
       PDFService.generateResponsePDF({
         ...activeContactMessage,
         response: activeContactMessage.response
       }, 'Réponse à votre message', filename);
       
-      toast({
-        title: "PDF téléchargé",
-        description: "Le document a été téléchargé avec succès.",
-      });
+      // Notification de succès (après un court délai)
+      setTimeout(() => {
+        toast({
+          title: "PDF téléchargé",
+          description: "Le document a été téléchargé avec succès.",
+        });
+      }, 1000);
     } catch (error) {
       console.error('Error downloading contact PDF:', error);
       toast({
@@ -1325,7 +1353,7 @@ L'équipe NASSER TRAVEL HORIZON
           </DialogHeader>
           <div className="py-4">
             <div ref={pdfTemplateRef} id="pdfTemplate" className="border p-8 rounded-md bg-white">
-              <ResponsePDFTemplate request={activeRequest} response={activeRequest?.response || ''} />
+              {activeRequest && <ResponsePDFTemplate request={activeRequest} response={activeRequest?.response || ''} />}
             </div>
           </div>
           <DialogFooter>
