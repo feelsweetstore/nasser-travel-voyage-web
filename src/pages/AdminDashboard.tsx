@@ -369,8 +369,7 @@ Numéro de vol : [XXXX]
 
 Afin de finaliser votre réservation, merci de bien vouloir :
 ✅ Confirmer votre accord par retour de message via notre e-mail.
-✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).
-✅ Procéder au paiement dans le délai mentionné ci-dessus
+✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).\n✅ Procéder au paiement dans le délai mentionné ci-dessus
 
 Si vous avez des questions ou souhaitez ajuster certains détails de votre voyage, notre équipe reste à votre entière disposition.
 
@@ -644,215 +643,216 @@ L'équipe NASSER TRAVEL HORIZON
   };
 
   return (
-    <main className="bg-white py-10">
-      <div className="container-custom">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">
-            Tableau de bord administrateur
-          </h1>
-          <p className="text-gray-600">
-            Gérez les fonctionnalités et le contenu du site NASSER TRAVEL HORIZON.
-          </p>
-        </div>
+    <React.Fragment>
+      <main className="bg-white py-10">
+        <div className="container-custom">
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">
+              Tableau de bord administrateur
+            </h1>
+            <p className="text-gray-600">
+              Gérez les fonctionnalités et le contenu du site NASSER TRAVEL HORIZON.
+            </p>
+          </div>
 
-        <Tabs defaultValue="settings" className="w-full">
-          <TabsList className="grid grid-cols-6 mb-8">
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              <span className="hidden md:inline">Paramètres</span>
-            </TabsTrigger>
-            <TabsTrigger value="requests" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              <span className="hidden md:inline">Demandes</span>
-            </TabsTrigger>
-            <TabsTrigger value="contacts" className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              <span className="hidden md:inline">Contacts</span>
-            </TabsTrigger>
-            <TabsTrigger value="reviews" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden md:inline">Avis</span>
-            </TabsTrigger>
-            <TabsTrigger value="content" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              <span className="hidden md:inline">Contenu</span>
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-2">
-              <BarChart2 className="h-4 w-4" />
-              <span className="hidden md:inline">Statistiques</span>
-            </TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="settings" className="w-full">
+            <TabsList className="grid grid-cols-6 mb-8">
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                <span className="hidden md:inline">Paramètres</span>
+              </TabsTrigger>
+              <TabsTrigger value="requests" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="hidden md:inline">Demandes</span>
+              </TabsTrigger>
+              <TabsTrigger value="contacts" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                <span className="hidden md:inline">Contacts</span>
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                <span className="hidden md:inline">Avis</span>
+              </TabsTrigger>
+              <TabsTrigger value="content" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span className="hidden md:inline">Contenu</span>
+              </TabsTrigger>
+              <TabsTrigger value="stats" className="flex items-center gap-2">
+                <BarChart2 className="h-4 w-4" />
+                <span className="hidden md:inline">Statistiques</span>
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Paramètres */}
-          <TabsContent value="settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Paramètres généraux</CardTitle>
-                <CardDescription>
-                  Activez ou désactivez les fonctionnalités du site
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Réservation en ligne</h3>
-                      <p className="text-sm text-gray-500">Permet aux clients de réserver directement en ligne</p>
+            {/* Paramètres */}
+            <TabsContent value="settings">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Paramètres généraux</CardTitle>
+                  <CardDescription>
+                    Activez ou désactivez les fonctionnalités du site
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium">Réservation en ligne</h3>
+                        <p className="text-sm text-gray-500">Permet aux clients de réserver directement en ligne</p>
+                      </div>
+                      <Switch 
+                        checked={onlineReservation} 
+                        onCheckedChange={handleReservationToggle}
+                        disabled={isLoading}
+                      />
                     </div>
-                    <Switch 
-                      checked={onlineReservation} 
-                      onCheckedChange={handleReservationToggle}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Espace client</h3>
-                      <p className="text-sm text-gray-500">Activer l'espace client</p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium">Espace client</h3>
+                        <p className="text-sm text-gray-500">Activer l'espace client</p>
+                      </div>
+                      <Switch 
+                        checked={clientAreaEnabled}
+                        onCheckedChange={handleClientAreaToggle}
+                      />
                     </div>
-                    <Switch 
-                      checked={clientAreaEnabled}
-                      onCheckedChange={handleClientAreaToggle}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Témoignages</h3>
-                      <p className="text-sm text-gray-500">Activer la section témoignages</p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium">Témoignages</h3>
+                        <p className="text-sm text-gray-500">Activer la section témoignages</p>
+                      </div>
+                      <Switch 
+                        checked={testimonialsEnabled}
+                        onCheckedChange={handleTestimonialsToggle}
+                      />
                     </div>
-                    <Switch 
-                      checked={testimonialsEnabled}
-                      onCheckedChange={handleTestimonialsToggle}
-                    />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          {/* Demandes */}
-          <TabsContent value="requests">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Liste des demandes */}
-              <div className="md:col-span-1">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Demandes reçues</CardTitle>
-                    <CardDescription>
-                      Réservations et devis
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <Tabs defaultValue="all" className="px-6">
-                      <TabsList className="mb-4 w-full">
-                        <TabsTrigger value="all" className="flex-1">Toutes</TabsTrigger>
-                        <TabsTrigger value="reservations" className="flex-1">Réservations</TabsTrigger>
-                        <TabsTrigger value="quotes" className="flex-1">Devis</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="all" className="max-h-[70vh] overflow-y-auto">
-                        {requests.length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucune demande pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {requests.map((request) => (
-                              <div 
-                                key={request.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewRequest(request)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{request.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination}</p>
+            {/* Contenu pour les autres onglets */}
+            <TabsContent value="requests">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Liste des demandes */}
+                <div className="md:col-span-1">
+                  <Card className="h-full">
+                    <CardHeader>
+                      <CardTitle>Demandes reçues</CardTitle>
+                      <CardDescription>
+                        Réservations et devis
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <Tabs defaultValue="all" className="px-6">
+                        <TabsList className="mb-4 w-full">
+                          <TabsTrigger value="all" className="flex-1">Toutes</TabsTrigger>
+                          <TabsTrigger value="reservations" className="flex-1">Réservations</TabsTrigger>
+                          <TabsTrigger value="quotes" className="flex-1">Devis</TabsTrigger>
+                        </TabsList>
+                        
+                        <TabsContent value="all" className="max-h-[70vh] overflow-y-auto">
+                          {requests.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                              Aucune demande pour le moment
+                            </div>
+                          ) : (
+                            <div className="space-y-2 pb-4">
+                              {requests.map((request) => (
+                                <div 
+                                  key={request.id} 
+                                  className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                  onClick={() => handleViewRequest(request)}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h4 className="font-medium">{request.fullName}</h4>
+                                      <p className="text-sm text-gray-500">{request.destination}</p>
+                                    </div>
+                                    <Badge variant={request.type === 'quote' ? 'outline' : 'default'} className="ml-2">
+                                      {request.type === 'quote' ? 'Devis' : 'Réservation'}
+                                    </Badge>
                                   </div>
-                                  <Badge variant={request.type === 'quote' ? 'outline' : 'default'} className="ml-2">
-                                    {request.type === 'quote' ? 'Devis' : 'Réservation'}
-                                  </Badge>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(request.createdAt).toLocaleDateString()}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    request.status === "traité" ? "bg-green-100 text-green-800" :
-                                    request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
-                                    "bg-gray-100 text-gray-800"
-                                  }`}>
-                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                      
-                      <TabsContent value="reservations" className="max-h-[70vh] overflow-y-auto">
-                        {requests.filter(r => r.type !== 'quote').length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucune réservation pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {requests.filter(r => r.type !== 'quote').map((request) => (
-                              <div 
-                                key={request.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewRequest(request)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{request.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination}</p>
+                                  <div className="flex justify-between items-center mt-2">
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(request.createdAt).toLocaleDateString()}
+                                    </span>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                      request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                      request.status === "traité" ? "bg-green-100 text-green-800" :
+                                      request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                      "bg-gray-100 text-gray-800"
+                                    }`}>
+                                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                    </span>
                                   </div>
                                 </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(request.createdAt).toLocaleDateString()}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    request.status === "traité" ? "bg-green-100 text-green-800" :
-                                    request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
-                                    "bg-gray-100 text-gray-800"
-                                  }`}>
-                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                      
-                      <TabsContent value="quotes" className="max-h-[70vh] overflow-y-auto">
-                        {requests.filter(r => r.type === 'quote').length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucune demande de devis pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {requests.filter(r => r.type === 'quote').map((request) => (
-                              <div 
-                                key={request.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewRequest(request)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{request.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination}</p>
+                              ))}
+                            </div>
+                          )}
+                        </TabsContent>
+                        
+                        <TabsContent value="reservations" className="max-h-[70vh] overflow-y-auto">
+                          {requests.filter(r => r.type !== 'quote').length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                              Aucune réservation pour le moment
+                            </div>
+                          ) : (
+                            <div className="space-y-2 pb-4">
+                              {requests.filter(r => r.type !== 'quote').map((request) => (
+                                <div 
+                                  key={request.id} 
+                                  className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                  onClick={() => handleViewRequest(request)}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h4 className="font-medium">{request.fullName}</h4>
+                                      <p className="text-sm text-gray-500">{request.destination}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-between items-center mt-2">
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(request.createdAt).toLocaleDateString()}
+                                    </span>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                      request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                      request.status === "traité" ? "bg-green-100 text-green-800" :
+                                      request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                      "bg-gray-100 text-gray-800"
+                                    }`}>
+                                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                    </span>
                                   </div>
                                 </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(request.createdAt).toLocaleDateString()}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    request.status === "traité" ? "bg-green-100 text-green-800" :
-                                    request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                              ))}
+                            </div>
+                          )}
+                        </TabsContent>
+                        
+                        <TabsContent value="quotes" className="max-h-[70vh] overflow-y-auto">
+                          {requests.filter(r => r.type === 'quote').length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                              Aucune demande de devis pour le moment
+                            </div>
+                          ) : (
+                            <div className="space-y-2 pb-4">
+                              {requests.filter(r => r.type === 'quote').map((request) => (
+                                <div 
+                                  key={request.id} 
+                                  className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                  onClick={() => handleViewRequest(request)}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h4 className="font-medium">{request.fullName}</h4>
+                                      <p className="text-sm text-gray-500">{request.destination}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-between items-center mt-2">
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(request.createdAt).toLocaleDateString()}
+                                    </span>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                      request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                      request.status === "traité" ? "bg-green-100 text-green-800" :
+                                      request
