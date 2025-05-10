@@ -108,6 +108,15 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
               {response}
             </div>
             
+            {/* La section "Pour finaliser votre réservation" sera uniquement affichée dans la signature et non dupliquée ici */}
+            
+            <p className="mt-4">
+              Cordialement,<br />
+              L'équipe NASSER TRAVEL HORIZON<br />
+              📞 Tél: +235 66 38 69 37<br />
+              📧 Email: contact@nassertravelhorizon.com<br />
+            </p>
+
             <div className="mt-3 space-y-1">
               <p>
                 <strong>Pour finaliser votre réservation :</strong>
@@ -118,13 +127,6 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
                 <li>✅ Procéder au paiement du montant indiqué ci-dessus</li>
               </ul>
             </div>
-            
-            <p className="mt-4">
-              Cordialement,<br />
-              L'équipe NASSER TRAVEL HORIZON<br />
-              📞 Tél: +235 66 38 69 37<br />
-              📧 Email: contact@nassertravelhorizon.com<br />
-            </p>
           </div>
         </div>
         
