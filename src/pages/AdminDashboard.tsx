@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -313,7 +312,6 @@ const AdminDashboard = () => {
         template = `Objet : Votre devis pour un voyage vers ${destination} – NASSER TRAVEL HORIZON
 
 Cher(e) ${fullName},
-
 Nous vous remercions pour votre demande de devis concernant votre voyage vers ${destination}, du ${departureDate} au ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
 
 Voici notre proposition personnalisée :
@@ -346,7 +344,6 @@ L'équipe NASSER TRAVEL HORIZON
         template = `Objet : Votre réservation de billet pour ${destination} – NASSER TRAVEL HORIZON
 
 Cher(e) ${fullName},
-
 Nous avons bien reçu votre demande de réservation de billet à destination de ${destination}, pour un départ prévu le ${departureDate} et un retour le ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
 
 Voici les détails de votre réservation en cours de traitement :
@@ -524,7 +521,6 @@ L'équipe NASSER TRAVEL HORIZON
       const template = `Objet : Réponse à votre message - NASSER TRAVEL HORIZON
 
 Cher(e) ${activeContactMessage.name},
-
 Nous vous remercions pour votre message concernant "${activeContactMessage.subject || 'votre demande'}".
 
 [Votre réponse personnalisée ici]
@@ -742,7 +738,7 @@ L'équipe NASSER TRAVEL HORIZON
                                     <h4 className="font-medium">{request.fullName}</h4>
                                     <p className="text-sm text-gray-500">{request.destination}</p>
                                   </div>
-                                  <Badge variant={request.type === 'quote' ? 'outline' : 'default'} className="ml-2">
+                                  <Badge variant={request.type === 'quote' ? 'outline' : 'default'}>
                                     {request.type === 'quote' ? 'Devis' : 'Réservation'}
                                   </Badge>
                                 </div>
@@ -1109,22 +1105,13 @@ L'équipe NASSER TRAVEL HORIZON
         </DialogContent>
       </Dialog>
 
-      {/* Dialog pour l'édition de contenu */}
-      <Dialog open={contentDialogOpen} onOpenChange={setContentDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {activeContentItem ? 'Modifier le contenu' : 'Ajouter du contenu'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <ContentForm 
-            contentItem={activeContentItem}
-            onSave={handleSaveContent}
-            onCancel={() => setContentDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* Dialog for content editing */}
+      <ContentForm
+        isOpen={contentDialogOpen}
+        onClose={() => setContentDialogOpen(false)}
+        contentItem={activeContentItem}
+        onSave={handleSaveContent}
+      />
     </main>
   );
 };

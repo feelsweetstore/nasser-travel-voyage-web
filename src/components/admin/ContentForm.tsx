@@ -8,13 +8,20 @@ import ContentFormActions from './content/ContentFormActions';
 import ContentEditorSelector from './content/ContentEditorSelector';
 
 interface ContentFormProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
+  onCancel?: () => void;
   onSave: (content: any) => void;
   contentItem?: any;
 }
 
-const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, contentItem }) => {
+const ContentForm: React.FC<ContentFormProps> = ({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  onCancel,
+  contentItem 
+}) => {
   const [title, setTitle] = useState('');
   const [page, setPage] = useState('Accueil');
   const [content, setContent] = useState('');
@@ -54,7 +61,12 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
     };
 
     onSave(newContentItem);
-    onClose();
+    if (onClose) onClose();
+  };
+
+  const handleCancel = () => {
+    if (onCancel) onCancel();
+    else if (onClose) onClose();
   };
 
   return (
@@ -79,7 +91,7 @@ const ContentForm: React.FC<ContentFormProps> = ({ isOpen, onClose, onSave, cont
             onContentChange={setContent}
           />
         </div>
-        <ContentFormActions onClose={onClose} onSave={handleSave} />
+        <ContentFormActions onClose={handleCancel} onSave={handleSave} />
       </DialogContent>
     </Dialog>
   );
