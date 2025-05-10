@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -449,6 +448,32 @@ L'équipe NASSER TRAVEL HORIZON
     }
   };
   
+  const handleDirectPDFDownload = () => {
+    if (!activeRequest) return;
+    
+    try {
+      // Générer directement le PDF avec un nom incluant celui du client
+      const filename = `${activeRequest.type === 'quote' ? 'devis' : 'reservation'}-${activeRequest.id}`;
+      
+      PDFService.generateResponsePDF({
+        ...activeRequest,
+        response: activeRequest.response
+      }, activeRequest.type === 'quote' ? 'Devis Personnalisé' : 'Confirmation de Réservation', filename);
+      
+      toast({
+        title: "PDF téléchargé",
+        description: "Le document a été téléchargé avec succès.",
+      });
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors du téléchargement du PDF.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   const handleDownloadPDF = () => {
     if (!activeRequest || !pdfTemplateRef.current) return;
     
@@ -471,25 +496,31 @@ L'équipe NASSER TRAVEL HORIZON
       });
     }
   };
-  
-  const handleDirectPDFDownload = () => {
-    if (!activeRequest) return;
+
+  /**
+   * Génère un PDF à partir d'un contenu texte avec demande sur page 1 et réponse sur page 2
+   * @param content - Contenu à inclure dans le PDF
+   * @param title - Titre du document
+   * @param filename - Nom du fichier PDF
+   */
+  const handleContactPDFDownload = () => {
+    if (!activeContactMessage) return;
     
     try {
-      // Générer directement le PDF sans aperçu
-      const filename = `${activeRequest.type === 'quote' ? 'devis' : 'reservation'}-${activeRequest.id}`;
+      // Générer le PDF pour le message de contact
+      const filename = `contact-${activeContactMessage.id}`;
       
       PDFService.generateResponsePDF({
-        ...activeRequest,
-        response: activeRequest.response
-      }, activeRequest.type === 'quote' ? 'Devis Personnalisé' : 'Confirmation de Réservation', filename);
+        ...activeContactMessage,
+        response: activeContactMessage.response
+      }, 'Réponse à votre message', filename);
       
       toast({
         title: "PDF téléchargé",
         description: "Le document a été téléchargé avec succès.",
       });
     } catch (error) {
-      console.error('Error downloading PDF:', error);
+      console.error('Error downloading contact PDF:', error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors du téléchargement du PDF.",
@@ -587,829 +618,237 @@ L'équipe NASSER TRAVEL HORIZON
     }
   };
 
-  const handleContactPDFDownload = () => {
-    if (!activeContactMessage) return;
-    
-    try {
-      // Générer le PDF pour le message de contact
-      const filename = `contact-${activeContactMessage.id}`;
-      
-      PDFService.generateResponsePDF({
-        ...activeContactMessage,
-        response: activeContactMessage.response
-      }, 'Réponse à votre message', filename);
-      
-      toast({
-        title: "PDF téléchargé",
-        description: "Le document a été téléchargé avec succès.",
-      });
-    } catch (error) {
-      console.error('Error downloading contact PDF:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors du téléchargement du PDF.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
-    <main className="bg-white py-10">
-      <div className="container-custom">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">
-            Tableau de bord administrateur
-          </h1>
-          <p className="text-gray-600">
-            Gérez les fonctionnalités et le contenu du site NASSER TRAVEL HORIZON.
-          </p>
-        </div>
+    <React.Fragment>
+      <main className="bg-white py-10">
+        <div className="container-custom">
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">
+              Tableau de bord administrateur
+            </h1>
+            <p className="text-gray-600">
+              Gérez les fonctionnalités et le contenu du site NASSER TRAVEL HORIZON.
+            </p>
+          </div>
 
-        <Tabs defaultValue="settings" className="w-full">
-          <TabsList className="grid grid-cols-6 mb-8">
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              <span className="hidden md:inline">Paramètres</span>
-            </TabsTrigger>
-            <TabsTrigger value="requests" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              <span className="hidden md:inline">Demandes</span>
-            </TabsTrigger>
-            <TabsTrigger value="contacts" className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              <span className="hidden md:inline">Contacts</span>
-            </TabsTrigger>
-            <TabsTrigger value="reviews" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden md:inline">Avis</span>
-            </TabsTrigger>
-            <TabsTrigger value="content" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              <span className="hidden md:inline">Contenu</span>
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-2">
-              <BarChart2 className="h-4 w-4" />
-              <span className="hidden md:inline">Statistiques</span>
-            </TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="settings" className="w-full">
+            <TabsList className="grid grid-cols-6 mb-8">
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                <span className="hidden md:inline">Paramètres</span>
+              </TabsTrigger>
+              <TabsTrigger value="requests" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="hidden md:inline">Demandes</span>
+              </TabsTrigger>
+              <TabsTrigger value="contacts" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                <span className="hidden md:inline">Contacts</span>
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                <span className="hidden md:inline">Avis</span>
+              </TabsTrigger>
+              <TabsTrigger value="content" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span className="hidden md:inline">Contenu</span>
+              </TabsTrigger>
+              <TabsTrigger value="stats" className="flex items-center gap-2">
+                <BarChart2 className="h-4 w-4" />
+                <span className="hidden md:inline">Statistiques</span>
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Paramètres */}
-          <TabsContent value="settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Paramètres généraux</CardTitle>
-                <CardDescription>
-                  Activez ou désactivez les fonctionnalités du site
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Réservation en ligne</h3>
-                      <p className="text-sm text-gray-500">Permet aux clients de réserver directement en ligne</p>
-                    </div>
-                    <Switch 
-                      checked={onlineReservation} 
-                      onCheckedChange={handleReservationToggle}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Espace client</h3>
-                      <p className="text-sm text-gray-500">Activer l'espace client</p>
-                    </div>
-                    <Switch 
-                      checked={clientAreaEnabled}
-                      onCheckedChange={handleClientAreaToggle}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Témoignages</h3>
-                      <p className="text-sm text-gray-500">Activer la section témoignages</p>
-                    </div>
-                    <Switch 
-                      checked={testimonialsEnabled}
-                      onCheckedChange={handleTestimonialsToggle}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Demandes */}
-          <TabsContent value="requests">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Liste des demandes */}
-              <div className="md:col-span-1">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Demandes reçues</CardTitle>
-                    <CardDescription>
-                      Réservations et devis
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <Tabs defaultValue="all" className="px-6">
-                      <TabsList className="mb-4 w-full">
-                        <TabsTrigger value="all" className="flex-1">Toutes</TabsTrigger>
-                        <TabsTrigger value="reservations" className="flex-1">Réservations</TabsTrigger>
-                        <TabsTrigger value="quotes" className="flex-1">Devis</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="all" className="max-h-[70vh] overflow-y-auto">
-                        {requests.length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucune demande pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {requests.map((request) => (
-                              <div 
-                                key={request.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewRequest(request)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{request.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination}</p>
-                                  </div>
-                                  <Badge variant={request.type === 'quote' ? 'outline' : 'default'} className="ml-2">
-                                    {request.type === 'quote' ? 'Devis' : 'Réservation'}
-                                  </Badge>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(request.createdAt).toLocaleDateString()}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    request.status === "traité" ? "bg-green-100 text-green-800" :
-                                    request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
-                                    "bg-gray-100 text-gray-800"
-                                  }`}>
-                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                      
-                      <TabsContent value="reservations" className="max-h-[70vh] overflow-y-auto">
-                        {requests.filter(r => r.type !== 'quote').length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucune réservation pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {requests.filter(r => r.type !== 'quote').map((request) => (
-                              <div 
-                                key={request.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewRequest(request)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{request.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination}</p>
-                                  </div>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(request.createdAt).toLocaleDateString()}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    request.status === "traité" ? "bg-green-100 text-green-800" :
-                                    request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
-                                    "bg-gray-100 text-gray-800"
-                                  }`}>
-                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                      
-                      <TabsContent value="quotes" className="max-h-[70vh] overflow-y-auto">
-                        {requests.filter(r => r.type === 'quote').length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucune demande de devis pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {requests.filter(r => r.type === 'quote').map((request) => (
-                              <div 
-                                key={request.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewRequest(request)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{request.fullName}</h4>
-                                    <p className="text-sm text-gray-500">{request.destination}</p>
-                                  </div>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(request.createdAt).toLocaleDateString()}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    request.status === "traité" ? "bg-green-100 text-green-800" :
-                                    request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
-                                    "bg-gray-100 text-gray-800"
-                                  }`}>
-                                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                    </Tabs>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              {/* Détails de la demande */}
-              <div className="md:col-span-2">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Détails de la demande</CardTitle>
-                    <CardDescription>
-                      {activeRequest ? 
-                        `${activeRequest.type === 'quote' ? 'Demande de devis' : 'Réservation'} - ${activeRequest.fullName}` : 
-                        'Sélectionnez une demande pour voir les détails'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {!activeRequest ? (
-                      <div className="text-center py-12 text-gray-500">
-                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                        <p>Veuillez sélectionner une demande dans la liste</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-1">Informations client</h3>
-                            <div className="bg-gray-50 p-4 rounded-md">
-                              <p><strong>Nom:</strong> {activeRequest.fullName}</p>
-                              <p><strong>Email:</strong> {activeRequest.email}</p>
-                              <p><strong>Téléphone:</strong> {activeRequest.whatsapp || activeRequest.phone}</p>
-                              <p><strong>Date de demande:</strong> {new Date(activeRequest.createdAt).toLocaleDateString()}</p>
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-1">Détails du voyage</h3>
-                            <div className="bg-gray-50 p-4 rounded-md">
-                              <p><strong>Destination:</strong> {activeRequest.destination}</p>
-                              <p>
-                                <strong>Date de départ:</strong> {activeRequest.departureDate ? new Date(activeRequest.departureDate).toLocaleDateString() : 'Non spécifiée'}
-                              </p>
-                              <p>
-                                <strong>Date de retour:</strong> {activeRequest.returnDate ? new Date(activeRequest.returnDate).toLocaleDateString() : 'Non spécifiée'}
-                              </p>
-                              <p><strong>Nombre de passagers:</strong> {activeRequest.passengers}</p>
-                              <p><strong>Classe:</strong> {
-                                activeRequest.travelClass === 'economy' ? 'Économique' :
-                                activeRequest.travelClass === 'premium' ? 'Premium Economy' :
-                                activeRequest.travelClass === 'business' ? 'Business' :
-                                activeRequest.travelClass === 'first' ? 'Première classe' :
-                                activeRequest.travelClass
-                              }</p>
-                              {activeRequest.type === 'quote' && activeRequest.budget && 
-                                <p><strong>Budget estimé:</strong> {activeRequest.budget} FCFA</p>
-                              }
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {activeRequest.message && (
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-1">Message du client</h3>
-                            <div className="bg-gray-50 p-4 rounded-md">
-                              <p>{activeRequest.message}</p>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {activeRequest.response ? (
-                          <div>
-                            <div className="flex justify-between items-center">
-                              <h3 className="text-sm font-medium text-gray-500 mb-1">Votre réponse</h3>
-                              <div className="flex gap-2">
-                                <Button variant="outline" size="sm" onClick={() => generatePDF()}>
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  Aperçu PDF
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={handleDirectPDFDownload}>
-                                  <Download className="h-4 w-4 mr-2" />
-                                  Télécharger PDF
-                                </Button>
-                              </div>
-                            </div>
-                            <div className="bg-nasser-primary/5 border border-nasser-primary/20 p-4 rounded-md">
-                              <p className="whitespace-pre-line">{activeRequest.response}</p>
-                              <p className="text-xs text-gray-500 mt-2">
-                                Envoyée le {new Date(activeRequest.responseDate).toLocaleDateString()} à {new Date(activeRequest.responseDate).toLocaleTimeString()}
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex justify-end space-x-2">
-                            <Button variant="outline" onClick={handleCloseDetails}>
-                              Fermer
-                            </Button>
-                            <Button onClick={handleOpenResponseDialog}>
-                              <Send className="h-4 w-4 mr-2" />
-                              Répondre
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Contacts */}
-          <TabsContent value="contacts">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Liste des messages de contact */}
-              <div className="md:col-span-1">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Messages de contact</CardTitle>
-                    <CardDescription>
-                      Demandes et messages reçus via le formulaire de contact
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <div className="px-6">
-                      <div className="max-h-[70vh] overflow-y-auto">
-                        {contactMessages.length === 0 ? (
-                          <div className="text-center py-8 text-gray-500">
-                            Aucun message pour le moment
-                          </div>
-                        ) : (
-                          <div className="space-y-2 pb-4">
-                            {contactMessages.map((message) => (
-                              <div 
-                                key={message.id} 
-                                className={`p-3 rounded-md cursor-pointer ${activeContactMessage?.id === message.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
-                                onClick={() => handleViewContactMessage(message)}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{message.name}</h4>
-                                    <p className="text-sm text-gray-500">{message.subject || 'Sans objet'}</p>
-                                  </div>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(message.createdAt).toLocaleDateString()}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    message.status === "nouveau" ? "bg-blue-100 text-blue-800" :
-                                    message.status === "traité" ? "bg-green-100 text-green-800" :
-                                    message.status === "lu" ? "bg-gray-100 text-gray-800" :
-                                    "bg-gray-100 text-gray-800"
-                                  }`}>
-                                    {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              {/* Détails du message */}
-              <div className="md:col-span-2">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Détails du message</CardTitle>
-                    <CardDescription>
-                      {activeContactMessage ? 
-                        `Message de ${activeContactMessage.name}` : 
-                        'Sélectionnez un message pour voir les détails'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {!activeContactMessage ? (
-                      <div className="text-center py-12 text-gray-500">
-                        <Mail className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                        <p>Veuillez sélectionner un message dans la liste</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-1">Informations expéditeur</h3>
-                            <div className="bg-gray-50 p-4 rounded-md">
-                              <p><strong>Nom:</strong> {activeContactMessage.name}</p>
-                              <p><strong>Email:</strong> {activeContactMessage.email}</p>
-                              {activeContactMessage.phone && <p><strong>Téléphone:</strong> {activeContactMessage.phone}</p>}
-                              <p><strong>Date du message:</strong> {new Date(activeContactMessage.createdAt).toLocaleDateString()}</p>
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500 mb-1">Détails du message</h3>
-                            <div className="bg-gray-50 p-4 rounded-md">
-                              <p><strong>Objet:</strong> {activeContactMessage.subject || 'Sans objet'}</p>
-                              <p className="mt-2"><strong>Message:</strong></p>
-                              <p className="mt-1">{activeContactMessage.message}</p>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {activeContactMessage.response ? (
-                          <div>
-                            <div className="flex justify-between items-center">
-                              <h3 className="text-sm font-medium text-gray-500 mb-1">Votre réponse</h3>
-                              <Button variant="outline" size="sm" onClick={handleContactPDFDownload}>
-                                <Download className="h-4 w-4 mr-2" />
-                                Télécharger PDF
-                              </Button>
-                            </div>
-                            <div className="bg-nasser-primary/5 border border-nasser-primary/20 p-4 rounded-md">
-                              <p className="whitespace-pre-line">{activeContactMessage.response}</p>
-                              <p className="text-xs text-gray-500 mt-2">
-                                Envoyée le {new Date(activeContactMessage.responseDate).toLocaleDateString()} à {new Date(activeContactMessage.responseDate).toLocaleTimeString()}
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex justify-end space-x-2">
-                            <Button variant="outline" onClick={handleCloseContactDetails}>
-                              Fermer
-                            </Button>
-                            <Button onClick={handleOpenContactResponseDialog}>
-                              <Send className="h-4 w-4 mr-2" />
-                              Répondre
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Avis - Mise à jour complète avec fonctionnalités opérationnelles */}
-          <TabsContent value="reviews">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Avis clients</CardTitle>
+            {/* Paramètres */}
+            <TabsContent value="settings">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Paramètres généraux</CardTitle>
                   <CardDescription>
-                    Gérez les avis clients laissés sur le site
+                    Activez ou désactivez les fonctionnalités du site
                   </CardDescription>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {reviews.filter(r => r.published).length} avis publiés / {reviews.length} total
-                </p>
-              </CardHeader>
-              <CardContent>
-                {reviews.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                    <p>Aucun avis client pour le moment</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium">Réservation en ligne</h3>
+                        <p className="text-sm text-gray-500">Permet aux clients de réserver directement en ligne</p>
+                      </div>
+                      <Switch 
+                        checked={onlineReservation} 
+                        onCheckedChange={handleReservationToggle}
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium">Espace client</h3>
+                        <p className="text-sm text-gray-500">Activer l'espace client</p>
+                      </div>
+                      <Switch 
+                        checked={clientAreaEnabled}
+                        onCheckedChange={handleClientAreaToggle}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium">Témoignages</h3>
+                        <p className="text-sm text-gray-500">Activer la section témoignages</p>
+                      </div>
+                      <Switch 
+                        checked={testimonialsEnabled}
+                        onCheckedChange={handleTestimonialsToggle}
+                      />
+                    </div>
                   </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Nom</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Note</TableHead>
-                        <TableHead>Message</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {reviews.map((review) => (
-                        <TableRow key={review.id}>
-                          <TableCell>{review.id}</TableCell>
-                          <TableCell>{review.name}</TableCell>
-                          <TableCell>{review.email}</TableCell>
-                          <TableCell>
-                            <div className="flex">{renderStars(review.rating)}</div>
-                          </TableCell>
-                          <TableCell className="max-w-[200px] truncate">{review.message}</TableCell>
-                          <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              review.published ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                            }`}>
-                              {review.published ? "Publié" : "Non publié"}
-                            </span>
-                          </TableCell>
-                          <TableCell className="space-x-2">
-                            <button 
-                              className="text-sm text-blue-600 hover:underline"
-                              onClick={() => handleViewReview(review)}
-                            >
-                              Voir
-                            </button>
-                            <button 
-                              className="text-sm text-green-600 hover:underline ml-2"
-                              onClick={() => handlePublishReview(review.id, !review.published)}
-                            >
-                              {review.published ? "Masquer" : "Publier"}
-                            </button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          {/* Contenu - Mise à jour avec fonctionnalités complètes */}
-          <TabsContent value="content">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Gestion du contenu</CardTitle>
-                  <CardDescription>
-                    Modifiez le contenu des pages du site
-                  </CardDescription>
-                </div>
-                <Button onClick={handleAddContent}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ajouter
-                </Button>
-              </CardHeader>
-              <CardContent>
-                {contentItems.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                    <p>Aucun contenu pour le moment</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Titre</TableHead>
-                        <TableHead>Page</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Catégorie</TableHead>
-                        <TableHead>Contenu</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {contentItems.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>{item.id}</TableCell>
-                          <TableCell>{item.title}</TableCell>
-                          <TableCell>{item.page}</TableCell>
-                          <TableCell>{item.type || 'text'}</TableCell>
-                          <TableCell>{item.category || 'general'}</TableCell>
-                          <TableCell className="max-w-[300px] truncate">{item.content}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleEditContent(item)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleConfirmDeleteContent(item.id)}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <Trash className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          {/* Statistiques */}
-          <TabsContent value="stats">
-            <Card>
-              <CardHeader>
-                <CardTitle>Statistiques du site</CardTitle>
-                <CardDescription>
-                  Performances et analytiques
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card>
-                    <CardHeader className="p-4">
-                      <CardTitle className="text-lg">Visites</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 p-4">
-                      <p className="text-3xl font-bold">{stats.visits}</p>
-                      <p className="text-sm text-gray-500">{stats.growth}</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="p-4">
-                      <CardTitle className="text-lg">Pages vues</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 p-4">
-                      <p className="text-3xl font-bold">{stats.pageViews}</p>
-                      <p className="text-sm text-gray-500">Page la plus visitée: {stats.topPage}</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="p-4">
-                      <CardTitle className="text-lg">Réservations</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 p-4">
-                      <p className="text-3xl font-bold">{stats.bookings}</p>
-                      <p className="text-sm text-gray-500">Taux de conversion: {stats.conversionRate}</p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-      
-      {/* Dialogue de réponse */}
-      <Dialog open={responseDialogOpen} onOpenChange={setResponseDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Répondre à la demande</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <Textarea 
-              value={responseText} 
-              onChange={(e) => setResponseText(e.target.value)} 
-              className="min-h-[300px] font-mono text-sm"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setResponseDialogOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handleSendResponse}>
-              <Send className="h-4 w-4 mr-2" />
-              Envoyer la réponse
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Dialogue de réponse au message de contact */}
-      <Dialog open={contactResponseDialogOpen} onOpenChange={setContactResponseDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Répondre au message</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <Textarea 
-              value={contactResponseText} 
-              onChange={(e) => setContactResponseText(e.target.value)} 
-              className="min-h-[300px] font-mono text-sm"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setContactResponseDialogOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handleSendContactResponse}>
-              <Send className="h-4 w-4 mr-2" />
-              Envoyer la réponse
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Dialogue d'aperçu PDF */}
-      <Dialog open={pdfPreviewOpen} onOpenChange={setPdfPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Aperçu du PDF</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <div ref={pdfTemplateRef} id="pdfTemplate" className="border p-8 rounded-md bg-white">
-              <ResponsePDFTemplate request={activeRequest} response={activeRequest?.response || ''} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPdfPreviewOpen(false)}>
-              Fermer
-            </Button>
-            <Button onClick={handleDownloadPDF}>
-              <Download className="h-4 w-4 mr-2" />
-              Télécharger
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Dialogue de détail d'avis */}
-      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Détail de l'avis</DialogTitle>
-          </DialogHeader>
-          {activeReview && (
-            <div className="py-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium text-lg">{activeReview.name}</h3>
-                  <p className="text-gray-500">{activeReview.email}</p>
-                </div>
-                <Badge variant={activeReview.published ? "default" : "outline"}>
-                  {activeReview.published ? "Publié" : "Non publié"}
-                </Badge>
-              </div>
-              
-              <div>
-                <div className="flex mb-2">
-                  {renderStars(activeReview.rating)}
-                  <span className="ml-2 text-sm text-gray-500">{activeReview.rating}/5</span>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <p className="italic">"{activeReview.message}"</p>
-                </div>
-              </div>
-              
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline" onClick={() => setReviewDialogOpen(false)}>
-                  Fermer
-                </Button>
-                <Button 
-                  variant={activeReview.published ? "destructive" : "default"}
-                  onClick={() => handlePublishReview(activeReview.id, !activeReview.published)}
-                >
-                  {activeReview.published ? "Masquer l'avis" : "Publier l'avis"}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-      
-      {/* Formulaire d'ajout/édition de contenu */}
-      <ContentForm 
-        isOpen={contentDialogOpen}
-        onClose={() => setContentDialogOpen(false)}
-        onSave={handleSaveContent}
-        contentItem={activeContentItem}
-      />
-      
-      {/* Dialogue de confirmation de suppression */}
-      <AlertDialog open={deleteContentDialogOpen} onOpenChange={setDeleteContentDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce contenu ? Cette action est irréversible.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteContent} className="bg-red-600 hover:bg-red-700">
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </main>
-  );
-};
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-export default AdminDashboard;
+            {/* Contenu pour les autres onglets */}
+            <TabsContent value="requests">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Liste des demandes */}
+                <div className="md:col-span-1">
+                  <Card className="h-full">
+                    <CardHeader>
+                      <CardTitle>Demandes reçues</CardTitle>
+                      <CardDescription>
+                        Réservations et devis
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <Tabs defaultValue="all" className="px-6">
+                        <TabsList className="mb-4 w-full">
+                          <TabsTrigger value="all" className="flex-1">Toutes</TabsTrigger>
+                          <TabsTrigger value="reservations" className="flex-1">Réservations</TabsTrigger>
+                          <TabsTrigger value="quotes" className="flex-1">Devis</TabsTrigger>
+                        </TabsList>
+                        
+                        <TabsContent value="all" className="max-h-[70vh] overflow-y-auto">
+                          {requests.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                              Aucune demande pour le moment
+                            </div>
+                          ) : (
+                            <div className="space-y-2 pb-4">
+                              {requests.map((request) => (
+                                <div 
+                                  key={request.id} 
+                                  className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                  onClick={() => handleViewRequest(request)}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h4 className="font-medium">{request.fullName}</h4>
+                                      <p className="text-sm text-gray-500">{request.destination}</p>
+                                    </div>
+                                    <Badge variant={request.type === 'quote' ? 'outline' : 'default'} className="ml-2">
+                                      {request.type === 'quote' ? 'Devis' : 'Réservation'}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex justify-between items-center mt-2">
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(request.createdAt).toLocaleDateString()}
+                                    </span>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                      request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                      request.status === "traité" ? "bg-green-100 text-green-800" :
+                                      request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                      "bg-gray-100 text-gray-800"
+                                    }`}>
+                                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </TabsContent>
+                        
+                        <TabsContent value="reservations" className="max-h-[70vh] overflow-y-auto">
+                          {requests.filter(r => r.type !== 'quote').length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                              Aucune réservation pour le moment
+                            </div>
+                          ) : (
+                            <div className="space-y-2 pb-4">
+                              {requests.filter(r => r.type !== 'quote').map((request) => (
+                                <div 
+                                  key={request.id} 
+                                  className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                  onClick={() => handleViewRequest(request)}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h4 className="font-medium">{request.fullName}</h4>
+                                      <p className="text-sm text-gray-500">{request.destination}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-between items-center mt-2">
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(request.createdAt).toLocaleDateString()}
+                                    </span>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                      request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                      request.status === "traité" ? "bg-green-100 text-green-800" :
+                                      request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                      "bg-gray-100 text-gray-800"
+                                    }`}>
+                                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </TabsContent>
+                        
+                        <TabsContent value="quotes" className="max-h-[70vh] overflow-y-auto">
+                          {requests.filter(r => r.type === 'quote').length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                              Aucune demande de devis pour le moment
+                            </div>
+                          ) : (
+                            <div className="space-y-2 pb-4">
+                              {requests.filter(r => r.type === 'quote').map((request) => (
+                                <div 
+                                  key={request.id} 
+                                  className={`p-3 rounded-md cursor-pointer ${activeRequest?.id === request.id ? 'bg-nasser-primary/10 border-l-4 border-nasser-primary' : 'hover:bg-gray-100'}`}
+                                  onClick={() => handleViewRequest(request)}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h4 className="font-medium">{request.fullName}</h4>
+                                      <p className="text-sm text-gray-500">{request.destination}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-between items-center mt-2">
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(request.createdAt).toLocaleDateString()}
+                                    </span>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                      request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
+                                      request.status === "traité" ? "bg-green-100 text-green-800" :
+                                      request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                      "bg-gray-100 text-gray-800"
+                                    }`}>
+                                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </TabsContent>
+                      </Tabs>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Détails de la demande sélectionnée (ou message vide si aucune demande sélectionnée) */}
+                <div className="md:col-span-2">
+                  {!activeRequest ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center text-gray-500
