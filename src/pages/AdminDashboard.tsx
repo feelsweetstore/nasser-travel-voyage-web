@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -313,7 +312,6 @@ const AdminDashboard = () => {
         template = `Objet : Votre devis pour un voyage vers ${destination} – NASSER TRAVEL HORIZON
 
 Cher(e) ${fullName},
-
 Nous vous remercions pour votre demande de devis concernant votre voyage vers ${destination}, du ${departureDate} au ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
 
 Voici notre proposition personnalisée :
@@ -346,7 +344,6 @@ L'équipe NASSER TRAVEL HORIZON
         template = `Objet : Votre réservation de billet pour ${destination} – NASSER TRAVEL HORIZON
 
 Cher(e) ${fullName},
-
 Nous avons bien reçu votre demande de réservation de billet à destination de ${destination}, pour un départ prévu le ${departureDate} et un retour le ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
 
 Voici les détails de votre réservation en cours de traitement :
@@ -449,19 +446,27 @@ L'équipe NASSER TRAVEL HORIZON
     }
   };
   
-  const handleDownloadPDF = () => {
-    if (!activeRequest || !pdfTemplateRef.current) return;
+  const handleDirectPDFDownload = () => {
+    if (!activeRequest) return;
     
     try {
-      // Utiliser html2canvas et jsPDF pour générer le PDF
-      const filename = `${activeRequest.type === 'quote' ? 'devis' : 'reservation'}-${activeRequest.id}`;
+      // Générer directement le PDF avec un nom incluant celui du client
+      const filename = `${activeRequest.type === 'quote' ? 'Devis' : 'Reservation'}-${activeRequest.fullName.replace(/\s+/g, '_')}`;
       
-      PDFService.generatePDF('pdfTemplate', filename);
+      PDFService.generateResponsePDF({
+        ...activeRequest,
+        response: activeRequest.response
+      }, activeRequest.type === 'quote' ? 'Devis Personnalisé' : 'Confirmation de Réservation', filename);
       
       toast({
         title: "PDF téléchargé",
         description: "Le document a été téléchargé avec succès.",
       });
+      
+      // Fermer automatiquement la fenêtre d'aperçu après téléchargement
+      setTimeout(() => {
+        setPdfPreviewOpen(false);
+      }, 500);
     } catch (error) {
       console.error('Error downloading PDF:', error);
       toast({
@@ -472,17 +477,14 @@ L'équipe NASSER TRAVEL HORIZON
     }
   };
   
-  const handleDirectPDFDownload = () => {
-    if (!activeRequest) return;
+  const handleDownloadPDF = () => {
+    if (!activeRequest || !pdfTemplateRef.current) return;
     
     try {
-      // Générer directement le PDF sans aperçu
-      const filename = `${activeRequest.type === 'quote' ? 'devis' : 'reservation'}-${activeRequest.id}`;
+      // Utiliser html2canvas et jsPDF pour générer le PDF avec un nom personnalisé
+      const filename = `${activeRequest.type === 'quote' ? 'Devis' : 'Reservation'}-${activeRequest.fullName.replace(/\s+/g, '_')}`;
       
-      PDFService.generateResponsePDF({
-        ...activeRequest,
-        response: activeRequest.response
-      }, activeRequest.type === 'quote' ? 'Devis Personnalisé' : 'Confirmation de Réservation', filename);
+      PDFService.generatePDF('pdfTemplate', filename);
       
       toast({
         title: "PDF téléchargé",
@@ -520,7 +522,6 @@ L'équipe NASSER TRAVEL HORIZON
       const template = `Objet : Réponse à votre message - NASSER TRAVEL HORIZON
 
 Cher(e) ${activeContactMessage.name},
-
 Nous vous remercions pour votre message concernant "${activeContactMessage.subject || 'votre demande'}".
 
 [Votre réponse personnalisée ici]

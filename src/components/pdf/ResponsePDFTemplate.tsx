@@ -80,7 +80,7 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
           <h2 className="text-base font-semibold mb-2 text-[#00B0EA] border-b pb-1">
             Objet: Votre {request?.type === 'quote' ? 'devis' : 'réservation'} pour un voyage vers {request?.destination}
           </h2>
-          <div className="bg-gray-50 p-3 rounded whitespace-pre-line text-sm">
+          <div className="bg-gray-50 p-3 rounded">
             <p className="mb-3"><strong>Cher(e) {request?.fullName},</strong></p>
             
             <p className="mb-3">
@@ -89,11 +89,11 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
               au {request?.returnDate ? new Date(request.returnDate).toLocaleDateString() : 'N/A'}.
             </p>
             
-            <div className="whitespace-pre-line">
+            <div className="whitespace-pre-line mb-3" style={{ lineHeight: '1.5', wordBreak: 'break-word' }}>
               {response}
             </div>
             
-            <div className="mt-3 space-y-1 text-sm">
+            <div className="mt-3 space-y-1">
               <p>
                 <strong>Pour finaliser votre réservation :</strong>
               </p>
@@ -104,7 +104,7 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
               </ul>
             </div>
             
-            <p className="mt-3 text-sm">
+            <p className="mt-4">
               Cordialement,<br />
               L'équipe NASSER TRAVEL HORIZON<br />
               📞 Tél: +235 66 38 69 37<br />
