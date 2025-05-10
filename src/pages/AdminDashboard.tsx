@@ -369,7 +369,8 @@ Numéro de vol : [XXXX]
 
 Afin de finaliser votre réservation, merci de bien vouloir :
 ✅ Confirmer votre accord par retour de message via notre e-mail.
-✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).\n✅ Procéder au paiement dans le délai mentionné ci-dessus
+✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).
+✅ Procéder au paiement dans le délai mentionné ci-dessus
 
 Si vous avez des questions ou souhaitez ajuster certains détails de votre voyage, notre équipe reste à votre entière disposition.
 
@@ -616,34 +617,8 @@ L'équipe NASSER TRAVEL HORIZON
     }
   };
 
-  const handleContactPDFDownload = () => {
-    if (!activeContactMessage) return;
-    
-    try {
-      // Générer le PDF pour le message de contact
-      const filename = `contact-${activeContactMessage.id}`;
-      
-      PDFService.generateResponsePDF({
-        ...activeContactMessage,
-        response: activeContactMessage.response
-      }, 'Réponse à votre message', filename);
-      
-      toast({
-        title: "PDF téléchargé",
-        description: "Le document a été téléchargé avec succès.",
-      });
-    } catch (error) {
-      console.error('Error downloading contact PDF:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors du téléchargement du PDF.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
-    <React.Fragment>
+    <>
       <main className="bg-white py-10">
         <div className="container-custom">
           <div className="mb-8">
@@ -855,4 +830,24 @@ L'équipe NASSER TRAVEL HORIZON
                                     <span className={`px-2 py-1 rounded-full text-xs ${
                                       request.status === "nouveau" ? "bg-blue-100 text-blue-800" :
                                       request.status === "traité" ? "bg-green-100 text-green-800" :
-                                      request
+                                      request.status === "en attente" ? "bg-yellow-100 text-yellow-800" :
+                                      "bg-gray-100 text-gray-800"
+                                    }`}>
+                                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </TabsContent>
+                      </Tabs>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Détails de la demande sélectionnée (ou message vide si aucune demande sélectionnée) */}
+                <div className="md:col-span-2">
+                  {!activeRequest ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center text-gray-5
