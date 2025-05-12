@@ -27,7 +27,7 @@ const ResponseTemplateEditor: React.FC = () => {
       toast({
         title: "Modèle de réponse mis à jour",
         description: "Le modèle a été enregistré avec succès.",
-        variant: "success",
+        variant: "default",
       });
     } else {
       ContentService.addContent({
@@ -40,7 +40,7 @@ const ResponseTemplateEditor: React.FC = () => {
       toast({
         title: "Modèle de réponse créé",
         description: "Un nouveau modèle a été ajouté avec succès.",
-        variant: "success",
+        variant: "default",
       });
     }
   };
