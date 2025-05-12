@@ -1,5 +1,6 @@
 
 import React, { forwardRef, useEffect } from 'react';
+import ContentService from '../../services/ContentService';
 
 interface ResponsePDFProps {
   request: any;
@@ -14,6 +15,21 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
       hasRef: !!ref
     });
   }, [request, response, ref]);
+
+  // Récupérer le modèle de réponse approprié selon le type de demande
+  const getResponseContent = () => {
+    const requestType = request?.type === 'quote' ? 'quote' : 'booking';
+    let template = ContentService.getResponseTemplate(requestType);
+    
+    // Remplacer les variables dans le modèle
+    template = template
+      .replace('{destination}', request?.destination || 'votre destination')
+      .replace('{response}', response || '');
+    
+    console.log("Template de réponse utilisé:", requestType, template.substring(0, 50) + '...');
+    
+    return template;
+  };
 
   return (
     <div 
@@ -98,25 +114,8 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
           <div className="bg-gray-50 p-3 rounded">
             <p className="mb-3"><strong>Cher(e) {request?.fullName},</strong></p>
             
-            <p className="mb-3">
-              Nous vous remercions pour votre demande concernant votre voyage vers {request?.destination}, 
-              du {request?.departureDate ? new Date(request.departureDate).toLocaleDateString() : 'N/A'} 
-              au {request?.returnDate ? new Date(request.returnDate).toLocaleDateString() : 'N/A'}.
-            </p>
-            
             <div className="whitespace-pre-line mb-3" style={{ lineHeight: '1.5', wordBreak: 'break-word' }}>
-              {response}
-            </div>
-            
-            <div className="mt-3 space-y-1">
-              <p>
-                <strong>Pour finaliser votre réservation :</strong>
-              </p>
-              <ul className="list-none pl-4 space-y-1">
-                <li>✅ Confirmer votre accord par retour de message</li>
-                <li>✅ Nous faire parvenir une copie de votre passeport</li>
-                <li>✅ Procéder au paiement du montant indiqué ci-dessus</li>
-              </ul>
+              {getResponseContent()}
             </div>
             
             <p className="mt-4">
