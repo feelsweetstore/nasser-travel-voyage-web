@@ -1,15 +1,15 @@
 
 import React from 'react';
-import ResponseTemplateEditor from '../content/ResponseTemplateEditor';
+import ResponseTemplateEditor from '@/components/admin/content/ResponseTemplateEditor';
 
 const ResponseTemplatesTab = () => {
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">Personnalisation des réponses</h2>
-      <p className="text-gray-600 mb-4">
-        Personnalisez les modèles de réponse qui seront utilisés pour répondre aux demandes 
-        de devis et de réservation. Ces modèles seront utilisés pour générer les PDF de réponse.
+    <div className="w-full py-4">
+      <h2 className="text-2xl font-bold mb-4">Modèles de réponse</h2>
+      <p className="text-muted-foreground mb-6">
+        Personnalisez les réponses automatiques pour les demandes de devis et de réservations.
       </p>
+      
       <ResponseTemplateEditor />
     </div>
   );
