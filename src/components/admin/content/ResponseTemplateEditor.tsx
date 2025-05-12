@@ -23,18 +23,20 @@ const ResponseTemplateEditor = () => {
       const template = type === 'quote' ? quoteTemplate : bookingTemplate;
       ContentService.saveResponseTemplate(type, template);
       
-      toast({
-        title: "Modèle de réponse enregistré",
-        description: `Le modèle pour les ${type === 'quote' ? 'devis' : 'réservations'} a été mis à jour.`,
-        variant: "default",
-      });
+      toast.success(
+        `Le modèle pour les ${type === 'quote' ? 'devis' : 'réservations'} a été mis à jour.`,
+        {
+          description: "Vos modifications ont été enregistrées avec succès."
+        }
+      );
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du modèle:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer le modèle de réponse.",
-        variant: "destructive",
-      });
+      toast.error(
+        "Impossible d'enregistrer le modèle de réponse.",
+        {
+          description: "Une erreur est survenue. Veuillez réessayer."
+        }
+      );
     }
   };
   
