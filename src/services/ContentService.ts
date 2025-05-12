@@ -1,3 +1,4 @@
+
 /**
  * Service de gestion du contenu du site
  */
@@ -208,6 +209,34 @@ class ContentService {
       return "Nous vous remercions pour votre demande de devis pour votre voyage vers {destination}.\n\nSuite à votre demande, nous avons le plaisir de vous proposer les options suivantes qui correspondent au mieux à vos critères :\n\n{response}\n\nCe devis est valable pendant 7 jours à compter de sa date d'émission. N'hésitez pas à nous contacter si vous avez des questions ou si vous souhaitez apporter des modifications à cette proposition.";
     } else {
       return "Nous vous remercions pour votre demande de réservation pour votre voyage vers {destination}.\n\nVotre réservation a bien été prise en compte avec les détails suivants :\n\n{response}\n\nAfin de garantir votre réservation, nous vous invitons à procéder au paiement dans les 48 heures. Passé ce délai, les tarifs et disponibilités pourraient être modifiés.";
+    }
+  }
+  
+  /**
+   * Enregistre un modèle de réponse
+   * @param requestType - Type de demande ('quote' pour devis ou 'booking' pour réservation)
+   * @param template - Contenu du modèle à enregistrer
+   */
+  static saveResponseTemplate(requestType: 'quote' | 'booking', template: string): void {
+    const category = requestType === 'quote' ? 'quote' : 'booking';
+    const templates = this.getContentByTypeAndCategory('response_template', category);
+    
+    if (templates && templates.length > 0) {
+      // Mettre à jour le modèle existant
+      this.updateContent(templates[0].id, { ...templates[0], content: template });
+    } else {
+      // Créer un nouveau modèle si inexistant
+      const title = requestType === 'quote' 
+        ? "Modèle de réponse pour devis" 
+        : "Modèle de réponse pour réservation";
+        
+      this.addContent({
+        title,
+        page: "Paramètres",
+        content: template,
+        type: "response_template",
+        category
+      });
     }
   }
 }
