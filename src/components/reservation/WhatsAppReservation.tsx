@@ -1,13 +1,44 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageSquare, ArrowRight } from 'lucide-react';
+import ContentService from '@/services/ContentService';
 
 const WhatsAppReservation = () => {
-  const whatsappNumber = "+23566000000";
+  const [contactInfo, setContactInfo] = useState({
+    phone: "+23566000000"
+  });
+
+  useEffect(() => {
+    // Récupération initiale
+    updateContactInfo();
+    
+    // Écouter les événements de mise à jour du contenu
+    const handleContentUpdate = () => {
+      updateContactInfo();
+    };
+    
+    window.addEventListener('contentUpdated', handleContentUpdate);
+    
+    return () => {
+      window.removeEventListener('contentUpdated', handleContentUpdate);
+    };
+  }, []);
+
+  // Fonction pour mettre à jour les coordonnées depuis ContentService
+  const updateContactInfo = () => {
+    const contactContent = ContentService.getContentByType('contact')[0]?.content || '';
+    const contactLines = contactContent.split('\n');
+    
+    const phoneLine = contactLines.find(line => line.startsWith('Téléphone:'))?.replace('Téléphone:', '').trim() || '';
+    const phone = phoneLine.split(',')[0]?.trim() || '+235 66 00 00 00';
+    
+    setContactInfo({ phone });
+  };
+
   const message = encodeURIComponent(
     "Bonjour, je souhaite réserver un billet d'avion via NASSER TRAVEL HORIZON."
   );
-  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${message}`;
+  const whatsappLink = `https://wa.me/${contactInfo.phone.replace(/\s/g, '').replace('+', '')}?text=${message}`;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
@@ -26,10 +57,10 @@ const WhatsAppReservation = () => {
       <div className="text-center mb-6">
         <p className="font-medium text-lg mb-1">Notre numéro WhatsApp :</p>
         <a 
-          href={`tel:${whatsappNumber}`}
+          href={`tel:${contactInfo.phone.replace(/\s/g, '')}`}
           className="text-xl font-bold text-green-600 hover:underline"
         >
-          {whatsappNumber}
+          {contactInfo.phone}
         </a>
       </div>
       

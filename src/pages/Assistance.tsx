@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
