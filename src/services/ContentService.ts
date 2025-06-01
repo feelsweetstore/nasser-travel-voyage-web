@@ -22,17 +22,6 @@ class ContentService {
         { id: 9, title: "Mentions légales", page: "Mentions légales", content: "NASSER TRAVEL HORIZON - SARL au capital de 5 000 000 FCFA\nSiège social : Avenue Charles de Gaulle, N'Djamena, Tchad\nRCS N'Djamena : 123456789\nDirecteur de la publication : M. Nasser\nHébergeur : OVH - 2 rue Kellermann - 59100 Roubaix - France", type: "legal", category: "legal" },
         { id: 10, title: "Politique de confidentialité", page: "Politique de confidentialité", content: "Chez NASSER TRAVEL HORIZON, nous nous engageons à protéger et à respecter votre vie privée. Cette politique définit la base sur laquelle les données personnelles que nous collectons auprès de vous, ou que vous nous fournissez, seront traitées par nous.", type: "privacy", category: "legal" },
         { id: 11, title: "CGV", page: "CGV", content: "Les présentes conditions générales de vente régissent les relations contractuelles entre la société NASSER TRAVEL HORIZON et ses clients, dans le cadre de son activité d'agence de voyage.", type: "terms", category: "legal" },
-        // Ajout des modèles de réponse pour les devis et réservations
-        { id: 12, title: "Modèle de réponse pour devis", page: "Paramètres", 
-          content: "Nous vous remercions pour votre demande de devis pour votre voyage vers {destination}.\n\nSuite à votre demande, nous avons le plaisir de vous proposer les options suivantes qui correspondent au mieux à vos critères :\n\n{response}\n\nCe devis est valable pendant 7 jours à compter de sa date d'émission. N'hésitez pas à nous contacter si vous avez des questions ou si vous souhaitez apporter des modifications à cette proposition.", 
-          type: "response_template", 
-          category: "quote" 
-        },
-        { id: 13, title: "Modèle de réponse pour réservation", page: "Paramètres", 
-          content: "Nous vous remercions pour votre demande de réservation pour votre voyage vers {destination}.\n\nVotre réservation a bien été prise en compte avec les détails suivants :\n\n{response}\n\nAfin de garantir votre réservation, nous vous invitons à procéder au paiement dans les 48 heures. Passé ce délai, les tarifs et disponibilités pourraient être modifiés.", 
-          type: "response_template", 
-          category: "booking" 
-        },
       ];
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(defaultContent));
     }
@@ -189,55 +178,6 @@ class ContentService {
       saturday: hoursLines.find(line => line.includes('Samedi')) || 'Samedi: 9h - 15h',
       sunday: hoursLines.find(line => line.includes('Dimanche')) || 'Dimanche: Fermé'
     };
-  }
-  
-  /**
-   * Récupère le modèle de réponse pour un type de demande
-   * @param requestType - Type de demande ('quote' pour devis ou 'booking' pour réservation)
-   * @returns Le modèle de réponse ou une chaîne par défaut
-   */
-  static getResponseTemplate(requestType: 'quote' | 'booking'): string {
-    const category = requestType === 'quote' ? 'quote' : 'booking';
-    const templates = this.getContentByTypeAndCategory('response_template', category);
-    
-    if (templates && templates.length > 0) {
-      return templates[0].content;
-    }
-    
-    // Modèles par défaut au cas où ils n'existent pas dans le localStorage
-    if (requestType === 'quote') {
-      return "Nous vous remercions pour votre demande de devis pour votre voyage vers {destination}.\n\nSuite à votre demande, nous avons le plaisir de vous proposer les options suivantes qui correspondent au mieux à vos critères :\n\n{response}\n\nCe devis est valable pendant 7 jours à compter de sa date d'émission. N'hésitez pas à nous contacter si vous avez des questions ou si vous souhaitez apporter des modifications à cette proposition.";
-    } else {
-      return "Nous vous remercions pour votre demande de réservation pour votre voyage vers {destination}.\n\nVotre réservation a bien été prise en compte avec les détails suivants :\n\n{response}\n\nAfin de garantir votre réservation, nous vous invitons à procéder au paiement dans les 48 heures. Passé ce délai, les tarifs et disponibilités pourraient être modifiés.";
-    }
-  }
-  
-  /**
-   * Enregistre un modèle de réponse
-   * @param requestType - Type de demande ('quote' pour devis ou 'booking' pour réservation)
-   * @param template - Contenu du modèle à enregistrer
-   */
-  static saveResponseTemplate(requestType: 'quote' | 'booking', template: string): void {
-    const category = requestType === 'quote' ? 'quote' : 'booking';
-    const templates = this.getContentByTypeAndCategory('response_template', category);
-    
-    if (templates && templates.length > 0) {
-      // Mettre à jour le modèle existant
-      this.updateContent(templates[0].id, { ...templates[0], content: template });
-    } else {
-      // Créer un nouveau modèle si inexistant
-      const title = requestType === 'quote' 
-        ? "Modèle de réponse pour devis" 
-        : "Modèle de réponse pour réservation";
-        
-      this.addContent({
-        title,
-        page: "Paramètres",
-        content: template,
-        type: "response_template",
-        category
-      });
-    }
   }
 }
 
