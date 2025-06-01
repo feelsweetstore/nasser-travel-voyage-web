@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import PDFService from '../services/PDFService';
 import ResponsePDFTemplate from '../components/pdf/ResponsePDFTemplate';
+import ResponseTemplateManager from '../components/admin/ResponseTemplateManager';
+import ResponseTemplateService from '../services/ResponseTemplateService';
 import ReviewService from '../services/ReviewService';
 import ContentService from '../services/ContentService';
 import ContentForm from '../components/admin/ContentForm';
@@ -48,6 +50,9 @@ const AdminDashboard = () => {
   const [activeContactMessage, setActiveContactMessage] = useState<any>(null);
   const [contactResponseDialogOpen, setContactResponseDialogOpen] = useState(false);
   const [contactResponseText, setContactResponseText] = useState('');
+
+  // État pour la gestion des modèles de réponse
+  const [templateManagerOpen, setTemplateManagerOpen] = useState(false);
 
   // Stats mock data
   const stats = {
@@ -297,87 +302,11 @@ const AdminDashboard = () => {
 
   const handleOpenResponseDialog = () => {
     if (activeRequest) {
-      // Préremplir avec un modèle de réponse selon le type de demande
-      const destination = activeRequest.destination || '[Destination]';
-      const fullName = activeRequest.fullName || '[Nom du client]';
-      const departureDate = formatDate(activeRequest.departureDate);
-      const returnDate = formatDate(activeRequest.returnDate);
-      const passengers = activeRequest.passengers || '1';
-      const travelClass = getTravelClassInFrench(activeRequest.travelClass);
-      const budget = activeRequest.budget ? `${activeRequest.budget} FCFA` : '[Budget non spécifié]';
-      
-      let template = '';
-      
-      if (activeRequest.type === 'quote') {
-        template = `Objet : Votre devis pour un voyage vers ${destination} – NASSER TRAVEL HORIZON
-
-Cher(e) ${fullName},
-Nous vous remercions pour votre demande de devis concernant votre voyage vers ${destination}, du ${departureDate} au ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
-
-Voici notre proposition personnalisée :
-
-✈️ Détails de l'offre (à remplir par l'agence)
-
-Vol : [Compagnie aérienne]
-
-Bagages : [Bagages inclus]
-
-Temps de vol : [Durée estimée]
-
-Escale(s) : [Oui / Non / Nombre]
-
-💰 Prix total : 
-📅 Offre valable jusqu'au : [Date limite]
-🎯 Budget client estimé : ${budget}
-
-Veuillez noter que les tarifs de vols sont flexibles et peuvent changer a tout moment.
-Cependant, merci de bien vouloir nous confirmer votre accord afin de finaliser la réservation et garantir la disponibilité au tarif indiqué.
- 
-Si vous souhaitez modifier certaines informations (dates, classe, destination, etc.), n'hésitez pas à nous le faire savoir.
-
-Cordialement,
-L'équipe NASSER TRAVEL HORIZON
-📞 Tél : +235 66 38 69 37
-📧 Email : contact@nassertravelhorizon.com
-📍 N'Djamena, Tchad`;
-      } else {
-        template = `Objet : Votre réservation de billet pour ${destination} – NASSER TRAVEL HORIZON
-
-Cher(e) ${fullName},
-Nous avons bien reçu votre demande de réservation de billet à destination de ${destination}, pour un départ prévu le ${departureDate} et un retour le ${returnDate}, en classe ${travelClass} pour ${passengers} passager(s).
-
-Voici les détails de votre réservation en cours de traitement :
-
-✈️ Détails du vol proposé (à compléter par l'agence)
-
-Compagnie aérienne : [Nom de la compagnie]
-
-Heure de départ : [Heure]
-
-Heure d'arrivée : [Heure]
-
-Escale(s) : [Oui / Non / Détails]
-
-Bagages inclus : [Poids / type]
-
-Numéro de vol : [XXXX]
-
-💰 Tarif total : [Montant en FCFA]
-📅 Validité de la réservation : [Date limite de confirmation]
-
-Afin de finaliser votre réservation, merci de bien vouloir :
-✅ Confirmer votre accord par retour de message via notre e-mail.
-✅ Nous faire parvenir une copie de votre passeport (si ce n'est pas encore fait).
-✅ Procéder au paiement dans le délai mentionné ci-dessus
-
-Si vous avez des questions ou souhaitez ajuster certains détails de votre voyage, notre équipe reste à votre entière disposition.
-
-Cordialement,
-L'équipe NASSER TRAVEL HORIZON
-📞 Tél : +235 66 38 69 37
-📧 Email : contact@nassertravelhorizon.com
-📍 N'Djamena, Tchad`;
-      }
+      // Utiliser le service de modèles pour générer la réponse
+      const template = ResponseTemplateService.fillTemplate(
+        activeRequest.type === 'quote' ? 'quote' : 'reservation',
+        activeRequest
+      );
       
       setResponseText(template);
       setResponseDialogOpen(true);
@@ -735,11 +664,22 @@ L'équipe NASSER TRAVEL HORIZON
               {/* Liste des demandes */}
               <div className="md:col-span-1">
                 <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Demandes reçues</CardTitle>
-                    <CardDescription>
-                      Réservations et devis
-                    </CardDescription>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle>Demandes reçues</CardTitle>
+                      <CardDescription>
+                        Réservations et devis
+                      </CardDescription>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setTemplateManagerOpen(true)}
+                      className="flex items-center gap-2"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span className="hidden sm:inline">Modèles de réponse</span>
+                    </Button>
                   </CardHeader>
                   <CardContent className="p-0">
                     <Tabs defaultValue="all" className="px-6">
@@ -1437,6 +1377,12 @@ L'équipe NASSER TRAVEL HORIZON
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Gestionnaire des modèles de réponse */}
+      <ResponseTemplateManager
+        isOpen={templateManagerOpen}
+        onClose={() => setTemplateManagerOpen(false)}
+      />
     </main>
   );
 };
