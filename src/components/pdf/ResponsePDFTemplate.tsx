@@ -15,6 +15,14 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
     });
   }, [request, response, ref]);
 
+  // Vérifier si la réponse contient déjà les informations de finalisation
+  const hasFinalizationInfo = response && (
+    response.includes("Pour finaliser votre réservation") ||
+    response.includes("✅ Confirmer votre accord") ||
+    response.includes("✅ Nous faire parvenir") ||
+    response.includes("✅ Procéder au paiement")
+  );
+
   return (
     <div 
       ref={ref} 
@@ -108,7 +116,19 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
               {response}
             </div>
             
-            {/* La section "Pour finaliser votre réservation" sera uniquement affichée dans la signature et non dupliquée ici */}
+            {/* Ajouter les informations de finalisation seulement si elles ne sont pas déjà dans la réponse */}
+            {!hasFinalizationInfo && (
+              <div className="mt-4 space-y-1">
+                <p>
+                  <strong>Pour finaliser votre réservation :</strong>
+                </p>
+                <ul className="list-none pl-4 space-y-1">
+                  <li>✅ Confirmer votre accord par retour de message</li>
+                  <li>✅ Nous faire parvenir une copie de votre passeport</li>
+                  <li>✅ Procéder au paiement du montant indiqué ci-dessus</li>
+                </ul>
+              </div>
+            )}
             
             <p className="mt-4">
               Cordialement,<br />
@@ -116,17 +136,6 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
               📞 Tél: +235 66 38 69 37<br />
               📧 Email: contact@nassertravelhorizon.com<br />
             </p>
-
-            <div className="mt-3 space-y-1">
-              <p>
-                <strong>Pour finaliser votre réservation :</strong>
-              </p>
-              <ul className="list-none pl-4 space-y-1">
-                <li>✅ Confirmer votre accord par retour de message</li>
-                <li>✅ Nous faire parvenir une copie de votre passeport</li>
-                <li>✅ Procéder au paiement du montant indiqué ci-dessus</li>
-              </ul>
-            </div>
           </div>
         </div>
         

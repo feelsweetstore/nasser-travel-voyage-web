@@ -36,7 +36,7 @@ export class PDFGenerator {
           await HTMLToPDFConverter.convertSingleElementToPDF(element, pdf);
         } else {
           console.log(`Nombre de pages trouvées: ${pages.length}`);
-          await this.processMultiplePages(pages, pdf);
+          await this.processExactPages(pages, pdf);
         }
         
         PDFUtils.forceDownload(pdf, filename);
@@ -51,12 +51,15 @@ export class PDFGenerator {
   }
 
   /**
-   * Traite plusieurs pages pour la génération PDF
+   * Traite exactement les pages définies sans génération de pages supplémentaires
    */
-  private static async processMultiplePages(pages: NodeListOf<Element>, pdf: jsPDF): Promise<void> {
+  private static async processExactPages(pages: NodeListOf<Element>, pdf: jsPDF): Promise<void> {
     await PDFUtils.waitForRender(500);
     
-    for (let i = 0; i < pages.length; i++) {
+    // Limiter à 2 pages maximum pour éviter les doublons
+    const maxPages = Math.min(pages.length, 2);
+    
+    for (let i = 0; i < maxPages; i++) {
       const page = pages[i] as HTMLElement;
       console.log(`Traitement de la page ${i + 1}, dimensions: ${page.offsetWidth}x${page.offsetHeight}`);
       
@@ -71,10 +74,13 @@ export class PDFGenerator {
         
         console.log(`Création du canvas pour la page ${i + 1}`);
         const canvas = await HTMLToPDFConverter.convertToCanvas(pageClone, {
-          windowWidth: pageClone.offsetWidth
+          windowWidth: pageClone.offsetWidth,
+          height: pageClone.offsetHeight,
+          scale: 1.5
         });
         
-        HTMLToPDFConverter.addImageToPDF(pdf, canvas, i === 0);
+        // Ajouter la page au PDF sans génération de pages supplémentaires
+        HTMLToPDFConverter.addSinglePageToPDF(pdf, canvas, i === 0);
         
       } finally {
         if (document.body.contains(tempContainer)) {

@@ -12,12 +12,13 @@ export class HTMLToPDFConverter {
    */
   static async convertToCanvas(element: HTMLElement, options: any = {}): Promise<HTMLCanvasElement> {
     const defaultOptions = {
-      scale: 2,
+      scale: 1.5,
       useCORS: true,
       logging: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
       windowWidth: element.offsetWidth,
+      height: element.offsetHeight,
       onclone: (clonedDoc: Document) => {
         console.log("Document cloné pour html2canvas");
         const textElements = clonedDoc.querySelectorAll('p, span, div');
@@ -35,9 +36,9 @@ export class HTMLToPDFConverter {
   }
 
   /**
-   * Ajoute une image au PDF avec gestion des pages multiples
+   * Ajoute une image au PDF sans génération de pages supplémentaires
    */
-  static addImageToPDF(pdf: jsPDF, canvas: HTMLCanvasElement, isFirstPage: boolean = true): void {
+  static addSinglePageToPDF(pdf: jsPDF, canvas: HTMLCanvasElement, isFirstPage: boolean = true): void {
     if (!isFirstPage) {
       pdf.addPage();
     }
@@ -49,44 +50,32 @@ export class HTMLToPDFConverter {
     }
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const { height: pdfHeight } = PDFUtils.calculatePDFDimensions(
-      canvas, 
-      pdfWidth, 
-      pdf.internal.pageSize.getHeight()
-    );
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    
+    // Calculer les dimensions pour s'adapter à la page sans débordement
+    const canvasRatio = canvas.height / canvas.width;
+    let imgWidth = pdfWidth;
+    let imgHeight = imgWidth * canvasRatio;
+    
+    // Si l'image est trop haute, l'ajuster pour tenir dans la page
+    if (imgHeight > pdfHeight) {
+      imgHeight = pdfHeight;
+      imgWidth = imgHeight / canvasRatio;
+    }
 
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+    // Centrer l'image sur la page
+    const x = (pdfWidth - imgWidth) / 2;
+    const y = (pdfHeight - imgHeight) / 2;
 
-    // Gestion du contenu long nécessitant plusieurs pages
-    this.handleLongContent(pdf, canvas, imgData, pdfWidth);
+    pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight, undefined, 'FAST');
   }
 
   /**
-   * Gère le contenu long en créant des pages supplémentaires
+   * Ajoute une image au PDF avec gestion des pages multiples (méthode héritée)
    */
-  private static handleLongContent(pdf: jsPDF, canvas: HTMLCanvasElement, imgData: string, pdfWidth: number): void {
-    if (canvas.height > 1600) {
-      const contentRatio = canvas.height / canvas.width;
-      const totalPages = Math.ceil(contentRatio * 1.2);
-      
-      if (totalPages > 1) {
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        let remainingHeight = (canvas.height * pdfWidth) / canvas.width - pageHeight;
-        let offsetY = pageHeight;
-        
-        while (remainingHeight > 0) {
-          pdf.addPage();
-          pdf.addImage(
-            imgData, 'PNG', 0, -offsetY, pdfWidth, 
-            (canvas.height * pdfWidth) / canvas.width, 
-            undefined, 'FAST'
-          );
-          
-          remainingHeight -= pageHeight;
-          offsetY += pageHeight;
-        }
-      }
-    }
+  static addImageToPDF(pdf: jsPDF, canvas: HTMLCanvasElement, isFirstPage: boolean = true): void {
+    // Utiliser la nouvelle méthode pour éviter les pages multiples
+    this.addSinglePageToPDF(pdf, canvas, isFirstPage);
   }
 
   /**
@@ -104,7 +93,8 @@ export class HTMLToPDFConverter {
       await PDFUtils.waitForRender(300);
       
       const canvas = await this.convertToCanvas(elementClone, {
-        windowWidth: 900
+        windowWidth: 900,
+        height: elementClone.offsetHeight
       });
       
       const imgData = canvas.toDataURL('image/png');
@@ -112,38 +102,11 @@ export class HTMLToPDFConverter {
         throw new Error("Failed to generate PDF content - empty canvas");
       }
       
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const canvasRatio = canvas.height / canvas.width;
-      const imgHeight = canvasRatio * pageWidth;
-      
-      this.addMultiPageImage(pdf, imgData, pageWidth, pageHeight, imgHeight);
+      this.addSinglePageToPDF(pdf, canvas, true);
       
     } finally {
       document.body.removeChild(tempWrapper);
       cleanup();
-    }
-  }
-
-  /**
-   * Ajoute une image sur plusieurs pages si nécessaire
-   */
-  private static addMultiPageImage(pdf: jsPDF, imgData: string, pageWidth: number, pageHeight: number, imgHeight: number): void {
-    if (imgHeight <= pageHeight) {
-      pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, imgHeight);
-    } else {
-      let heightLeft = imgHeight;
-      let position = 0;
-      
-      pdf.addImage(imgData, 'PNG', 0, position, pageWidth, imgHeight);
-      heightLeft -= pageHeight;
-      
-      while (heightLeft > 0) {
-        position -= pageHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pageWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
     }
   }
 }
