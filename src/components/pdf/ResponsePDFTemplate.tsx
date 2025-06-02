@@ -15,14 +15,6 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
     });
   }, [request, response, ref]);
 
-  // Vérifier si la réponse contient déjà les informations de finalisation
-  const hasFinalizationInfo = response && (
-    response.includes("Pour finaliser votre réservation") ||
-    response.includes("✅ Confirmer votre accord") ||
-    response.includes("✅ Nous faire parvenir") ||
-    response.includes("✅ Procéder au paiement")
-  );
-
   return (
     <div 
       ref={ref} 
@@ -92,7 +84,7 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
         </div>
       </div>
       
-      {/* Second page - Response */}
+      {/* Second page - Response (contenu personnalisé uniquement) */}
       <div className="page page-2 p-8 max-w-3xl mx-auto my-8" style={{ backgroundColor: 'white', border: '1px solid #f0f0f0', minHeight: '800px' }}>
         <div className="text-center mb-5">
           <h1 className="text-2xl font-bold text-[#00B0EA]">NASSER TRAVEL HORIZON</h1>
@@ -100,42 +92,11 @@ const ResponsePDFTemplate = forwardRef<HTMLDivElement, ResponsePDFProps>(({ requ
         </div>
         
         <div className="mb-6">
-          <h2 className="text-base font-semibold mb-2 text-[#00B0EA] border-b pb-1">
-            Objet: Votre {request?.type === 'quote' ? 'devis' : 'réservation'} pour un voyage vers {request?.destination}
-          </h2>
           <div className="bg-gray-50 p-3 rounded">
-            <p className="mb-3"><strong>Cher(e) {request?.fullName},</strong></p>
-            
-            <p className="mb-3">
-              Nous vous remercions pour votre demande concernant votre voyage vers {request?.destination}, 
-              du {request?.departureDate ? new Date(request.departureDate).toLocaleDateString() : 'N/A'} 
-              au {request?.returnDate ? new Date(request.returnDate).toLocaleDateString() : 'N/A'}.
-            </p>
-            
-            <div className="whitespace-pre-line mb-3" style={{ lineHeight: '1.5', wordBreak: 'break-word' }}>
+            {/* Contenu personnalisé uniquement - sans aucun texte automatique */}
+            <div className="whitespace-pre-line" style={{ lineHeight: '1.5', wordBreak: 'break-word' }}>
               {response}
             </div>
-            
-            {/* Ajouter les informations de finalisation seulement si elles ne sont pas déjà dans la réponse */}
-            {!hasFinalizationInfo && (
-              <div className="mt-4 space-y-1">
-                <p>
-                  <strong>Pour finaliser votre réservation :</strong>
-                </p>
-                <ul className="list-none pl-4 space-y-1">
-                  <li>✅ Confirmer votre accord par retour de message</li>
-                  <li>✅ Nous faire parvenir une copie de votre passeport</li>
-                  <li>✅ Procéder au paiement du montant indiqué ci-dessus</li>
-                </ul>
-              </div>
-            )}
-            
-            <p className="mt-4">
-              Cordialement,<br />
-              L'équipe NASSER TRAVEL HORIZON<br />
-              📞 Tél: +235 66 38 69 37<br />
-              📧 Email: contact@nassertravelhorizon.com<br />
-            </p>
           </div>
         </div>
         
