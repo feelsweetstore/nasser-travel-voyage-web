@@ -5,6 +5,7 @@
 class ClientAreaService {
   private static STORAGE_KEY = 'clientAreaEnabled';
   private static AUTH_KEY = 'clientAuth';
+  private static PROFILE_KEY = 'clientProfile';
 
   /**
    * Get the current status of client area
@@ -68,12 +69,37 @@ class ClientAreaService {
     // Simulate an API call with a delay
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    // Return demo data
-    return {
+    // Check if there's a saved profile in localStorage
+    const savedProfile = localStorage.getItem(this.PROFILE_KEY);
+    if (savedProfile) {
+      return JSON.parse(savedProfile);
+    }
+    
+    // Return default demo data if no saved profile
+    const defaultProfile = {
       email: 'demo@example.com',
       name: 'Client Démo',
-      phone: '+235 66 00 00 00'
+      phone: '+235 66 00 00 00',
+      address: '',
+      city: '',
+      country: 'Tchad'
     };
+    
+    // Save the default profile
+    localStorage.setItem(this.PROFILE_KEY, JSON.stringify(defaultProfile));
+    return defaultProfile;
+  }
+
+  /**
+   * Update user profile data
+   * @param profileData - Updated profile data
+   */
+  static async updateUserProfile(profileData: any): Promise<void> {
+    // Simulate an API call with a delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Save the updated profile to localStorage
+    localStorage.setItem(this.PROFILE_KEY, JSON.stringify(profileData));
   }
 }
 

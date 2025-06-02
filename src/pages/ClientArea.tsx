@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { User, Calendar, FileText, Bell, Shield, Loader2, LockIcon } from 'lucide-react';
@@ -7,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import OnlineReservationService from '../services/OnlineReservationService';
 import ClientAreaService from '../services/ClientAreaService';
+import EditableProfile from '../components/client/EditableProfile';
+import ReservationCard from '../components/client/ReservationCard';
 
 const ClientArea = () => {
   const { toast } = useToast();
@@ -325,43 +326,10 @@ const ClientArea = () => {
                   {reservations.length > 0 ? (
                     <div className="space-y-4">
                       {reservations.map((reservation) => (
-                        <div key={reservation.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-semibold text-lg">{reservation.destination}</h3>
-                              <p className="text-gray-600">
-                                Départ: {new Date(reservation.departureDate).toLocaleDateString('fr-FR')}
-                                {reservation.returnDate && ` | Retour: ${new Date(reservation.returnDate).toLocaleDateString('fr-FR')}`}
-                              </p>
-                              <p className="text-gray-600 mt-1">
-                                {reservation.passengers} passager(s) | Classe {
-                                  reservation.travelClass === 'economy' ? 'Économique' :
-                                  reservation.travelClass === 'premium' ? 'Premium' :
-                                  reservation.travelClass === 'business' ? 'Business' : 'Première'
-                                }
-                              </p>
-                            </div>
-                            <div className="flex flex-col items-end">
-                              <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                                {reservation.status === 'confirmed' ? 'Confirmée' : reservation.status}
-                              </span>
-                              <span className="text-gray-500 text-sm mt-1">
-                                Réservation #{reservation.id.substring(4, 10)}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex justify-end mt-4">
-                            <button 
-                              className="text-nasser-primary hover:text-nasser-accent text-sm font-medium"
-                              onClick={() => toast({
-                                title: "Téléchargement du billet",
-                                description: "Votre billet a été téléchargé avec succès.",
-                              })}
-                            >
-                              Télécharger le billet
-                            </button>
-                          </div>
-                        </div>
+                        <ReservationCard 
+                          key={reservation.id} 
+                          reservation={reservation} 
+                        />
                       ))}
                     </div>
                   ) : (
@@ -406,48 +374,7 @@ const ClientArea = () => {
                   <CardTitle>Mon profil</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="max-w-md mx-auto">
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Email
-                        </label>
-                        <div className="p-3 bg-gray-100 border border-gray-200 rounded-md">
-                          demo@example.com
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Nom
-                        </label>
-                        <div className="p-3 bg-gray-100 border border-gray-200 rounded-md">
-                          Client Démo
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Téléphone
-                        </label>
-                        <div className="p-3 bg-gray-100 border border-gray-200 rounded-md">
-                          +235 66 00 00 00
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-8">
-                      <button
-                        className="bg-nasser-primary hover:bg-nasser-primary/90 text-white font-medium py-2 px-4 rounded-md transition-colors"
-                        onClick={() => toast({
-                          title: "Modification de profil",
-                          description: "Cette fonctionnalité sera disponible prochainement.",
-                        })}
-                      >
-                        Modifier mon profil
-                      </button>
-                    </div>
-                  </div>
+                  <EditableProfile />
                 </CardContent>
               </Card>
             </TabsContent>
