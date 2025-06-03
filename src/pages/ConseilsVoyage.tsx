@@ -1,33 +1,9 @@
-import React, { useEffect, useState } from 'react';
+
+import React from 'react';
 import { MapPin, Shield, Heart, Briefcase, Camera, Utensils, Plane, Phone, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import ContentService from '../services/ContentService';
 
 const ConseilsVoyage = () => {
-  const [pageContent, setPageContent] = useState({
-    title: "Conseils Voyage",
-    subtitle: "Découvrez nos conseils d'experts pour organiser et profiter pleinement de votre voyage",
-    description: "Nos conseillers expérimentés partagent avec vous leurs meilleurs conseils pour voyager en toute sérénité."
-  });
-
-  useEffect(() => {
-    // Charger le contenu modifiable depuis ContentService
-    const content = ContentService.getContentByPage('ConseilsVoyage');
-    
-    const newContent = { ...pageContent };
-    content.forEach(item => {
-      if (item.category === 'title') {
-        newContent.title = item.content;
-      } else if (item.category === 'subtitle') {
-        newContent.subtitle = item.content;
-      } else if (item.category === 'description') {
-        newContent.description = item.content;
-      }
-    });
-    
-    setPageContent(newContent);
-  }, []);
-
   const travelTips = [
     {
       icon: <Shield className="h-8 w-8 text-nasser-primary" />,
@@ -135,17 +111,10 @@ const ConseilsVoyage = () => {
         {/* Header Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-heading font-bold mb-6">
-            {pageContent.title}
+            Conseils Voyage
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {pageContent.subtitle}
-          </p>
-        </div>
-
-        {/* Description Section */}
-        <div className="text-center mb-16">
-          <p className="text-lg text-gray-700 max-w-4xl mx-auto">
-            {pageContent.description}
+            Découvrez nos conseils d'experts pour organiser et profiter pleinement de votre voyage
           </p>
         </div>
 

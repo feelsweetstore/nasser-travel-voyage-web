@@ -1,34 +1,9 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { FileText, CheckCircle, Clock, Users, Phone, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import ContentService from '../services/ContentService';
 
 const AccompagnementVisa = () => {
-  const [pageContent, setPageContent] = useState({
-    title: "Accompagnement Visa",
-    subtitle: "Facilitez vos démarches administratives avec notre service d'accompagnement visa personnalisé",
-    description: "Notre équipe d'experts vous accompagne dans toutes vos démarches de demande de visa."
-  });
-
-  useEffect(() => {
-    // Charger le contenu modifiable depuis ContentService
-    const content = ContentService.getContentByPage('AccompagnementVisa');
-    
-    const newContent = { ...pageContent };
-    content.forEach(item => {
-      if (item.category === 'title') {
-        newContent.title = item.content;
-      } else if (item.category === 'subtitle') {
-        newContent.subtitle = item.content;
-      } else if (item.category === 'description') {
-        newContent.description = item.content;
-      }
-    });
-    
-    setPageContent(newContent);
-  }, []);
-
   const visaTypes = [
     {
       title: "Visa Touristique",
@@ -91,17 +66,10 @@ const AccompagnementVisa = () => {
         {/* Header Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-heading font-bold mb-6">
-            {pageContent.title}
+            Accompagnement Visa
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {pageContent.subtitle}
-          </p>
-        </div>
-
-        {/* Description Section */}
-        <div className="text-center mb-16">
-          <p className="text-lg text-gray-700 max-w-4xl mx-auto">
-            {pageContent.description}
+            Facilitez vos démarches administratives avec notre service d'accompagnement visa personnalisé
           </p>
         </div>
 
@@ -151,6 +119,7 @@ const AccompagnementVisa = () => {
           </div>
         </section>
 
+        {/* Pays de destination */}
         <section className="mb-16">
           <h2 className="text-3xl font-heading font-bold text-center mb-12">Destinations prises en charge</h2>
           <div className="bg-white rounded-xl shadow-md p-8">
@@ -164,6 +133,7 @@ const AccompagnementVisa = () => {
           </div>
         </section>
 
+        {/* Avantages */}
         <section className="mb-16">
           <div className="bg-gradient-to-r from-nasser-primary to-blue-600 rounded-2xl shadow-xl p-8 md:p-12 text-white">
             <h2 className="text-3xl font-heading font-bold text-center mb-8">Pourquoi choisir notre accompagnement ?</h2>
@@ -193,6 +163,7 @@ const AccompagnementVisa = () => {
           </div>
         </section>
 
+        {/* CTA Section */}
         <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
           <h2 className="text-3xl font-heading font-bold mb-6">Prêt à démarrer vos démarches ?</h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
