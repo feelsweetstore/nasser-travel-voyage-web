@@ -56,9 +56,8 @@ const Navbar = () => {
 
           {/* Client Area Button - Desktop */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/espace-client" className="relative">
-              <span className="btn-outline py-2">Espace Client</span>
-              <span className="badge-coming-soon absolute -top-2 -right-2">Bientôt</span>
+            <Link to="/espace-client" className="btn-outline py-2">
+              Espace Client
             </Link>
           </div>
 
@@ -96,9 +95,8 @@ const Navbar = () => {
             <Link to="/galerie" className="block py-2 nav-link">Galerie</Link>
             <Link to="/contact" className="block py-2 nav-link">Contact</Link>
             <Link to="/faq" className="block py-2 nav-link">FAQ</Link>
-            <Link to="/espace-client" className="block py-2 nav-link relative">
+            <Link to="/espace-client" className="block py-2 nav-link">
               Espace Client
-              <span className="badge-coming-soon ml-2">Bientôt</span>
             </Link>
           </nav>
         )}
