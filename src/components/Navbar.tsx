@@ -42,8 +42,8 @@ const Navbar = () => {
               <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-10">
                 <div className="py-1">
                   <Link to="/services" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Tous nos services</Link>
-                  <Link to="/visa" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Accompagnement visa</Link>
-                  <Link to="/conseil" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Conseils voyage</Link>
+                  <Link to="/accompagnement-visa" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Accompagnement visa</Link>
+                  <Link to="/conseils-voyage" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Conseils voyage</Link>
                 </div>
               </div>
             </div>
@@ -86,8 +86,8 @@ const Navbar = () => {
               {isServicesOpen && (
                 <div className="pl-4 py-2 space-y-2">
                   <Link to="/services" className="block py-1 text-sm text-gray-700">Tous nos services</Link>
-                  <Link to="/visa" className="block py-1 text-sm text-gray-700">Accompagnement visa</Link>
-                  <Link to="/conseil" className="block py-1 text-sm text-gray-700">Conseils voyage</Link>
+                  <Link to="/accompagnement-visa" className="block py-1 text-sm text-gray-700">Accompagnement visa</Link>
+                  <Link to="/conseils-voyage" className="block py-1 text-sm text-gray-700">Conseils voyage</Link>
                 </div>
               )}
             </div>
