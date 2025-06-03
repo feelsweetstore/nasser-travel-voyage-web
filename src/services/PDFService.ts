@@ -23,6 +23,15 @@ class PDFService {
   static generateResponsePDF(request: any, title: string, filename: string): void {
     return PDFGenerator.generateResponsePDF(request, title, filename);
   }
+
+  /**
+   * Génère un PDF pour un message de contact
+   * @param contactMessage - Données du message de contact
+   * @param filename - Nom du fichier PDF
+   */
+  static generateContactPDF(contactMessage: any, filename: string): void {
+    return PDFGenerator.generateContactPDF(contactMessage, filename);
+  }
 }
 
 export default PDFService;

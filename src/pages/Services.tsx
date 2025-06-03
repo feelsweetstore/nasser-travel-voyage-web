@@ -14,7 +14,8 @@ const Services = () => {
         "Vols nationaux et internationaux",
         "Options économiques et premium",
         "Assistance complète pour les groupes"
-      ]
+      ],
+      link: "/reserver"
     },
     {
       icon: <FileText className="h-12 w-12 text-nasser-primary" />,
@@ -25,7 +26,8 @@ const Services = () => {
         "Préparation des documents nécessaires",
         "Conseils sur les exigences d'entrée par pays",
         "Suivi personnalisé de chaque dossier"
-      ]
+      ],
+      link: "/accompagnement-visa"
     },
     {
       icon: <Globe className="h-12 w-12 text-nasser-primary" />,
@@ -36,7 +38,8 @@ const Services = () => {
         "Informations sur les destinations",
         "Conseils de sécurité et santé",
         "Suggestions d'hébergement et activités"
-      ]
+      ],
+      link: "/conseils-voyage"
     },
     {
       icon: <Headphones className="h-12 w-12 text-nasser-primary" />,
@@ -47,7 +50,8 @@ const Services = () => {
         "Assistance d'urgence pendant le voyage",
         "Gestion des imprévus et changements",
         "Service client réactif et attentif"
-      ]
+      ],
+      link: "/assistance"
     },
     {
       icon: <CreditCard className="h-12 w-12 text-nasser-primary" />,
@@ -58,7 +62,8 @@ const Services = () => {
         "Virement bancaire",
         "Mobile Money (Orange Money, MoMo)",
         "Paiement en ligne (bientôt disponible)"
-      ]
+      ],
+      link: "/reserver"
     },
     {
       icon: <Award className="h-12 w-12 text-nasser-primary" />,
@@ -69,7 +74,8 @@ const Services = () => {
         "Services premium pour clients fidèles",
         "Offres spéciales et promotions exclusives",
         "Traitement prioritaire de vos demandes"
-      ]
+      ],
+      link: "/espace-client"
     }
   ];
 
@@ -96,7 +102,7 @@ const Services = () => {
                 </div>
                 <h3 className="text-xl font-heading font-bold mb-3 text-center">{service.title}</h3>
                 <p className="text-gray-700 mb-6 text-center">{service.description}</p>
-                <ul className="space-y-2">
+                <ul className="space-y-2 mb-6">
                   {service.details.map((detail, idx) => (
                     <li key={idx} className="flex items-start">
                       <svg className="h-5 w-5 text-nasser-primary mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
@@ -106,6 +112,14 @@ const Services = () => {
                     </li>
                   ))}
                 </ul>
+                <div className="text-center">
+                  <Link 
+                    to={service.link} 
+                    className="inline-block bg-nasser-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                  >
+                    En savoir plus
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
@@ -126,7 +140,7 @@ const Services = () => {
                 Demander un devis
               </Link>
               <a 
-                href="https://wa.me/23566000000" 
+                href="https://wa.me/23566386937" 
                 className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-md transition-colors flex items-center justify-center"
                 target="_blank" 
                 rel="noopener noreferrer"

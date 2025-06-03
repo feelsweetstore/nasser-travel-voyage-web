@@ -24,6 +24,8 @@ import LegalNotice from "./pages/LegalNotice";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
 import OpeningHours from "./pages/OpeningHours";
+import AccompagnementVisa from './pages/AccompagnementVisa';
+import ConseilsVoyage from './pages/ConseilsVoyage';
 
 const queryClient = new QueryClient();
 
@@ -94,6 +96,8 @@ const App = () => {
               <Route path="/confidentialite" element={<PrivacyPolicy />} />
               <Route path="/cgv" element={<Terms />} />
               <Route path="/heures-ouverture" element={<OpeningHours />} />
+              <Route path="/accompagnement-visa" element={<AccompagnementVisa />} />
+              <Route path="/conseils-voyage" element={<ConseilsVoyage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />

@@ -546,7 +546,7 @@ L'équipe NASSER TRAVEL HORIZON
     try {
       console.log("Téléchargement du PDF de contact pour:", activeContactMessage.name);
       // Générer le PDF pour le message de contact
-      const filename = `Contact-${activeContactMessage.name.replace(/\s+/g, '_')}`;
+      const filename = `Contact-${activeContactMessage.name.replace(/\s+/g, '_')}-${activeContactMessage.id}`;
       
       // Notification du début du téléchargement
       toast({
@@ -554,10 +554,7 @@ L'équipe NASSER TRAVEL HORIZON
         description: "Le téléchargement va commencer dans un instant...",
       });
       
-      PDFService.generateResponsePDF({
-        ...activeContactMessage,
-        response: activeContactMessage.response
-      }, 'Réponse à votre message', filename);
+      PDFService.generateContactPDF(activeContactMessage, filename);
       
       // Notification de succès (après un court délai)
       setTimeout(() => {

@@ -108,4 +108,23 @@ export class PDFGenerator {
         .catch(error => console.error("Erreur lors de la génération du PDF:", error));
     }, 500);
   }
+
+  /**
+   * Génère un PDF pour un message de contact
+   */
+  static generateContactPDF(contactMessage: any, filename: string): void {
+    console.log("Génération du PDF de contact:", contactMessage.name, filename);
+    
+    if (!document.getElementById('contactPdfTemplate')) {
+      console.error("Contact PDF template not found in the DOM");
+      return;
+    }
+    
+    setTimeout(() => {
+      console.log("Lancement de la génération contact PDF après timeout");
+      this.generateFromElement('contactPdfTemplate', filename)
+        .then(() => console.log("Génération Contact PDF terminée avec succès"))
+        .catch(error => console.error("Erreur lors de la génération du Contact PDF:", error));
+    }, 500);
+  }
 }
