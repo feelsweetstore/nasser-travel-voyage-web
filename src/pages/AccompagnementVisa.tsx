@@ -2,34 +2,36 @@
 import React from 'react';
 import { FileText, CheckCircle, Clock, Users, Phone, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ContentService from '../services/ContentService';
 
 const AccompagnementVisa = () => {
-  const visaTypes = [
-    {
-      title: "Visa Touristique",
-      description: "Pour vos voyages de loisirs et découvertes",
-      duration: "5-15 jours",
-      documents: ["Passeport valide", "Photos d'identité", "Attestation d'hébergement", "Billet d'avion"]
-    },
-    {
-      title: "Visa d'Affaires",
-      description: "Pour vos déplacements professionnels",
-      duration: "7-21 jours",
-      documents: ["Passeport valide", "Invitation d'entreprise", "Justificatifs professionnels", "Assurance voyage"]
-    },
-    {
-      title: "Visa Transit",
-      description: "Pour les escales et correspondances",
-      duration: "3-7 jours",
-      documents: ["Passeport valide", "Billet de continuation", "Visa du pays de destination"]
-    },
-    {
-      title: "Visa Étudiant",
-      description: "Pour poursuivre vos études à l'étranger",
-      duration: "15-30 jours",
-      documents: ["Passeport valide", "Lettre d'admission", "Justificatifs financiers", "Certificats médicaux"]
-    }
-  ];
+  // Récupérer le contenu depuis le service
+  const pageContent = ContentService.getContentByPage('Accompagnement Visa');
+  
+  const getContentByTitle = (title: string) => {
+    const item = pageContent.find(item => item.title === title);
+    return item ? item.content : '';
+  };
+
+  const mainTitle = getContentByTitle('Titre principal') || 'Accompagnement Visa';
+  const subtitle = getContentByTitle('Sous-titre') || 'Facilitez vos démarches administratives avec notre service d\'accompagnement visa personnalisé';
+  const description = getContentByTitle('Description des services') || 'NASSER TRAVEL HORIZON vous accompagne dans toutes vos démarches de visa.';
+  const visaTypesContent = getContentByTitle('Types de visa') || '';
+  const countriesContent = getContentByTitle('Pays supportés') || '';
+
+  // Parser les types de visa depuis le contenu
+  const visaTypes = visaTypesContent.split('\n').filter(line => line.trim()).map(line => {
+    const parts = line.split('|');
+    return {
+      title: parts[0] || '',
+      description: parts[1] || '',
+      duration: parts[2] || '',
+      documents: ["Passeport valide", "Photos d'identité", "Documents spécifiques", "Justificatifs requis"]
+    };
+  });
+
+  // Parser les pays depuis le contenu
+  const countries = countriesContent.split(', ').filter(country => country.trim());
 
   const processSteps = [
     {
@@ -54,54 +56,61 @@ const AccompagnementVisa = () => {
     }
   ];
 
-  const countries = [
-    "France", "Canada", "États-Unis", "Royaume-Uni", "Allemagne", "Italie",
-    "Espagne", "Belgique", "Pays-Bas", "Suisse", "Australie", "Dubaï",
-    "Arabie Saoudite", "Turquie", "Maroc", "Sénégal", "Côte d'Ivoire"
-  ];
-
   return (
     <main className="bg-nasser-light py-16">
       <div className="container-custom">
         {/* Header Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-heading font-bold mb-6">
-            Accompagnement Visa
+            {mainTitle}
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Facilitez vos démarches administratives avec notre service d'accompagnement visa personnalisé
+            {subtitle}
           </p>
         </div>
 
-        {/* Types de visa */}
+        {/* Description */}
         <section className="mb-16">
-          <h2 className="text-3xl font-heading font-bold text-center mb-12">Types de visa traités</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {visaTypes.map((visa, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-                <h3 className="text-xl font-heading font-bold mb-3 text-nasser-primary">{visa.title}</h3>
-                <p className="text-gray-600 mb-4">{visa.description}</p>
-                <div className="mb-4">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-nasser-primary/10 text-nasser-primary">
-                    <Clock className="h-4 w-4 mr-1" />
-                    Délai: {visa.duration}
-                  </span>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Documents requis :</h4>
-                  <ul className="space-y-1">
-                    {visa.documents.map((doc, idx) => (
-                      <li key={idx} className="flex items-start text-sm text-gray-600">
-                        <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                        {doc}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
+          <div className="bg-white rounded-xl shadow-md p-8 text-center">
+            <p className="text-lg text-gray-700 leading-relaxed">
+              {description}
+            </p>
           </div>
         </section>
+
+        {/* Types de visa */}
+        {visaTypes.length > 0 && (
+          <section className="mb-16">
+            <h2 className="text-3xl font-heading font-bold text-center mb-12">Types de visa traités</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {visaTypes.map((visa, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                  <h3 className="text-xl font-heading font-bold mb-3 text-nasser-primary">{visa.title}</h3>
+                  <p className="text-gray-600 mb-4">{visa.description}</p>
+                  {visa.duration && (
+                    <div className="mb-4">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-nasser-primary/10 text-nasser-primary">
+                        <Clock className="h-4 w-4 mr-1" />
+                        Délai: {visa.duration}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="font-semibold mb-2">Documents requis :</h4>
+                    <ul className="space-y-1">
+                      {visa.documents.map((doc, idx) => (
+                        <li key={idx} className="flex items-start text-sm text-gray-600">
+                          <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                          {doc}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Processus */}
         <section className="mb-16">
@@ -120,18 +129,20 @@ const AccompagnementVisa = () => {
         </section>
 
         {/* Pays de destination */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-heading font-bold text-center mb-12">Destinations prises en charge</h2>
-          <div className="bg-white rounded-xl shadow-md p-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {countries.map((country, index) => (
-                <div key={index} className="text-center p-3 rounded-md border border-gray-200 hover:border-nasser-primary transition-colors">
-                  <span className="font-medium text-gray-700">{country}</span>
-                </div>
-              ))}
+        {countries.length > 0 && (
+          <section className="mb-16">
+            <h2 className="text-3xl font-heading font-bold text-center mb-12">Destinations prises en charge</h2>
+            <div className="bg-white rounded-xl shadow-md p-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {countries.map((country, index) => (
+                  <div key={index} className="text-center p-3 rounded-md border border-gray-200 hover:border-nasser-primary transition-colors">
+                    <span className="font-medium text-gray-700">{country}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Avantages */}
         <section className="mb-16">
